@@ -13,7 +13,7 @@ import { z } from "zod";
 import { isSecureRequest, json, jsonError } from "@/lib/http";
 import { getSession, setSessionCookie } from "@/lib/session";
 import {
-  isStaffLogin,
+  isStaffAccount,
   isStaffPasswordSet,
   recordUnlockFailure,
   resetUnlockAttempts,
@@ -36,7 +36,7 @@ export async function GET(): Promise<Response> {
   const session = await getSession();
   return json({
     authenticated: Boolean(session),
-    staff: isStaffLogin(session?.login),
+    staff: await isStaffAccount(session),
     staffConfigured: staffConfigured(),
     passwordRequired: await isStaffPasswordSet(),
     unlocked: session?.staffUnlocked === true,
@@ -46,7 +46,7 @@ export async function GET(): Promise<Response> {
 export async function POST(req: Request): Promise<Response> {
   const session = await getSession();
   if (!session) return jsonError("Authentification requise.", 401);
-  if (!isStaffLogin(session.login)) {
+  if (!(await isStaffAccount(session))) {
     return jsonError("Ce compte ne fait pas partie du staff.", 403);
   }
 

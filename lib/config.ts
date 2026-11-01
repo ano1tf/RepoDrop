@@ -9,6 +9,20 @@ const int = (v: string | undefined, def: number) => {
   return Number.isFinite(n) && n > 0 ? n : def;
 };
 
+/**
+ * `STAFF_LOGINS` accepte deux formes, séparées par des virgules :
+ *   - un **login** GitHub (`ano1tf`) ;
+ *   - un **identifiant numérique** (`4242`), que GitHub ne change JAMAIS —
+ *     c'est la forme à privilégier, elle survit aux renommages de compte.
+ */
+const staffEntries = (process.env.STAFF_LOGINS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+/** Un identifiant GitHub est une suite de chiffres (jamais un login). */
+const isGithubId = (entry: string) => /^\d{1,20}$/.test(entry);
+
 export const config = {
   /** URL publique de l'app (callback OAuth) */
   appUrl: process.env.APP_URL ?? "http://localhost:3000",
@@ -30,13 +44,21 @@ export const config = {
   /** Mode dev : bouton de connexion directe (jamais en prod) */
   devAuth: process.env.DEV_AUTH === "1",
   /**
-   * Comptes GitHub autorisés sur le panel staff (`STAFF_LOGINS=a,b`).
-   * Vide + DEV_AUTH=1 : n'importe quel compte connecté (pratique en dev).
+   * Comptes GitHub autorisés sur le panel staff (`STAFF_LOGINS=a,b`), sous
+   * forme de logins. Vide + DEV_AUTH=1 : n'importe quel compte connecté
+   * (pratique en dev).
+   *
+   * Les entrées purement numériques ne sont pas des logins mais des
+   * identifiants de compte : elles finissent dans `staffIds`.
    */
-  staffLogins: (process.env.STAFF_LOGINS ?? "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean),
+  staffLogins: staffEntries
+    .filter((s) => !isGithubId(s))
+    .map((s) => s.toLowerCase()),
+  /** Identifiants GitHub numériques du staff (stables en cas de renommage). */
+  staffIds: staffEntries
+    .filter(isGithubId)
+    .map((s) => Number(s))
+    .filter((n) => Number.isSafeInteger(n) && n > 0),
   /**
    * Mot de passe du panel staff, amorçable par variable d'environnement.
    * Le panel peut en définir un lui-même : la valeur en base a priorité.

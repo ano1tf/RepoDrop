@@ -73,6 +73,7 @@ export async function GET(req: Request): Promise<Response> {
         name: viewer.name || viewer.login,
         avatar: viewer.avatar_url,
         token,
+        id: viewer.id,
       },
       isSecureRequest(req),
     );

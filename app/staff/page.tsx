@@ -44,7 +44,13 @@ export default async function StaffPage() {
   // mais on explique quoi régler si la liste STAFF_LOGINS est vide.
   const access = await staffAccess();
   if (access === "denied") {
-    return <NoAccess login={session.login} configured={staffConfigured()} />;
+    return (
+      <NoAccess
+        login={session.login}
+        id={session.id}
+        configured={staffConfigured()}
+      />
+    );
   }
   if (access === "locked") {
     return <StaffGate login={session.login} />;
@@ -71,7 +77,10 @@ export default async function StaffPage() {
     uploadsPerHour: config.limits.uploadsPerHour,
     devAuth: config.devAuth,
     sessionSecretSet: Boolean(config.sessionSecret),
-    staffLogins: config.staffLogins,
+    staffLogins: [
+      ...config.staffLogins,
+      ...config.staffIds.map((id) => String(id)),
+    ],
     nodeVersion: process.version,
   };
 
@@ -104,7 +113,15 @@ export default async function StaffPage() {
 }
 
 /** Écran affiché à un compte connecté mais non staff. */
-function NoAccess({ login, configured }: { login: string; configured: boolean }) {
+function NoAccess({
+  login,
+  id,
+  configured,
+}: {
+  login: string;
+  id?: number;
+  configured: boolean;
+}) {
   return (
     <main className="mx-auto flex max-w-lg flex-col items-center gap-5 px-4 py-24 text-center">
       <span className="grid h-14 w-14 place-items-center rounded-2xl bg-danger/10 text-danger ring-1 ring-danger/30">
@@ -126,15 +143,40 @@ function NoAccess({ login, configured }: { login: string; configured: boolean })
             Aucun compte staff n'est configuré
           </p>
           <p>
-            Ajoutez votre login GitHub dans <code className="text-chalk">.env</code> :
+            Ajoutez votre identifiant GitHub dans <code className="text-chalk">.env</code> :
           </p>
           <pre className="mt-2 overflow-x-auto rounded-lg bg-ink p-3 font-mono text-[11px] text-chalk ring-1 ring-edge">
-            STAFF_LOGINS={login}
+            STAFF_LOGINS={id ?? login}
           </pre>
           <p className="mt-2">
             Puis redémarrez l'application. En mode développement
             (<code className="text-chalk">DEV_AUTH=1</code>), tout compte
             connecté a accès.
+          </p>
+        </div>
+      )}
+
+      {configured && (
+        <div className="w-full rounded-xl bg-panel p-4 text-left text-xs leading-relaxed text-mist ring-1 ring-edge">
+          <p className="mb-2 flex items-center gap-2 font-medium text-amber">
+            <ShieldAlert className="h-4 w-4" />
+            Vous venez de changer de pseudo GitHub ?
+          </p>
+          <p>
+            GitHub ne redirige pas les profils : dès le renommage, l'ancien login
+            répond 404 et devient réclamable par n'importe qui — une liste qui le
+            contient ne vous reconnaît donc plus (et ouvrirait le panel au premier
+            venu). Remplacez-le par votre{" "}
+            <strong className="text-chalk">identifiant numérique</strong>, qui ne
+            change jamais, dans le{" "}
+            <code className="text-chalk">.env</code> du serveur :
+          </p>
+          <pre className="mt-2 overflow-x-auto rounded-lg bg-ink p-3 font-mono text-[11px] text-chalk ring-1 ring-edge">
+            STAFF_LOGINS={id ?? login}
+          </pre>
+          <p className="mt-2">
+            Puis redémarrez l'application. Pour ajouter plusieurs comptes, séparez
+            les entrées par des virgules.
           </p>
         </div>
       )}
