@@ -36,7 +36,7 @@ cp .env.example .env
 # éditez .env :
 #   GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET
 #   SESSION_SECRET   → openssl rand -hex 32
-#   STAFF_LOGINS     → votre login GitHub (panel staff)
+#   STAFF_LOGINS     → votre ID GitHub (stable) ou votre login (panel staff)
 ```
 
 Variables importantes :
@@ -47,7 +47,7 @@ Variables importantes :
 | `APP_URL` | URL publique (callback OAuth + sonde de disponibilité) | `http://localhost:3000` |
 | `SESSION_SECRET` | Chiffrement du cookie de session **et du jeton Discord** | — |
 | `DEV_AUTH=1` | Bouton « connexion directe » via `GH_TOKEN` du serveur (**dev uniquement**) | off |
-| `STAFF_LOGINS` | Logins GitHub autorisés sur `/staff` (séparés par des virgules) | — |
+| `STAFF_LOGINS` | Comptes autorisés sur `/staff` : **ID numérique** (stable) ou login, séparés par des virgules — cf. [changement de pseudo](#changement-de-pseudo-github) | — |
 | `DISCORD_BOT_TOKEN` / `DISCORD_WEBHOOK_URL` | Amorçage du bot (aussi configurable depuis le panel) | — |
 | `DISCORD_CHANNEL_ID` | Canal cible du bot | — |
 | `DISCORD_PING_MINUTES` | Période du ping de disponibilité | `10` |
@@ -188,8 +188,26 @@ La porte n'est qu'un raccourci : **tout se décide côté serveur**, dans
 
 | Verrou | Réglage | Effet s'il manque |
 |---|---|---|
-| 1. Allowlist | `STAFF_LOGINS=login1,login2` | écran « accès restreint », API en 403 |
+| 1. Allowlist | `STAFF_LOGINS=id1,login2` | écran « accès restreint », API en 403 |
 | 2. Mot de passe | onglet **Sécurité** du panel, ou `STAFF_PASSWORD` | écran de saisie, API en 403 `locked` |
+
+#### Changement de pseudo GitHub
+
+GitHub **ne redirige pas** les profils : dès qu'un compte est renommé
+(`DimalaxYT` → `ano1tf`), l'ancien login répond `404` et devient immédiatement
+réclamable par n'importe qui. Conséquences pour l'allowlist :
+
+- une entrée écrite avec un **ancien login** ne reconnaît plus son propriétaire
+  — et, si quelqu'un reprend le pseudo libéré, elle ouvrirait le panel à cet
+  inconnu ;
+- l'**identifiant numérique** du compte (`GET /user` → `id`), lui, ne change
+  jamais : `STAFF_LOGINS=98652864` reste valable à vie, renommages compris.
+
+Donc : **privilégiez l'ID numérique** ; les logins restent acceptés par
+commodité. L'ID de la session est stocké dans le cookie chiffré
+(`SessionData.id`) et comparé sans le moindre appel réseau. Si vous perdez
+l'accès, l'écran « accès restreint » de `/staff` affiche l'ID à recopier tel
+quel dans `STAFF_LOGINS` — un redémarrage suffit ensuite.
 
 Le mot de passe est **haché en scrypt** (sel aléatoire, `N=16384`) avant
 d'être écrit en base : il n'est jamais renvoyé par l'API, jamais journalisé, et

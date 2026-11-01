@@ -2,12 +2,25 @@
  * Contrôle d'accès au panel staff.
  *
  * Deux verrous cumulatifs :
- *   1. `STAFF_LOGINS` (logins GitHub, séparés par des virgules). Rien n'est
- *      deviné : si la liste est vide, personne n'entre — sauf en mode
- *      développement (`DEV_AUTH=1`), où tout compte connecté passe ;
+ *   1. `STAFF_LOGINS` (comptes GitHub, séparés par des virgules). Une entrée
+ *      peut être un **login** (`ano1tf`) ou, mieux, un **identifiant
+ *      numérique** (`98652864`). Rien n'est deviné : si la liste est vide,
+ *      personne n'entre — sauf en mode développement (`DEV_AUTH=1`), où tout
+ *      compte connecté passe ;
  *   2. un **mot de passe** de panel, défini depuis le panel lui-même (empreinte
  *      scrypt en base) ou amorcé par `STAFF_PASSWORD`. Validé une fois, il est
  *      porté par le cookie de session chiffré jusqu'à la déconnexion.
+ *
+ * **Renommages de compte.** GitHub ne redirige PAS les profils : dès qu'un
+ * compte est renommé (`DimalaxYT` → `ano1tf`), l'ancien login répond 404 et
+ * devient immédiatement réclamable par n'importe qui. Une allowlist écrite avec
+ * l'ancien nom ferme donc le panel à son propriétaire — et l'ouvrirait au
+ * premier venu qui reprend le pseudo libéré.
+ *
+ * D'où la règle : **l'identifiant numérique fait foi**. Il est stable à vie
+ * (renommages compris), il est enregistré dans la session au moment du login,
+ * et il est affiché sur l'écran « accès restreint » pour être recopié tel quel
+ * dans `STAFF_LOGINS`. Les logins restent acceptés par commodité.
  */
 import crypto from "node:crypto";
 import { config } from "./config";
@@ -17,17 +30,44 @@ import { bucketDelete, bucketGet, bucketSet, logEvent } from "./db";
 
 /** La liste `STAFF_LOGINS` est-elle renseignée ? */
 export function staffConfigured(): boolean {
-  return config.staffLogins.length > 0;
+  return config.staffLogins.length > 0 || config.staffIds.length > 0;
 }
 
-/** Vérification du login (insensible à la casse, comme GitHub). */
-export function isStaffLogin(login: string | null | undefined): boolean {
-  if (!login) return false;
-  const normalized = login.trim().toLowerCase();
-  if (!normalized) return false;
-  if (config.staffLogins.includes(normalized)) return true;
+/**
+ * Vérification de l'appartenance au staff : login (insensible à la casse,
+ * comme GitHub) OU identifiant numérique — la forme qui survit aux renommages.
+ */
+export function isStaffLogin(
+  login: string | null | undefined,
+  id?: number | null,
+): boolean {
+  const normalized = (login ?? "").trim().toLowerCase();
+  const numericId =
+    typeof id === "number" && Number.isSafeInteger(id) && id > 0 ? id : null;
+
+  if (normalized && config.staffLogins.includes(normalized)) return true;
+  if (numericId !== null && config.staffIds.includes(numericId)) return true;
+  if (!normalized && numericId === null) return false;
+
   // Dev uniquement : aucun compte déclaré → tout le monde est staff.
-  return config.devAuth && config.staffLogins.length === 0;
+  return config.devAuth && !staffConfigured();
+}
+
+/** Identité minimale suffisante pour décider de l'accès staff. */
+export interface StaffIdentity {
+  login?: string | null;
+  id?: number | null;
+}
+
+/**
+ * Accès staff d'une session (login + identifiant GitHub).
+ * Point d'entrée unique pour la page `/staff` et les API `/api/staff/*`.
+ */
+export async function isStaffAccount(
+  identity: StaffIdentity | null | undefined,
+): Promise<boolean> {
+  if (!identity) return false;
+  return isStaffLogin(identity.login, identity.id);
 }
 
 export type StaffCheck =
@@ -50,7 +90,7 @@ export async function checkStaff(): Promise<StaffCheck> {
   if (!session) {
     return { ok: false, status: 401, message: "Authentification requise." };
   }
-  if (!isStaffLogin(session.login)) {
+  if (!(await isStaffAccount(session))) {
     return {
       ok: false,
       status: 403,

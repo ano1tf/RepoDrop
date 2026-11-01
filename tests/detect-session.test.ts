@@ -49,6 +49,32 @@ describe("session chiffrée", () => {
     });
   });
 
+  it("conserve l'identifiant GitHub, stable en cas de renommage", async () => {
+    const sealed = await sealSession({
+      login: "ano1tf",
+      name: "Ano",
+      avatar: "",
+      token: "gho_secret_token_value",
+      id: 98652864,
+    });
+    const opened = await openSession(sealed);
+    expect(opened?.id).toBe(98652864);
+    expect(opened?.login).toBe("ano1tf");
+  });
+
+  it("ignore un identifiant qui n'est pas un nombre", async () => {
+    const sealed = await sealSession({
+      login: "alice",
+      name: "Alice",
+      avatar: "",
+      token: "gho_secret_token_value",
+      // Cookie bricolé : le champ doit être ignoré, pas propagé.
+      id: "98652864" as unknown as number,
+    });
+    const opened = await openSession(sealed);
+    expect(opened?.id).toBeUndefined();
+  });
+
   it("conserve le déverrouillage du panel staff, et rien d'autre ne le vaut", async () => {
     const sealed = await sealSession({
       login: "alice",

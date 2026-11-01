@@ -16,6 +16,12 @@ export interface SessionData {
   avatar: string;
   token: string;
   /**
+   * Identifiant numérique GitHub. Contrairement au login, il ne change pas
+   * quand l'utilisateur renomme son compte : c'est lui qui rend le contrôle
+   * d'accès staff insensible aux renommages (`lib/staff.ts`).
+   */
+  id?: number;
+  /**
    * Mot de passe du panel staff validé pour cette session. Porté par le cookie
    * chiffré : il disparaît donc à la déconnexion et ne touche jamais la base.
    */
@@ -46,6 +52,7 @@ export async function openSession(sealed: string): Promise<SessionData | null> {
       name: data.name ?? data.login,
       avatar: data.avatar ?? "",
       token: data.token,
+      id: typeof data.id === "number" ? data.id : undefined,
       staffUnlocked: data.staffUnlocked === true,
     };
   } catch {

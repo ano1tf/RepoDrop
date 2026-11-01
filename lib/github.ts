@@ -76,6 +76,8 @@ export interface Viewer {
   login: string;
   name: string | null;
   avatar_url: string;
+  /** Identifiant numérique du compte : il ne change jamais, même renommé. */
+  id: number;
 }
 
 export async function getViewer(token: string): Promise<Viewer> {
