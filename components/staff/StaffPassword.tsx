@@ -66,7 +66,7 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
         ok: true,
         text: password
           ? "Mot de passe enregistré."
-          : "Mot de passe supprimé : l'allowlist STAFF_LOGINS suffit désormais.",
+          : "Mot de passe supprimé : la liste des comptes autorisés suffit désormais.",
       });
     } catch {
       setFeedback({ ok: false, text: "Impossible de joindre le serveur." });
@@ -118,9 +118,9 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
               Mot de passe du panel
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-mist">
-              Second verrou, cumulatif avec l'allowlist{" "}
-              <code className="text-chalk">STAFF_LOGINS</code>. Il est demandé à
-              chaque nouvelle session et n'est jamais stocké en clair.
+              Second verrou, cumulatif avec la liste des comptes autorisés. Il
+              est demandé à chaque nouvelle session et n&apos;est jamais stocké
+              en clair.
             </p>
           </div>
           <Badge variant={view.passwordSet ? "default" : "amber"}>
@@ -135,7 +135,7 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
               {view.source === "panel"
                 ? "défini depuis ce panel"
                 : view.source === "env"
-                  ? "variable STAFF_PASSWORD"
+                  ? "variable d'environnement"
                   : "aucun"}
             </dd>
           </div>
@@ -243,8 +243,9 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
         </Button>
         {!view.passwordSet && (
           <p className="mt-4 rounded-lg bg-amber/10 px-3 py-2 text-xs text-amber ring-1 ring-amber/30">
-            Aucun mot de passe n'est défini : le verrouillage n'a aucun effet
-            tant que seul <code>STAFF_LOGINS</code> protège le panel.
+            Aucun mot de passe n&apos;est défini : le verrouillage n&apos;a
+            aucun effet tant que seule la liste des comptes autorisés protège le
+            panel.
           </p>
         )}
       </section>
