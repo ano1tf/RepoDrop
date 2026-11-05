@@ -94,9 +94,7 @@ export async function checkStaff(): Promise<StaffCheck> {
     return {
       ok: false,
       status: 403,
-      message: staffConfigured()
-        ? "Ce compte ne fait pas partie du staff."
-        : "Aucun compte staff configuré : renseignez STAFF_LOGINS dans .env.",
+      message: "Ce compte n'a pas accès à cet espace.",
     };
   }
   if ((await isStaffPasswordSet()) && session.staffUnlocked !== true) {

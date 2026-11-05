@@ -239,10 +239,9 @@ export function DiscordSettings({
           {!initial.persistentSecrets && (
             <p className="rounded-lg bg-amber/10 p-3 text-xs leading-relaxed text-amber ring-1 ring-amber/30">
               <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-              <code>SESSION_SECRET</code> n'est pas défini : la clé de chiffrement
+              Le secret de session n&apos;est pas défini : la clé de chiffrement
               est régénérée à chaque démarrage, le jeton sera perdu au prochain
-              redémarrage. Renseignez <code>SESSION_SECRET</code> dans
-              <code> .env</code>.
+              redémarrage. Définissez-le côté serveur pour conserver le jeton.
             </p>
           )}
 

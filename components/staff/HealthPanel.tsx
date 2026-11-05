@@ -165,7 +165,7 @@ export function HealthPanel({
           />
           <ConfigRow label="Dossier de travail" value={configView.jobsDir} mono />
           <ConfigRow
-            label="SESSION_SECRET"
+            label="Secret de session"
             value={configView.sessionSecretSet ? "défini" : "ABSENT"}
             badge={configView.sessionSecretSet ? "ok" : "danger"}
           />
@@ -187,9 +187,9 @@ export function HealthPanel({
           {configView.devAuth && (
             <p className="rounded-lg bg-amber/10 p-3 text-xs leading-relaxed text-amber ring-1 ring-amber/30">
               <AlertTriangle className="mr-1 inline h-3.5 w-3.5" />
-              <code>DEV_AUTH=1</code> est actif : la connexion directe par jeton
-              serveur est proposée et le panel staff est ouvert à tout compte
-              connecté. À désactiver en production.
+              Le mode développement est actif : la connexion directe est
+              proposée et le panel staff est ouvert à tout compte connecté. À
+              désactiver en production.
             </p>
           )}
         </CardContent>

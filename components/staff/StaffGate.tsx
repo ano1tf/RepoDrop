@@ -118,9 +118,7 @@ export function StaffGate({ login }: { login: string }) {
         </form>
 
         <p className="mt-4 text-xs leading-relaxed text-mist/80">
-          Le mot de passe est défini depuis l'onglet Sécurité du panel, ou par
-          la variable <code className="text-chalk">STAFF_PASSWORD</code>. Après
-          6 essais, l'accès est suspendu 15 minutes.
+          Après 6 essais, l&apos;accès est suspendu 15 minutes.
         </p>
       </div>
 

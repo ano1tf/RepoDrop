@@ -299,7 +299,7 @@ export default async function Home() {
           </div>
           <p className="mt-6 text-xs text-mist">
             Limites par défaut : 200 Mo uploadés, 500 Mo décompressés, 20 000
-            fichiers — ajustables par variables d'environnement.
+            fichiers par import.
           </p>
         </div>
       </section>
