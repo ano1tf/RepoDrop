@@ -23,6 +23,7 @@ export function Footer() {
             <span className="flex items-center gap-2 font-semibold tracking-tight">
               <Link
                 href="/staff"
+                rel="nofollow"
                 aria-label="Espace réservé"
                 title=""
                 className="grid h-8 w-8 place-items-center rounded-lg bg-go/15 text-go ring-1 ring-go/30 transition-colors hover:bg-go/25 hover:ring-go/50"
@@ -44,6 +45,7 @@ export function Footer() {
             <FooterLink href="/import">Importer une archive</FooterLink>
             <FooterLink href="/#comment">Comment ça marche</FooterLink>
             <FooterLink href="/#securite">Sécurité</FooterLink>
+            <FooterLink href="/#faq">Questions fréquentes</FooterLink>
           </FooterCol>
 
           <FooterCol title="Formats pris en charge">
