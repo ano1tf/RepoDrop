@@ -24,7 +24,10 @@ export async function Header() {
           <Wordmark />
         </Link>
 
-        <nav className="flex items-center gap-1.5 sm:gap-2">
+        <nav
+          aria-label="Navigation principale"
+          className="flex items-center gap-1.5 sm:gap-2"
+        >
           <Link
             href="/#comment"
             className="hidden rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-panel2 hover:text-chalk md:inline-block"
@@ -73,6 +76,7 @@ export async function Header() {
               </span>
               <a
                 href="/api/auth/logout"
+                rel="nofollow"
                 className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
               >
                 Déconnexion

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Archive, Eye, FolderArchive, FolderSearch, ShieldCheck } from "lucide-react";
 import Link from "next/link";
@@ -8,7 +9,12 @@ import { config } from "@/lib/config";
 import { Uploader } from "@/components/Uploader";
 import { formatBytes } from "@/lib/utils";
 
-export const metadata = { title: "Importer" };
+export const metadata: Metadata = {
+  title: "Importer une archive",
+  description:
+    "Téléversez une archive .rar, .zip, .tar ou .tar.gz pour prévisualiser ses fichiers et la pousser vers un dépôt GitHub.",
+  robots: { index: false, follow: false },
+};
 
 export default async function ImportPage() {
   const session = await getSession();

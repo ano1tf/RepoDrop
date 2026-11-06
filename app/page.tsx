@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import {
   Archive,
   ArrowRight,
   Check,
+  ChevronDown,
   Eye,
   FileArchive,
   FileWarning,
@@ -16,9 +19,18 @@ import {
   Terminal,
 } from "lucide-react";
 import { getSession } from "@/lib/session";
+import {
+  buildPageMetadata,
+  buildStructuredData,
+  FAQ_ITEMS,
+  resolveSiteUrl,
+  serializeJsonLd,
+} from "@/lib/seo";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = buildPageMetadata({ path: "/" });
 
 const STEPS = [
   {
@@ -98,12 +110,18 @@ const GUARANTEES = [
 ] as const;
 
 export default async function Home() {
-  const session = await getSession();
+  const [session, reqHeaders] = await Promise.all([getSession(), headers()]);
+  const baseUrl = resolveSiteUrl({ headers: reqHeaders });
+  const jsonLd = serializeJsonLd(buildStructuredData(baseUrl));
   const ctaHref = session ? "/import" : "/login";
   const ctaLabel = session ? "Importer une archive" : "Commencer avec GitHub";
 
   return (
     <main className="flex-1">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd }}
+      />
       {/* ------------------------------------------------------------ hero */}
       <section className="relative overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 hero-bg" />
@@ -304,6 +322,41 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ------------------------------------------------------------- FAQ */}
+      <section
+        id="faq"
+        className="mx-auto max-w-6xl scroll-mt-24 px-4 pt-20 sm:px-6"
+      >
+        <div className="mb-10 max-w-2xl">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Questions fréquentes
+          </h2>
+          <p className="mt-3 text-mist">
+            Tout savoir sur l'import d'archives vers GitHub, les formats acceptés
+            et la confidentialité de votre compte.
+          </p>
+        </div>
+        <div className="grid gap-3">
+          {FAQ_ITEMS.map((item) => (
+            <details
+              key={item.question}
+              className="panel group overflow-hidden transition-colors open:border-go/30"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium text-chalk transition-colors hover:text-go [&::-webkit-details-marker]:hidden">
+                <span>{item.question}</span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 text-mist transition-transform duration-200 group-open:rotate-180 group-open:text-go"
+                />
+              </summary>
+              <div className="border-t border-edge/60 px-5 pb-5 pt-4 text-sm leading-relaxed text-mist">
+                {item.answer}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+
       {/* ------------------------------------------------------------ CTA */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="panel relative overflow-hidden p-8 text-center sm:p-14">
@@ -359,7 +412,10 @@ function Stat({
  */
 function HeroMock() {
   return (
-    <div className="relative mx-auto w-full max-w-md animate-fade-up lg:max-w-none">
+    <div
+      aria-hidden="true"
+      className="relative mx-auto w-full max-w-md animate-fade-up lg:max-w-none"
+    >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-go/10 via-transparent to-sky/10 blur-2xl"

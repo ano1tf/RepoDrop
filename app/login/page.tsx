@@ -1,12 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle, Lock, ShieldCheck } from "lucide-react";
 import { config } from "@/lib/config";
 import { Wordmark, GitHubIcon } from "@/components/Brand";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { buildPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-export const metadata = { title: "Connexion" };
+export const metadata: Metadata = buildPageMetadata({
+  title: "Connexion GitHub",
+  description:
+    "Connectez votre compte GitHub à RepoDrop pour créer un dépôt et pousser vos archives .rar, .zip ou .tar en un clic. Jeton chiffré, jamais stocké en base.",
+  path: "/login",
+});
 
 const ERRORS: Record<string, string> = {
   state: "La session de connexion a expiré. Réessayez.",
@@ -46,7 +53,9 @@ export default async function LoginPage({
             className="h-px w-full bg-gradient-to-r from-transparent via-go/60 to-transparent"
           />
           <CardHeader className="items-center text-center">
-            <CardTitle className="text-xl">Connexion à RepoDrop</CardTitle>
+            <h1 className="text-xl font-semibold tracking-tight">
+              Connexion à RepoDrop
+            </h1>
             <CardDescription>
               Autorisez l'accès à GitHub pour créer des dépôts et pousser vos
               archives.
@@ -65,6 +74,7 @@ export default async function LoginPage({
 
             <a
               href="/api/auth/login"
+              rel="nofollow"
               className={cn(buttonVariants({ size: "lg" }), "w-full")}
             >
               <GitHubIcon className="h-5 w-5" />
@@ -100,6 +110,7 @@ export default async function LoginPage({
                 </p>
                 <a
                   href="/api/auth/dev-login"
+                  rel="nofollow"
                   className={cn(buttonVariants({ variant: "secondary" }), "w-full")}
                 >
                   Connexion directe (GH_TOKEN du serveur)

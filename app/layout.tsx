@@ -1,19 +1,65 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import {
+  resolveSiteUrl,
+  SITE_DEFAULT_TITLE,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_OG_IMAGE,
+} from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: {
-    default: "RepoDrop — vos archives de code sur GitHub",
-    template: "%s · RepoDrop",
-  },
-  description:
-    "Importez un .rar, un .zip ou un .tar de code directement sur GitHub : connectez-vous, déposez l'archive, pushez. Sans terminal, sans clone.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = resolveSiteUrl({ headers: await headers() });
+
+  return {
+    metadataBase: new URL(baseUrl),
+    applicationName: SITE_NAME,
+    title: {
+      default: SITE_DEFAULT_TITLE,
+      template: `%s · ${SITE_NAME}`,
+    },
+    description: SITE_DESCRIPTION,
+    keywords: SITE_KEYWORDS,
+    authors: [{ name: SITE_NAME }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    category: "technology",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    openGraph: {
+      type: "website",
+      locale: "fr_FR",
+      siteName: SITE_NAME,
+      url: "/",
+      title: SITE_DEFAULT_TITLE,
+      description: SITE_DESCRIPTION,
+      images: [SITE_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: SITE_DEFAULT_TITLE,
+      description: SITE_DESCRIPTION,
+      images: [SITE_OG_IMAGE.url],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#080b12",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
