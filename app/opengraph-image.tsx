@@ -1,6 +1,17 @@
 import { ImageResponse } from "next/og";
 import { SITE_NAME } from "@/lib/seo";
 
+/**
+ * Image sociale OpenGraph (1200×630).
+ *
+ * Elle ne dépend ni de la requête ni de la session : la rendre une fois pour
+ * toutes à la compilation (`force-static`) supprime un rendu ImageResponse à
+ * chaque passage de crawler (Google, Slack, X, Discord) tout en gardant la même
+ * URL stable — les réseaux mettent les aperçus en cache très longtemps, une
+ * URL qui change de contenu à chaque requête ne leur sert à rien.
+ */
+export const dynamic = "force-static";
+
 export const alt =
   "RepoDrop — Importez vos archives .rar, .zip et .tar directement sur GitHub";
 export const size = { width: 1200, height: 630 };
