@@ -344,3 +344,27 @@ L'état est maintenant sérialisé dans l'URL :
 Vérifié en HTTP : `/repos` affiche la liste ; `/repos?repo=…&ref=main&path=src&file=src/index.ts`
 rend l'écran détail au lieu de la liste, répond 200 et inclut le fichier dans
 l'état RSC. Build, lint, typecheck et 290 tests passent.
+
+---
+
+## Complément — balises HTML (SEO, partage, icônes)
+
+Parti de l'existant de la PR #14 (sitemap, robots, OpenGraph, JSON-LD), audit
+des balises **réellement servies** (`curl` sur un build de production), puis
+comblement des manques constatés :
+
+| Constat | Correction |
+| --- | --- |
+| `@graph` sans `Organization` ni `WebPage` : aucun logo de site exploitable | `Organization` (logo PNG 512), `WebPage` + `ImageObject`, tout relié par `@id` |
+| Aucun favicon raster ni `apple-touch-icon` (Google ignore le SVG) | PNG 192/512 + 180 iOS versionnés, dérivés de `app/icon.svg` |
+| Manifeste PWA en SVG seul : non installable sur Chrome | entrées PNG + `maskable` margée |
+| `twitter:image` du layout pointait sur `opengraph-image` | source unique réexportée par `twitter-image` (une seule image à retoucher) |
+| `/login` indexable alors qu'elle n'a aucun contenu propre | `noindex, follow` (partage social conservé) |
+| 404 : deux balises `robots` contradictoires (`noindex` + `noindex, nofollow`) | une seule, `noindex` |
+| `<lastmod>` = heure de la requête | `SOURCE_DATE_EPOCH`, sinon `SITE_CONTENT_LAST_MODIFIED` |
+| Aperçus sociaux rendus à chaque crawl | `dynamic = "force-static"` |
+| `twitter:site` absent → risque de créditer un tiers si mal configuré | émis uniquement si `NEXT_PUBLIC_TWITTER_HANDLE` est posé |
+
+Vérifié : build, lint, typecheck et 337 tests passent ; `curl` confirme les
+balises (icônes, OG complet, Twitter, JSON-LD à 6 nœuds sans `@id` orphelin,
+`lastmod` stable, `noindex` des pages privées).

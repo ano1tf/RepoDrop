@@ -37,14 +37,57 @@ export const SITE_OG_IMAGE = {
 export const SITE_TWITTER_IMAGE = "/twitter-image";
 
 /**
- * Métadonnées complètes d'une page publique indexable (canonique, OpenGraph,
- * Twitter Card) afin que chaque segment feuille conserve `og:image` résolu
- * contre `metadataBase` (y compris derrière un proxy).
+ * Emplacement public du compte X/Twitter. Vide par défaut : on n'émet alors
+ * **aucune** balise `twitter:site` / `twitter:creator` plutôt qu'une valeur
+ * inventée, qui ferait attribuer les aperçus de partage à un compte tiers.
+ */
+export const SITE_TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE ?? "";
+
+/**
+ * Date de dernière modification éditoriale du site, au format ISO `AAAA-MM-JJ`.
+ *
+ * À **remonter à la main** quand le contenu des pages listées change. C'est ce
+ * qui donne un `lastmod` crédible dans `/sitemap.xml` : un `lastmod` recalculé à
+ * chaque requête (ou à chaque build) annonce au moteur que tout le site change
+ * en permanence, et la balise finit purement ignorée. `SOURCE_DATE_EPOCH`
+ * (norme reproductible) permet de la surcharger depuis la CI.
+ */
+export const SITE_CONTENT_LAST_MODIFIED = "2026-11-07";
+
+/**
+ * Icônes servies au navigateur, aux moteurs et aux systèmes (installe PWA).
+ *
+ * `icon.svg` reste la source de vérité visuelle ; les PNG en sont dérivés et
+ * versionnés dans `public/icons/` car ni Google (résultats enrichis
+ * `Organization.logo`, qui exige un raster ≥ 112 px) ni iOS (`apple-touch-icon`)
+ * ne lisent correctement un favicon SVG. Le PNG *maskable* garde une marge de
+ * 12,5 % pour que l'icône survive au rognage Android.
+ */
+export const SITE_ICONS = {
+  svg: "/icon.svg",
+  png192: "/icons/icon-192.png",
+  png512: "/icons/icon-512.png",
+  maskable512: "/icons/icon-maskable-512.png",
+  appleTouch: "/apple-icon.png",
+  /** Raster carré utilisé comme `logo` dans les données structurées. */
+  structuredDataLogo: "/icons/icon-512.png",
+} as const;
+
+/**
+ * Métadonnées complètes d'une page publique indexable (canonique, icônes,
+ * OpenGraph, Twitter Card) afin que chaque segment feuille conserve
+ * `og:image` résolu contre `metadataBase` (y compris derrière un proxy).
+ *
+ * `noIndex: true` produit une page complète en partage (titre, description,
+ * image) mais explicitement exclue de l'indexation : c'est le bon réglage pour
+ * une page de connexion, utile à qui reçoit le lien sans polluer les résultats
+ * de recherche avec un écran sans contenu propre.
  */
 export function buildPageMetadata(opts: {
   title?: string;
   description?: string;
   path: string;
+  noIndex?: boolean;
 }): Metadata {
   const fullTitle = opts.title ? `${opts.title} · ${SITE_NAME}` : SITE_DEFAULT_TITLE;
   const description = opts.description ?? SITE_DESCRIPTION;
@@ -55,6 +98,8 @@ export function buildPageMetadata(opts: {
     alternates: {
       canonical: opts.path,
     },
+    icons: buildIcons(),
+    ...(opts.noIndex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: "website",
       locale: "fr_FR",
@@ -69,8 +114,46 @@ export function buildPageMetadata(opts: {
       title: fullTitle,
       description,
       images: [SITE_TWITTER_IMAGE],
+      ...twitterHandleFields(),
     },
   };
+}
+
+/**
+ * Balises `<link rel="icon">` / `apple-touch-icon` d'une page.
+ *
+ * Next.js pose déjà l'icône SVG détectée par convention de fichier
+ * (`app/icon.svg`) ; on déclare en plus les PNG, sans quoi les navigateurs qui
+ * ignorent le SVG (Safari ancien, écran d'accueil iOS) n'affichent qu'un cadre
+ * vide, et Google n'a aucun raster à proposer comme logo de site.
+ */
+export function buildIcons(): Metadata["icons"] {
+  return {
+    icon: [
+      { url: SITE_ICONS.svg, type: "image/svg+xml", sizes: "any" },
+      { url: SITE_ICONS.png192, type: "image/png", sizes: "192x192" },
+      { url: SITE_ICONS.png512, type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: [SITE_ICONS.svg],
+    apple: [
+      { url: SITE_ICONS.appleTouch, type: "image/png", sizes: "180x180" },
+    ],
+  };
+}
+
+/**
+ * Champs `twitter:site` / `twitter:creator`, émis **seulement** si un compte
+ * est configuré (`NEXT_PUBLIC_TWITTER_HANDLE`). Un handle par défaut inventé
+ * ferait créditer les partages à un tiers.
+ */
+export function twitterHandleFields(): {
+  site?: string;
+  creator?: string;
+} {
+  const handle = SITE_TWITTER_HANDLE.trim().replace(/^@/, "");
+  if (!handle) return {};
+  const at = `@${handle}`;
+  return { site: at, creator: at };
 }
 
 export const SITE_KEYWORDS: string[] = [
@@ -123,6 +206,25 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
       "Lorsque l'archive contient un unique dossier englobant (par exemple mon-projet/), RepoDrop propose de le retirer automatiquement pour placer vos fichiers directement à la racine du dépôt. Les dossiers node_modules, .git embarqués et fichiers système superflus (.DS_Store, __MACOSX) sont écartés par défaut.",
   },
 ];
+
+/**
+ * `lastmod` du plan de site, déterministe :
+ *   1. `SOURCE_DATE_EPOCH` (secondes Unix) s'il est valide — builds reproductibles ;
+ *   2. sinon `SITE_CONTENT_LAST_MODIFIED`.
+ * Une valeur absurde (epoch négatif, NaN, date invalide) retombe sur la
+ * constante plutôt que de produire un `<lastmod>Invalid Date</lastmod>`.
+ */
+export function resolveContentLastModified(
+  env: Record<string, string | undefined> = process.env,
+): Date {
+  const epoch = Number(env.SOURCE_DATE_EPOCH);
+  if (Number.isFinite(epoch) && epoch > 0) {
+    const fromEpoch = new Date(epoch * 1000);
+    if (!Number.isNaN(fromEpoch.getTime())) return fromEpoch;
+  }
+  const fallback = new Date(`${SITE_CONTENT_LAST_MODIFIED}T00:00:00.000Z`);
+  return Number.isNaN(fallback.getTime()) ? new Date(0) : fallback;
+}
 
 /** Hôtes locaux ou non routables : ne représentent jamais un domaine public de prod. */
 const LOCAL_OR_WILDCARD_HOSTS = new Set([
@@ -223,11 +325,16 @@ export function resolveSiteUrl(opts: ResolveSiteUrlOptions = {}): string {
  * `/import`, `/repos`, `/jobs/*` et `/staff` redirigent vers `/login` ou sont
  * privées (`noindex`), ce que Google Search Console considère comme une erreur
  * si elles figurent dans un sitemap.
+ *
+ * `lastModified` vaut par défaut la date éditoriale du site (ou
+ * `SOURCE_DATE_EPOCH`), **jamais** `new Date()` : voir
+ * `SITE_CONTENT_LAST_MODIFIED`.
  */
 export function buildSitemap(
   baseUrl: string,
-  now: Date = new Date(),
+  lastModified: Date = resolveContentLastModified(),
 ): MetadataRoute.Sitemap {
+  const now = lastModified;
   const origin = baseUrl.replace(/\/+$/, "");
   return [
     {
@@ -265,7 +372,14 @@ export function buildRobots(baseUrl: string): MetadataRoute.Robots {
   };
 }
 
-/** Manifeste Web App (`/manifest.webmanifest`). */
+/**
+ * Manifeste Web App (`/manifest.webmanifest`).
+ *
+ * Les PNG sont nécessaires : Chrome refuse d'installer une PWA dont le
+ * manifeste ne fournit que du SVG. Le *maskable* est déclaré séparément (et non
+ * en `purpose: "any maskable"` sur la même entrée) pour que le rognage Android
+ * s'applique à la version déjà margée.
+ */
 export function buildManifest(): MetadataRoute.Manifest {
   return {
     name: SITE_DEFAULT_TITLE,
@@ -280,71 +394,144 @@ export function buildManifest(): MetadataRoute.Manifest {
     categories: ["developer tools", "productivity", "utilities"],
     icons: [
       {
-        src: "/icon.svg",
+        src: SITE_ICONS.svg,
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
+      },
+      {
+        src: SITE_ICONS.png192,
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: SITE_ICONS.png512,
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: SITE_ICONS.maskable512,
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };
 }
 
 /**
- * Données structurées Schema.org (`@graph` : `WebSite`, `WebApplication`, `FAQPage`)
- * destinées à la page d'accueil.
+ * Données structurées Schema.org destinées à la page d'accueil.
+ *
+ * `@graph` plutôt que des blocs séparés : les nœuds se référencent par `@id`,
+ * ce qui évite à Google de voir plusieurs entités concurrentes pour un même
+ * site. Dépendances utiles aux résultats enrichis :
+ *
+ * - `Organization` fournit le `logo` (raster carré) et les `sameAs` (profils
+ *   officiels) : sans ce nœud, Google n'a aucun logo de site à afficher ;
+ * - `WebPage` relie la page au site (`isPartOf`) et à l'application
+ *   (`mainEntity`) — c'est le nœud attendu pour un `BreadcrumbList` ultérieur ;
+ * - `WebApplication` reste le nœud principal de la page, l'entité à propos de
+ *   laquelle la page existe.
  */
 export function buildStructuredData(baseUrl: string) {
   const origin = baseUrl.replace(/\/+$/, "");
+  const graph: Record<string, unknown>[] = [
+    {
+      "@type": "Organization",
+      "@id": `${origin}/#organization`,
+      name: SITE_NAME,
+      url: origin,
+      logo: {
+        "@type": "ImageObject",
+        "@id": `${origin}/#logo`,
+        url: `${origin}${SITE_ICONS.structuredDataLogo}`,
+        contentUrl: `${origin}${SITE_ICONS.structuredDataLogo}`,
+        width: 512,
+        height: 512,
+        caption: SITE_NAME,
+      },
+      // Référence inline (et non `{ "@id": ... }`) : une référence par `@id`
+      // seule exigerait un nœud `ImageObject` séparé, or Google lit le logo
+      // directement sur l'Organization. Évite un pointeur orphelin.
+      image: `${origin}${SITE_ICONS.structuredDataLogo}`,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${origin}/#website`,
+      url: origin,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      inLanguage: "fr-FR",
+      publisher: { "@id": `${origin}/#organization` },
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${origin}/#webpage`,
+      url: origin,
+      name: SITE_DEFAULT_TITLE,
+      description: SITE_DESCRIPTION,
+      inLanguage: "fr-FR",
+      isPartOf: { "@id": `${origin}/#website` },
+      about: { "@id": `${origin}/#app` },
+      primaryImageOfPage: { "@id": `${origin}/#primaryimage` },
+    },
+    {
+      "@type": "ImageObject",
+      "@id": `${origin}/#primaryimage`,
+      url: `${origin}${SITE_OG_IMAGE.url}`,
+      contentUrl: `${origin}${SITE_OG_IMAGE.url}`,
+      width: SITE_OG_IMAGE.width,
+      height: SITE_OG_IMAGE.height,
+      caption: SITE_OG_IMAGE.alt,
+    },
+    {
+      "@type": "WebApplication",
+      "@id": `${origin}/#app`,
+      name: SITE_NAME,
+      url: `${origin}/`,
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "All",
+      browserRequirements: "Requires JavaScript",
+      inLanguage: "fr-FR",
+      description: SITE_DESCRIPTION,
+      image: `${origin}${SITE_OG_IMAGE.url}`,
+      isPartOf: { "@id": `${origin}/#website` },
+      publisher: { "@id": `${origin}/#organization` },
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "EUR",
+      },
+      featureList: [
+        "Import d'archives .rar (RAR4/RAR5), .zip, .tar et .tar.gz vers GitHub",
+        "Extraction sandboxée anti zip-slip et anti bombes de décompression",
+        "Aperçu complet de l'arborescence avant le push",
+        "Création de dépôt GitHub public ou privé et push sur branche dédiée",
+        "Jeton OAuth GitHub chiffré côté client (cookie httpOnly JWE), jamais stocké en base",
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${origin}/#faq`,
+      url: `${origin}/#faq`,
+      inLanguage: "fr-FR",
+      isPartOf: { "@id": `${origin}/#webpage` },
+      mainEntity: FAQ_ITEMS.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    },
+  ];
+
   return {
     "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebSite",
-        "@id": `${origin}/#website`,
-        url: origin,
-        name: SITE_NAME,
-        description: SITE_DESCRIPTION,
-        inLanguage: "fr-FR",
-      },
-      {
-        "@type": "WebApplication",
-        "@id": `${origin}/#app`,
-        name: SITE_NAME,
-        url: origin,
-        applicationCategory: "DeveloperApplication",
-        operatingSystem: "All",
-        browserRequirements: "Requires JavaScript",
-        inLanguage: "fr-FR",
-        description: SITE_DESCRIPTION,
-        image: `${origin}/opengraph-image`,
-        offers: {
-          "@type": "Offer",
-          price: "0",
-          priceCurrency: "EUR",
-        },
-        featureList: [
-          "Import d'archives .rar (RAR4/RAR5), .zip, .tar et .tar.gz vers GitHub",
-          "Extraction sandboxée anti zip-slip et anti bombes de décompression",
-          "Aperçu complet de l'arborescence avant le push",
-          "Création de dépôt GitHub public ou privé et push sur branche dédiée",
-          "Jeton OAuth GitHub chiffré côté client (cookie httpOnly JWE), jamais stocké en base",
-        ],
-      },
-      {
-        "@type": "FAQPage",
-        "@id": `${origin}/#faq`,
-        url: `${origin}/#faq`,
-        inLanguage: "fr-FR",
-        mainEntity: FAQ_ITEMS.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.answer,
-          },
-        })),
-      },
-    ],
+    "@graph": graph,
   };
 }
 

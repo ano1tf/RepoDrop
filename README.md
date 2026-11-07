@@ -313,7 +313,7 @@ Limite de taille par défaut : **200 Mo** uploadés, **500 Mo** décompressés, 
 npm test
 ```
 
-290 tests couvrent :
+337 tests couvrent :
 
 - sanitisation (traversal Unix/Windows, absolus, NUL, profondeur) ;
 - extraction `.zip` réelle (fixtures `yazl` : nominal, bombes, symlinks, `.git`, limites) ;
@@ -341,7 +341,11 @@ npm test
   s'affiche dans une iframe) ;
 - **liens profonds `/repos`** : validation et aller-retour de l'état complet
   dépôt / branche / dossier / fichier, filtre, tri et « Les miens », y compris
-  caractères Unicode et refus des chemins de traversée.
+  caractères Unicode et refus des chemins de traversée ;
+- **balises SEO** : icônes (SVG + PNG + `apple-touch-icon`, fichiers réellement
+  présents), manifeste installable avec entrée `maskable`, `noindex` des pages
+  privées, absence de `twitter:site` par défaut, `@graph` sans `@id` orphelin et
+  `lastmod` de sitemap déterministe (`SOURCE_DATE_EPOCH` / date éditoriale).
 
 CI : GitHub Actions (lint + typecheck + tests + build) sur chaque push/PR.
 
@@ -380,6 +384,50 @@ clé de session serait tirée au hasard, ce qui invaliderait les sessions et
 rendrait illisible le jeton Discord chiffré à chaque redémarrage. Le serveur
 refuse désormais de démarrer dans ce cas au lieu de le faire silencieusement.
 
+### Balises SEO, partage et icônes
+
+Tout est calculé dans `lib/seo.ts` (pur, testé) puis posé par les métadonnées
+Next.js ; `next.config.ts` n'intervient pas.
+
+| Surface | Balises produites |
+| --- | --- |
+| Titre | `title` + gabarit `%s · RepoDrop`, `application-name`, `author`, `creator`, `publisher`, `category`, `keywords` |
+| Indexation | `robots` + `googlebot` (`max-image-preview:large`, snippets illimités) ; `noindex` sur `/login`, `/import`, `/repos`, `/jobs/*` et 404 |
+| Canonique | `<link rel="canonical">` absolu résolu contre `metadataBase`, insensible aux `Host` forgés |
+| OpenGraph | `og:title/description/url/site_name/locale/type` + `og:image` complet (`width`, `height`, `type`, `alt`) |
+| Twitter/X | `twitter:card=summary_large_image`, titre, description, image ; `twitter:site`/`creator` **seulement** si `NEXT_PUBLIC_TWITTER_HANDLE` est défini |
+| Icônes | SVG + PNG 192/512, `apple-touch-icon` 180, manifeste PWA avec entrée `maskable` |
+| Données structurées | `@graph` lié par `@id` : `Organization` (logo raster), `WebSite`, `WebPage`, `ImageObject`, `WebApplication`, `FAQPage` |
+| Fichiers | `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/opengraph-image`, `/twitter-image` |
+
+Quatre décisions qui évitent des pièges classiques :
+
+- **Un seul `@graph`.** Les nœuds se référencent par `@id` (`WebPage.isPartOf`
+  → `WebSite`, `WebApplication.publisher` → `Organization`) au lieu de décrire
+  plusieurs entités concurrentes. Un test vérifie qu'aucune référence `@id` ne
+  pointe dans le vide.
+- **Logo raster.** Google exige un logo carré **PNG** (≥ 112 px) pour les
+  résultats enrichis : `icon.svg` reste le favicon, mais
+  `/icons/icon-512.png` sert de `Organization.logo`. Les PNG sont versionnés
+  dans `public/icons/` (dérivés de `app/icon.svg`).
+- **`lastmod` stable.** `/sitemap.xml` n'utilise ni `new Date()` à la requête ni
+  la date du build : il lit `SOURCE_DATE_EPOCH`, sinon
+  `SITE_CONTENT_LAST_MODIFIED` (`lib/seo.ts`, à remonter quand le contenu
+  change). Un `lastmod` qui bouge à chaque crawl finit ignoré par les moteurs.
+- **Aperçus sociaux statiques.** `/opengraph-image` et `/twitter-image` sont
+  rendus une fois (`dynamic = "force-static"`), l'image Twitter réexportant la
+  même source pour ne jamais diverger. Les crawlers ne déclenchent donc plus de
+  rendu ImageResponse, et l'URL reste stable pour les caches (Slack, Discord,
+  X).
+
+Vérification manuelle :
+
+```bash
+curl -s localhost:3000/ | grep -o '<meta name="twitter:[a-z]*"'
+curl -s localhost:3000/sitemap.xml
+curl -s localhost:3000/ | grep -o '<script type="application/ld+json">'
+```
+
 ---
 
 ## Architecture
@@ -407,6 +455,7 @@ lib/
   db.ts               # SQLite (node:sqlite) : jobs, journal, réglages, sondes
   settings.ts         # réglages chiffrés (AES-256-GCM) — jeton Discord
   staff.ts            # allowlist STAFF_LOGINS
+  seo.ts              # origine canonique, sitemap/robots, icônes, JSON-LD
   discord/            # client (REST + Gateway), messages, moniteur de ping
 scripts/rar-extract.mjs   # worker .rar isolé (WASM unrar, killable)
 tests/                # vitest + fixtures zip/rar/tar + dépôt bare local

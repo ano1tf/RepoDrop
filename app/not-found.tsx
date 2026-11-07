@@ -4,7 +4,10 @@ import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Page introuvable",
-  robots: { index: false, follow: false },
+  // `noindex` seulement : un `nofollow` supplémentaire est redondant (Next ne
+  // pose plus de seconde balise contradictoire) et empêcherait de suivre les
+  // liens de secours proposés sur cette page.
+  robots: { index: false, follow: true },
 };
 
 export default function NotFound() {

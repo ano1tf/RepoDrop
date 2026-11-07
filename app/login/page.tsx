@@ -13,6 +13,9 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Connectez votre compte GitHub à RepoDrop pour créer un dépôt et pousser vos archives .rar, .zip ou .tar en un clic. Jeton chiffré, jamais stocké en base.",
   path: "/login",
+  // Page sans contenu propre (un bouton d'autorisation) : partageable, mais
+  // inutile dans un index de moteur — et surtout pas en doublon de l'accueil.
+  noIndex: true,
 });
 
 const ERRORS: Record<string, string> = {

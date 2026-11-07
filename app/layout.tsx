@@ -4,12 +4,15 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import {
+  buildIcons,
   resolveSiteUrl,
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
   SITE_OG_IMAGE,
+  SITE_TWITTER_IMAGE,
+  twitterHandleFields,
 } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: SITE_NAME,
     publisher: SITE_NAME,
     category: "technology",
+    icons: buildIcons(),
     robots: {
       index: true,
       follow: true,
@@ -52,7 +56,8 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: SITE_DEFAULT_TITLE,
       description: SITE_DESCRIPTION,
-      images: [SITE_OG_IMAGE.url],
+      images: [SITE_TWITTER_IMAGE],
+      ...twitterHandleFields(),
     },
   };
 }
