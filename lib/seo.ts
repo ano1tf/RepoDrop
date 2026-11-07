@@ -44,6 +44,28 @@ export const SITE_TWITTER_IMAGE = "/twitter-image";
 export const SITE_TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE ?? "";
 
 /**
+ * Jeton de vérification Google Search Console (`<meta name="google-site-verification">`).
+ *
+ * Posé en dur plutôt qu'en variable d'environnement : ce n'est **pas** un secret
+ * (il est publié dans le HTML de chaque page) et il doit être identique sur tous
+ * les déploiements, sinon la propriété vérifiée ne correspond plus au domaine
+ * servi. Surchargeable par `GOOGLE_SITE_VERIFICATION` pour un déploiement de
+ * test qui doit rester sur son propre jeton.
+ */
+export const SITE_GOOGLE_SITE_VERIFICATION =
+  process.env.GOOGLE_SITE_VERIFICATION ?? "7AQ_yCc-DFuI95AFEHuKT6a3Pi5xPaS9YFqr7oop7ko";
+
+/**
+ * Bloc `verification` des métadonnées Next.js : émet les balises
+ * `<meta name="…-site-verification" content="…">`. Un jeton vide est omis
+ * plutôt qu'émis vide, ce que Search Console rejetterait.
+ */
+export function buildVerification(): Metadata["verification"] {
+  const google = SITE_GOOGLE_SITE_VERIFICATION.trim();
+  return google ? { google } : undefined;
+}
+
+/**
  * Date de dernière modification éditoriale du site, au format ISO `AAAA-MM-JJ`.
  *
  * À **remonter à la main** quand le contenu des pages listées change. C'est ce
