@@ -313,7 +313,7 @@ Limite de taille par défaut : **200 Mo** uploadés, **500 Mo** décompressés, 
 npm test
 ```
 
-337 tests couvrent :
+339 tests couvrent :
 
 - sanitisation (traversal Unix/Windows, absolus, NUL, profondeur) ;
 - extraction `.zip` réelle (fixtures `yazl` : nominal, bombes, symlinks, `.git`, limites) ;
@@ -345,7 +345,9 @@ npm test
 - **balises SEO** : icônes (SVG + PNG + `apple-touch-icon`, fichiers réellement
   présents), manifeste installable avec entrée `maskable`, `noindex` des pages
   privées, absence de `twitter:site` par défaut, `@graph` sans `@id` orphelin et
-  `lastmod` de sitemap déterministe (`SOURCE_DATE_EPOCH` / date éditoriale).
+  `lastmod` de sitemap déterministe (`SOURCE_DATE_EPOCH` / date éditoriale) ;
+- **vérification Search Console** : jeton au format base64url exposé par
+  `buildVerification()` (bloc `verification` des métadonnées Next.js).
 
 CI : GitHub Actions (lint + typecheck + tests + build) sur chaque push/PR.
 
@@ -398,6 +400,7 @@ Next.js ; `next.config.ts` n'intervient pas.
 | Twitter/X | `twitter:card=summary_large_image`, titre, description, image ; `twitter:site`/`creator` **seulement** si `NEXT_PUBLIC_TWITTER_HANDLE` est défini |
 | Icônes | SVG + PNG 192/512, `apple-touch-icon` 180, manifeste PWA avec entrée `maskable` |
 | Données structurées | `@graph` lié par `@id` : `Organization` (logo raster), `WebSite`, `WebPage`, `ImageObject`, `WebApplication`, `FAQPage` |
+| Vérification | `google-site-verification` (Search Console) sur toutes les pages HTML |
 | Fichiers | `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/opengraph-image`, `/twitter-image` |
 
 Quatre décisions qui évitent des pièges classiques :
@@ -414,6 +417,11 @@ Quatre décisions qui évitent des pièges classiques :
   la date du build : il lit `SOURCE_DATE_EPOCH`, sinon
   `SITE_CONTENT_LAST_MODIFIED` (`lib/seo.ts`, à remonter quand le contenu
   change). Un `lastmod` qui bouge à chaque crawl finit ignoré par les moteurs.
+- **Jeton Search Console en dur, pas en secret.** `SITE_GOOGLE_SITE_VERIFICATION`
+  (`lib/seo.ts`) est publié dans le HTML de chaque page : ce n'est pas un
+  secret, et il doit être identique partout sous peine d'invalider la
+  propriété vérifiée. `GOOGLE_SITE_VERIFICATION` permet de le surcharger pour
+  un déploiement de test ; un jeton vide n'émet aucune balise.
 - **Aperçus sociaux statiques.** `/opengraph-image` et `/twitter-image` sont
   rendus une fois (`dynamic = "force-static"`), l'image Twitter réexportant la
   même source pour ne jamais diverger. Les crawlers ne déclenchent donc plus de

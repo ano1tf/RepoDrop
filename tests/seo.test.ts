@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildIcons,
+  buildVerification,
   buildManifest,
   buildPageMetadata,
   buildRobots,
@@ -16,6 +17,7 @@ import {
   serializeJsonLd,
   SITE_CONTENT_LAST_MODIFIED,
   SITE_DESCRIPTION,
+  SITE_GOOGLE_SITE_VERIFICATION,
   SITE_NAME,
   twitterHandleFields,
 } from "@/lib/seo";
@@ -368,5 +370,23 @@ describe("resolveContentLastModified", () => {
     const d = resolveContentLastModified({});
     expect(now - d.getTime()).toBeGreaterThan(60_000);
     expect(buildSitemap("https://repodrop.fr")[0]?.lastModified).toEqual(d);
+  });
+});
+
+describe("vérification Google Search Console", () => {
+  it("expose un jeton au format attendu par Google", () => {
+    // Jetons Search Console : base64url, 43 caractères, jamais vide.
+    expect(SITE_GOOGLE_SITE_VERIFICATION).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  });
+
+  it("produit le bloc verification des métadonnées Next.js", () => {
+    expect(buildVerification()).toEqual({
+      google: SITE_GOOGLE_SITE_VERIFICATION,
+    });
+    // Next.js traduit ce bloc en
+    // <meta name="google-site-verification" content="…" /> sur chaque page.
+    expect(buildVerification()?.google).toBe(
+      "7AQ_yCc-DFuI95AFEHuKT6a3Pi5xPaS9YFqr7oop7ko",
+    );
   });
 });

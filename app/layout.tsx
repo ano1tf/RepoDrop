@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import {
   buildIcons,
+  buildVerification,
   resolveSiteUrl,
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
@@ -32,6 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: SITE_NAME,
     category: "technology",
     icons: buildIcons(),
+    // Vérification Google Search Console : balise
+    // <meta name="google-site-verification" content="…"> sur toutes les pages.
+    verification: buildVerification(),
     robots: {
       index: true,
       follow: true,
