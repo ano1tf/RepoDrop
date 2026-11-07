@@ -17,6 +17,7 @@ import {
   normalizeLocale,
   ogLocaleOf,
   parseLocale,
+  safeNextPath,
 } from "@/lib/i18n/locales";
 import { DICTIONARIES, getDictionary, section } from "@/lib/i18n/dictionary";
 import { fill, formatNumber, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
@@ -216,5 +217,20 @@ describe("accès au dictionnaire", () => {
     for (const l of LOCALES) {
       expect(DICTIONARIES[l.code].meta.description.length).toBeGreaterThan(40);
     }
+  });
+});
+
+describe("safeNextPath (bascule par lien direct)", () => {
+  it("n'autorise que les chemins internes (pas d'open redirect)", () => {
+    expect(safeNextPath("/langues")).toBe("/langues");
+    expect(safeNextPath("/repos?repo=a")).toBe("/repos?repo=a");
+    expect(safeNextPath("/")).toBe("/");
+    expect(safeNextPath(null)).toBe("/");
+    expect(safeNextPath(undefined)).toBe("/");
+    expect(safeNextPath("")).toBe("/");
+    expect(safeNextPath("https://evil.com")).toBe("/");
+    expect(safeNextPath("//evil.com")).toBe("/");
+    expect(safeNextPath("/\\evil.com")).toBe("/");
+    expect(safeNextPath("/\tlangues")).toBe("/");
   });
 });

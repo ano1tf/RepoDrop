@@ -456,6 +456,8 @@ lib/i18n/
   server.ts             # getLocale() / getT() : cookie → Accept-Language → fr
   format.ts             # fill("{upload} Mo") , placeholdersOf, formatNumber
 app/api/lang/route.ts   # POST validation stricte + cookie rd_lang (1 an)
+app/api/lang/switch/     # GET ?to=xx&next=/chemin : bascule par lien, 307
+app/langues/page.tsx     # /langues : galerie de démo, 16 cartes cliquables
 components/LanguageSwitcher.tsx
 ```
 
@@ -474,6 +476,14 @@ Trois décisions et ce qu'elles évitent :
 - **RTL pris au sérieux.** `<html lang dir>` suivent la langue (`dir="rtl"` en
   arabe) ; la maquette et les puces utilisent `padding-inline-start` et
   `rtl:rotate-180` au lieu de `left`/`right`.
+
+Deux façons de changer de langue : le sélecteur de l'en-tête (sans JS requis
+pour le rendu, `POST /api/lang` + `router.refresh()`) et des liens partageables
+`/api/lang/switch?to=ja&next=/repos`. Cette route GET pose le cookie puis
+redirige en 307 ; `next` est filtré par `safeNextPath` (chemins internes
+uniquement, sinon `/`) pour ne pas devenir une redirection ouverte.
+`/langues` sert de galerie de contrôle — les 16 cartes affichent le titre réel
+et un aperçu du héros dans chaque langue.
 
 Ajouter une langue :
 

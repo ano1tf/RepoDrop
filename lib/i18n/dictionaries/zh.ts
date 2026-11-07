@@ -122,7 +122,7 @@ export const zh: Dict = {
     q4: "可以把压缩包发到已有 GitHub 仓库而不覆盖我的工作吗？",
     a4: "可以。你可以新建仓库（公开或私有）、推送到已有仓库的独立分支以保留主分支，或明确选择带确认的完整替换。",
     q5: "导入时唯一的根目录和 node_modules 会怎样？",
-    a5: "当压缩包只包含一个包裹目录时（例如 my-project/），RepoDrop 会建议自动去掉它，让文件直接位于仓库根目录。node_modules、内嵌的 .git 目录以及多余的系統文件（.DS_Store、__MACOSX）默认被丢弃。",
+    a5: "当压缩包只包含一个包裹目录时（例如 my-project/），RepoDrop 会建议自动去掉它，让文件直接位于仓库根目录。node_modules、内嵌的 .git 目录以及多余的系统文件（.DS_Store、__MACOSX）默认被丢弃。",
   },
 
   login: {

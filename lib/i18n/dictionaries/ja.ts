@@ -71,7 +71,7 @@ export const ja: Dict = {
       ".rar（RAR4/RAR5）、.zip、.tar/.tar.gz はサーバー側で開きます——どこにもソフトをインストールする必要はありません。",
     feature2Title: "堅牢な展開",
     feature2Body:
-      "zip-slip 対策、展開爆弾対策、埋め込まれた .git とシンボリックリンクは破棄。リポジトリは清净なまま。",
+      "zip-slip 対策、展開爆弾対策、埋め込まれた .git とシンボリックリンクは破棄。リポジトリは清潔なまま。",
     feature3Title: "プッシュ前のプレビュー",
     feature3Body:
       "ファイル、サイズ、ルートフォルダ、node_modules：何が出ていくかを正確に把握し、主導権を保てます。",

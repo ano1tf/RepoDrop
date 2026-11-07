@@ -125,3 +125,18 @@ export function dirOf(locale: Locale): "ltr" | "rtl" {
 export function localeDefinition(locale: Locale): LocaleDefinition {
   return LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
 }
+
+/**
+ * Destination autorisée après une bascule de langue par lien direct.
+ *
+ * Seuls les chemins absolus **internes** sont acceptés : `https://evil.com`,
+ * `//evil.com`, `/\evil.com` et `/<tab>` retombent tous sur `/`. Sans ce filtre,
+ * `/api/lang/switch?to=de&next=//evil.com` serait une redirection ouverte
+ * pilotée par un simple lien.
+ */
+export function safeNextPath(value: string | null | undefined): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
+  // Les navigateurs normalisent `/\` et `/ <tab>` en `//` : refusés aussi.
+  if (/[\\\s]/.test(value)) return "/";
+  return value;
+}

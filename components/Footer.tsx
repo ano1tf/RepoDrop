@@ -48,6 +48,7 @@ export async function Footer() {
             <FooterLink href="/#comment">{t.footer.howItWorks}</FooterLink>
             <FooterLink href="/#securite">{t.footer.security}</FooterLink>
             <FooterLink href="/#faq">{t.footer.faq}</FooterLink>
+            <FooterLink href="/langues">{t.nav.language}</FooterLink>
           </FooterCol>
 
           <FooterCol title={t.footer.formatsTitle}>

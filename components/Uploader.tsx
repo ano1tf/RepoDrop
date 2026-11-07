@@ -20,8 +20,15 @@ interface Props {
 
 const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
-export function Uploader({ maxLabel, extractLabel, t }: Props) {
+export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
   const router = useRouter();
+  /*
+   * Les chaînes viennent d'un objet recréé à chaque rendu serveur : on les
+   * fige dans une ref pour que `send` garde une identité stable (sinon le
+   * `useCallback` se recrée à chaque rendu et le gestionnaire de dépôt avec).
+   */
+  const tRef = useRef(strings);
+  tRef.current = strings;
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -31,11 +38,11 @@ export function Uploader({ maxLabel, extractLabel, t }: Props) {
     (file: File) => {
       setError(null);
       if (!OK_EXT.test(file.name)) {
-        setError(t.errorFormat);
+        setError(tRef.current.errorFormat);
         return;
       }
       if (file.size === 0) {
-        setError(t.errorEmpty);
+        setError(tRef.current.errorEmpty);
         return;
       }
 
@@ -57,17 +64,17 @@ export function Uploader({ maxLabel, extractLabel, t }: Props) {
         setError(
           xhr.response?.error ??
             (xhr.status === 413
-              ? fill(t.errorTooLarge, { max: maxLabel })
-              : fill(t.errorHttp, { status: xhr.status })),
+              ? fill(tRef.current.errorTooLarge, { max: maxLabel })
+              : fill(tRef.current.errorHttp, { status: xhr.status })),
         );
       };
       xhr.onerror = () => {
         setProgress(null);
-        setError(t.errorNetwork);
+        setError(tRef.current.errorNetwork);
       };
       xhr.send(form);
     },
-    [maxLabel, router, t],
+    [maxLabel, router],
   );
 
   const onDrop = (e: DragEvent) => {
@@ -85,7 +92,7 @@ export function Uploader({ maxLabel, extractLabel, t }: Props) {
       <div
         role="button"
         tabIndex={0}
-        aria-label={t.dropLabel}
+        aria-label={strings.dropLabel}
         onClick={() => !uploading && inputRef.current?.click()}
         onKeyDown={(e) => {
           if ((e.key === "Enter" || e.key === " ") && !uploading) inputRef.current?.click();
@@ -119,7 +126,7 @@ export function Uploader({ maxLabel, extractLabel, t }: Props) {
           <div className="w-full max-w-sm">
             <div className="mb-3 flex items-center justify-center gap-2 text-sm text-chalk">
               <UploadCloud className="h-5 w-5 text-go" />
-              {fill(t.uploading, { progress: progress ?? 0 })}
+              {fill(strings.uploading, { progress: progress ?? 0 })}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
               <div
@@ -127,7 +134,7 @@ export function Uploader({ maxLabel, extractLabel, t }: Props) {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-3 text-xs text-mist">{t.keepOpen}</p>
+            <p className="mt-3 text-xs text-mist">{strings.keepOpen}</p>
           </div>
         ) : (
           <>
@@ -140,9 +147,9 @@ export function Uploader({ maxLabel, extractLabel, t }: Props) {
               <Archive className={cn("h-8 w-8", drag && "text-go")} />
             </div>
             <div>
-              <p className="text-base font-medium text-chalk">{t.dropHint}</p>
+              <p className="text-base font-medium text-chalk">{strings.dropHint}</p>
               <p className="mt-1 text-sm text-mist">
-                {fill(t.formatsHint, { max: maxLabel, extract: extractLabel })}
+                {fill(strings.formatsHint, { max: maxLabel, extract: extractLabel })}
               </p>
             </div>
           </>
