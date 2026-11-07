@@ -150,7 +150,24 @@ describe("buildManifest", () => {
     expect(m.start_url).toBe("/");
     expect(m.theme_color).toBe("#080b12");
     expect(m.icons?.length).toBeGreaterThan(0);
-    expect(manifestRoute()).toEqual(m);
+    // Le manifeste par défaut reste celui d'origine (français).
+    expect(buildManifest()).toEqual(m);
+  });
+
+  it("suit la langue demandée sans toucher aux icônes", async () => {
+    // La route `/manifest.webmanifest` lit le cookie de langue : on vérifie le
+    // rendu localisé via `buildManifest`, sans dépendre du contexte Next.
+    const ja = buildManifest({
+      locale: "ja",
+      name: "RepoDrop — アーカイブを GitHub へ",
+      description: "説明",
+    });
+    expect(ja.lang).toBe("ja");
+    expect(ja.name).toBe("RepoDrop — アーカイブを GitHub へ");
+    expect(ja.start_url).toBe("/");
+    expect(ja.icons).toEqual(buildManifest().icons);
+    // La route existe toujours et reste une fonction (rendu dynamique).
+    expect(typeof manifestRoute).toBe("function");
   });
 });
 

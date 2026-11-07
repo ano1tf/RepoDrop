@@ -39,7 +39,7 @@ export const pt: Dict = {
     ctaHow: "Como funciona",
     checkSandboxed: "Extração em sandbox",
     checkToken: "Token GitHub nunca guardado",
-    checkFrench: "Fluxo de trabalho aberto",
+    checkFrench: "Aberto: o código é público",
 
     statFormats: "formatos de arquivo",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -47,6 +47,7 @@ export const pt: Dict = {
     statCommandsSub: "tudo com um clique",
     statDuration: "do envio ao push",
     statDurationSub: "pré-visualização incluída",
+    statDurationValue: "2 min",
     statLanguages: "idiomas",
     statLanguagesSub: "interface e mensagens",
 
@@ -204,5 +205,271 @@ export const pt: Dict = {
     title: "Página não encontrada",
     body: "Esta página não existe — ou o job expirou (os arquivos são eliminados após algum tempo).",
     back: "Voltar ao início",
+  },
+  jobs: {
+    metaTitle: "Acompanhar a importação",
+
+    statusQueued: "Em fila",
+    statusExtracting: "A extrair",
+    statusReady: "Pronto a enviar",
+    statusPushing: "A enviar…",
+    statusDone: "Concluído",
+    statusFailed: "Falhou",
+
+    extractingTitle: "Extração em curso…",
+    extractingBody:
+      "Verificação dos caminhos e dos tamanhos, deteção da pasta raiz. Tudo acontece no servidor, num espaço isolado.",
+    pushingTitle: "A enviar para o GitHub…",
+    pushingBody:
+      "Criação do commit e envio dos ficheiros. Pode deixar este separador aberto: vamos mantê-lo informado.",
+
+    failedTitle: "A operação falhou",
+    failedUnknown: "Erro desconhecido.",
+    lostConnection: "Ligação perdida. Tente novamente.",
+    httpFailed: "Falhou (HTTP {status}).",
+    repoMoved:
+      "O repositório {repo} avançou desde a sua importação. Pode substituir o seu ramo pelo conteúdo exato deste arquivo: os ficheiros ausentes do arquivo serão apagados do repositório e o push será forçado. O histórico existente é mantido (novo commit por cima).",
+    repoMovedConfirm:
+      "Confirma a substituição completa do código deste repositório por este arquivo?",
+    replaceAllYes: "Sim, substituir todo o código",
+    replaceAllRetry: "Tentar novamente substituindo todo o código",
+    cancel: "Cancelar",
+    retryOtherArchive: "Tentar novamente com outro arquivo",
+    backHome: "Voltar ao início",
+
+    doneTitle: "Enviado!",
+    doneBody: "{count} importados no ramo",
+    doneCommit: "commit",
+    doneCreated: "· repositório criado",
+    openOnGithub: "Abrir no GitHub",
+    copyLink: "Copiar a ligação",
+    downloadZip: "Transferir em .zip",
+    aiLinksTitle: "Ligações prontas a dar a uma IA:",
+    anotherImport: "Importar outro arquivo",
+
+    linkRepo: "Repositório GitHub",
+    linkBranch: "Ramo «{branch}»",
+    linkBranchSub: "Envie para este ramo",
+    linkCommit: "Commit exato",
+    linkCodespaces: "Codespaces (agente de IA do GitHub)",
+    linkCodespacesSub: "vscode.dev pronto a usar, Copilot ligado",
+    linkVscode: "vscode.dev (editor web oficial)",
+    linkVscodeSub: "Copilot + edição + execução (Codespaces)",
+    linkClone: "URL de clone (agente externo)",
+    linkCloneSub: "O agente autentica-se com a sua própria sessão GitHub",
+    linkGh: "Comando CLI `gh`",
+
+    previewTitle: "Pré-visualização do arquivo",
+    previewLead: "O que será enviado, depois dos filtros de segurança.",
+    previewFiles: "Ficheiros",
+    previewSize: "Tamanho descomprimido",
+    previewIgnored: "Ignorados:",
+    ignoredGit: ".git ({count})",
+    ignoredSystemFiles: "ficheiros de sistema ({count})",
+    ignoredSymlinks: "ligações simbólicas ({count})",
+    ignoredHardlinks: "hard links ({count})",
+    ignoredBlocked: "caminhos bloqueados ({count})",
+    tooLargeForGithub:
+      "{count} ficheiro(s) excedem 100 MB: o GitHub provavelmente recusá-los-á. Ex.:",
+
+    filtersTitle: "Filtros de importação",
+    filtersNone: "Nenhum filtro disponível para este arquivo.",
+    stripRootLabel: "Remover a pasta raiz",
+    stripRootHint:
+      "Recomendado: o conteúdo do projeto ficaria na raiz do repositório.",
+    includeNodeModules: "Incluir",
+    includeNodeModulesHint:
+      "Desmarcado por predefinição: pesado e raramente útil num repositório.",
+
+    destTitle: "Destino",
+    destLead: "Para onde enviar estes ficheiros?",
+    destNew: "Novo repositório",
+    destExisting: "Repositório existente",
+    repoNameLabel: "Nome do repositório",
+    repoNamePlaceholder: "meu-projeto",
+    repoNameInvalid:
+      "Apenas letras, dígitos, pontos, hífenes e underscores (tem de começar por uma letra ou um dígito).",
+    visibilityLabel: "Visibilidade",
+    visibilityPrivate: "Privado",
+    visibilityPrivateHint: "Visível apenas para si",
+    visibilityPublic: "Público",
+    visibilityPublicHint: "Visível para todos",
+    searchRepo: "Procurar um repositório…",
+    loadingRepos: "A carregar os seus repositórios…",
+    reposLoadError: "Não foi possível carregar os seus repositórios.",
+    noWritableRepo:
+      "Nenhum repositório acessível com permissões de escrita. Crie um novo!",
+    noRepoMatch: "Nenhum repositório corresponde à procura.",
+    dedicatedBranch: "Criar um ramo dedicado",
+    dedicatedHintExisting:
+      "Não tocar no ramo predefinido: ideal para um repositório partilhado.",
+    dedicatedHintNew:
+      "Nome do ramo inicial do novo repositório (caso contrário, o ramo predefinido).",
+    replaceAll: "Substituir todo o código do repositório",
+    replaceAllHint:
+      "O repositório passará a conter exatamente os ficheiros do arquivo: os que faltarem serão apagados e o push será forçado — vai funcionar mesmo que o repositório tenha mudado entretanto (fim do erro «fetch first»). A usar quando o arquivo é a nova versão completa do projeto.",
+    replaceConfirm:
+      "Confirmo: os ficheiros do repositório {repo} ausentes deste arquivo serão definitivamente apagados do ramo enviado.",
+    replaceConfirmNoRepo:
+      "Confirmo: os ficheiros do repositório ausentes deste arquivo serão definitivamente apagados do ramo enviado.",
+    advanced: "Opções avançadas",
+    commitMessage: "Mensagem de commit",
+    commitPlaceholder: "Importação de {filename} via RepoDrop",
+    pushAction: "Enviar para o GitHub",
+    replacePushAction: "Substituir todo o código no GitHub",
+    sending: "A enviar…",
+    replaceNeedConfirm:
+      "Assinale a confirmação da substituição para ativar o botão.",
+    tokenNote:
+      "O seu token GitHub fica num cookie cifrado — nunca é escrito na base de dados.",
+  },
+
+  repos: {
+    metaTitle: "Os meus repositórios",
+    pageTitle: "Os meus repositórios",
+    pageLead:
+      "Explore os seus repositórios antes de importar seja o que for: árvore, pré-visualização de ficheiros, ramo à sua escolha. Renomear, visibilidade e eliminação estão no separador {actions} de um repositório.",
+
+    filterPlaceholder: "Filtrar por nome, descrição ou linguagem…",
+    filterAria: "Filtrar os repositórios",
+    sortAria: "Ordenar",
+    sortPushed: "Atividade recente",
+    sortName: "Nome (A→Z)",
+    sortSize: "Tamanho",
+    mine: "Os meus",
+    refresh: "Atualizar",
+    errorList: "Lista indisponível (HTTP {status}).",
+    errorServer: "Não é possível contactar o servidor.",
+    truncated:
+      "Apenas os 300 repositórios mais recentes estão carregados. Refine com o filtro acima.",
+    loading: "A carregar os seus repositórios…",
+    emptyFilter: "Nenhum repositório corresponde a este filtro.",
+    emptyToken: "Nenhum repositório visível com este token GitHub.",
+    countAll: "{count} repositório(s)",
+    countFiltered: "{count} de {total}",
+    countHint: "— clique para explorar o conteúdo.",
+    noDescription: "Sem descrição",
+    pushedAgo: "enviado {when}",
+    issues: "{count} issue(s)",
+    readOnly: "só leitura",
+
+    backToList: "Voltar à lista",
+    list: "Lista",
+    badgePrivate: "privado",
+    badgePublic: "público",
+    badgeArchived: "arquivado",
+    badgeFork: "fork",
+    badgeReadOnly: "só leitura",
+    branchProtected: "(protegido)",
+    downloadTitle: "Transferir {repo} em .{format}",
+    downloadTitleRef: "Transferir {repo} ({ref}) em .{format}",
+    actionsTab: "Ações",
+    loadingRepo: "A carregar o repositório…",
+    inaccessible: "Repositório inacessível.",
+    inaccessibleHttp: "Repositório inacessível (HTTP {status}).",
+    errorServerJoin: "Não é possível contactar o servidor.",
+    copyDenied: "Cópia recusada pelo navegador.",
+    reloadFolder: "Recarregar esta pasta",
+    root: "raiz",
+    entries: "{count} entrada(s)",
+    loadingShort: "A carregar…",
+    emptyRepo:
+      "Este repositório ainda não contém ficheiros. Importe um arquivo para o preencher.",
+    loadingFile: "A carregar o ficheiro…",
+    selectFile: "Selecione um ficheiro para o pré-visualizar.",
+    lines: "{count} linhas",
+    copy: "Copiar",
+    copied: "Copiado",
+    raw: "Em bruto",
+    fileTooBig:
+      "Ficheiro demasiado grande para a pré-visualização ({size}). Abra-o no GitHub.",
+    fileBinary: "Ficheiro binário ({size}): sem pré-visualização de texto.",
+
+    actionsTitle: "Renomear / descrever",
+    nameLabel: "Nome do repositório",
+    renameWarning:
+      "Renomear quebra os clones, as ligações e as páginas GitHub existentes. O GitHub redireciona o nome antigo, mas não para sempre.",
+    descLabel: "Descrição",
+    descPlaceholder: "Para que serve este repositório?",
+    save: "Guardar",
+    writeInsufficient: "Permissões de escrita insuficientes neste repositório.",
+    visibilityTitle: "Visibilidade",
+    visibilityCurrently: "Atualmente {visibility}.",
+    visibilityToPrivate:
+      " Torná-lo privado retira o acesso a todos os anónimos.",
+    visibilityToPublic:
+      " Torná-lo público expõe todo o histórico de commits.",
+    makePublic: "Tornar público",
+    makePrivate: "Tornar privado",
+    dangerZone: "Zona sensível",
+    deleteWarning:
+      "A eliminação é definitiva: código, histórico, issues e wiki.",
+    deleteRepo: "Eliminar o repositório",
+    deleteTitle: "Eliminar {repo}",
+    deleteConfirmBody:
+      "Nenhuma recuperação possível. Escreva {name} para desbloquear o botão.",
+    deleteForever: "Eliminar definitivamente",
+    cancel: "Cancelar",
+    updated: "Repositório atualizado.",
+    deleted: "Repositório {repo} eliminado.",
+    httpFailed: "Falhou (HTTP {status}).",
+  },
+
+  api: {
+    authRequired: "Autenticação necessária.",
+    jobNotFound: "Job não encontrado.",
+    jobNotReady: "Este job ainda não está pronto.",
+    jobNotPushable: "Este job não está pronto para ser enviado.",
+    invalidJson: "Corpo JSON inválido.",
+    invalidMultipart: "Pedido inválido (multipart/form-data esperado).",
+    emptyBody: "Corpo do pedido vazio.",
+    emptyArchive: "O arquivo está vazio.",
+    uploadFailed: "Não foi possível receber o ficheiro. Tente novamente.",
+    repoNameRequired:
+      "O nome do repositório é obrigatório para criar um novo repositório.",
+    branchNameTooLong: "Nome do ramo demasiado longo.",
+    invalidOptions: "Opções inválidas.",
+    invalidChange: "Alteração inválida.",
+    noChange: "Nenhuma alteração.",
+    pathRequired: "Parâmetro «path» obrigatório.",
+  },
+  errors: {
+    encrypted:
+      "Este arquivo está protegido por palavra-passe, o que ainda não é suportado.",
+    tooManyFiles: "Demasiados ficheiros no arquivo (limite atingido).",
+    tooBig:
+      "O conteúdo descomprimido excede o tamanho permitido. Reduza o arquivo (node_modules?).",
+    empty: "Este arquivo não contém nenhum ficheiro utilizável.",
+    corrupt:
+      "Arquivo ilegível ou corrompido. Verifique o ficheiro e tente novamente.",
+    unsupported:
+      "Formato não suportado (método de compressão ou variante de arquivo desconhecida).",
+    volume:
+      "Os arquivos RAR multivolume (.part1.rar, .part2.rar…) não são suportados.",
+    unsafePaths:
+      "O arquivo contém caminhos de ficheiro perigosos (traversal) e foi recusado.",
+    pathLimits:
+      "Um caminho de ficheiro excede os limites permitidos (profundidade ou comprimento).",
+    timeout: "A extração demorou demasiado e foi interrompida.",
+    rateLimited: "Demasiados pedidos. Aguarde um momento e tente novamente.",
+    notFound: "Recurso não encontrado.",
+    forbidden:
+      "Não tem permissões de escrita neste repositório (ou o token do GitHub não tem o scope certo).",
+    repoExists: "Já existe um repositório com esse nome na sua conta.",
+    nameInvalid: "Nome de repositório ou de ramo inválido.",
+    noChanges:
+      "Nada para enviar: os ficheiros já correspondem ao repositório de destino.",
+    conflict:
+      "O repositório de destino mudou entretanto. Tente novamente, envie para um ramo dedicado ou relance com «Substituir todo o código» para sobrescrever o ramo com o conteúdo do arquivo.",
+    scopeMissing:
+      "O GitHub recusa a alteração de ficheiros de workflow (.github/workflows/…): ao token falta o scope «workflow». Termine a sessão e volte a entrar para o conceder.",
+    gitFailed: "O push para o GitHub falhou.",
+    interrupted: "O processamento foi interrompido (reinício do servidor).",
+    badPath: "Caminho de ficheiro inválido.",
+    confirmMismatch:
+      "A confirmação não corresponde ao nome do repositório: nada foi eliminado.",
+    archiveTooBig:
+      "Este repositório é demasiado grande para ser transferido como arquivo.",
+    internal: "Erro interno inesperado. Tente novamente dentro de instantes.",
   },
 };

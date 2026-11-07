@@ -26,16 +26,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { translateError } from "@/lib/i18n/errors";
+import type { Dict } from "@/lib/i18n/types";
 import type { RepoSummary } from "@/lib/repo-types";
 
 export function RepoActions({
   repo,
   onUpdated,
   onDeleted,
+  t,
+  tErrors,
 }: {
   repo: RepoSummary;
   onUpdated: (next: RepoSummary) => void;
   onDeleted: (fullName: string) => void;
+  t: Dict["repos"];
+  tErrors: Pick<Dict, "errors" | "api">;
 }) {
   const [name, setName] = useState(repo.name);
   const [description, setDescription] = useState(repo.description ?? "");
@@ -68,22 +74,31 @@ export function RepoActions({
         repo?: RepoSummary;
         deleted?: string;
         error?: string;
+        code?: string;
       };
       if (!res.ok) {
-        setFeedback({ ok: false, text: data.error ?? `Échec (HTTP ${res.status}).` });
+        setFeedback({
+          ok: false,
+          text: data.code
+            ? translateError(tErrors, { code: data.code })
+            : data.error ?? t.httpFailed.replace("{status}", String(res.status)),
+        });
         return;
       }
       if (method === "DELETE") {
-        setFeedback({ ok: true, text: `Dépôt ${data.deleted ?? repo.full_name} supprimé.` });
+        setFeedback({
+          ok: true,
+          text: t.deleted.replace("{repo}", data.deleted ?? repo.full_name),
+        });
         onDeleted(repo.full_name);
         return;
       }
       if (data.repo) {
         onUpdated(data.repo);
-        setFeedback({ ok: true, text: "Dépôt mis à jour." });
+        setFeedback({ ok: true, text: t.updated });
       }
     } catch {
-      setFeedback({ ok: false, text: "Impossible de joindre le serveur." });
+      setFeedback({ ok: false, text: t.errorServerJoin });
     } finally {
       setBusy("");
     }
@@ -117,13 +132,13 @@ export function RepoActions({
       >
         <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-mist">
           <Pencil className="h-3.5 w-3.5" />
-          Renommer / décrire
+          {t.actionsTitle}
         </h3>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="repo-name" className="mb-1.5 block text-xs text-mist">
-              Nom du dépôt
+              {t.nameLabel}
             </label>
             <Input
               id="repo-name"
@@ -135,21 +150,20 @@ export function RepoActions({
             {name.trim() !== repo.name && (
               <p className="mt-1.5 flex items-start gap-1.5 text-[11px] text-amber">
                 <AlertTriangle className="mt-px h-3 w-3 shrink-0" />
-                Renommer casse les clones, les liens et les pages GitHub existants.
-                GitHub redirige l'ancien nom, mais pas indéfiniment.
+                {t.renameWarning}
               </p>
             )}
           </div>
           <div>
             <label htmlFor="repo-desc" className="mb-1.5 block text-xs text-mist">
-              Description
+              {t.descLabel}
             </label>
             <Input
               id="repo-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={!repo.can.push || busy !== ""}
-              placeholder="À quoi sert ce dépôt ?"
+              placeholder={t.descPlaceholder}
               maxLength={350}
             />
           </div>
@@ -162,11 +176,11 @@ export function RepoActions({
             ) : (
               <Check className="h-3.5 w-3.5" />
             )}
-            Enregistrer
+            {t.save}
           </Button>
           {!repo.can.push && (
             <span className="text-[11px] text-mist">
-              Droits d'écriture insuffisants sur ce dépôt.
+              {t.writeInsufficient}
             </span>
           )}
         </div>
@@ -181,14 +195,14 @@ export function RepoActions({
             ) : (
               <Eye className="h-3.5 w-3.5" />
             )}
-            Visibilité
+            {t.visibilityTitle}
           </h3>
           <p className="mt-1 text-xs text-mist">
-            Actuellement{" "}
-            <strong className="text-chalk">{repo.private ? "privé" : "public"}</strong>.
-            {repo.private
-              ? " Le rendre public expose tout l'historique des commits."
-              : " Le rendre privé retire l'accès à tous les anonymes."}
+            {t.visibilityCurrently.replace(
+              "{visibility}",
+              repo.private ? t.badgePrivate : t.badgePublic,
+            )}
+            {repo.private ? t.visibilityToPublic : t.visibilityToPrivate}
           </p>
         </div>
         <Button
@@ -204,7 +218,7 @@ export function RepoActions({
           ) : (
             <Lock className="h-3.5 w-3.5" />
           )}
-          Rendre {repo.private ? "public" : "privé"}
+          {repo.private ? t.makePublic : t.makePrivate}
         </Button>
       </div>
 
@@ -220,10 +234,10 @@ export function RepoActions({
             <div>
               <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-mist">
                 <Trash2 className="h-3.5 w-3.5" />
-                Zone sensible
+                {t.dangerZone}
               </h3>
               <p className="mt-1 text-xs text-mist">
-                La suppression est définitive : code, historique, issues et wiki.
+                {t.deleteWarning}
               </p>
             </div>
             <Button
@@ -236,21 +250,26 @@ export function RepoActions({
               }}
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Supprimer le dépôt
+              {t.deleteRepo}
             </Button>
           </div>
         ) : (
           <div>
             <h3 className="flex items-center gap-2 text-sm font-semibold text-danger">
               <AlertTriangle className="h-4 w-4" />
-              Supprimer {repo.full_name}
+              {t.deleteTitle.replace("{repo}", repo.full_name)}
             </h3>
             <p className="mt-2 text-xs leading-relaxed text-mist">
-              Aucune récupération possible. Tapez{" "}
+              {/*
+                Le gabarit `{name}` est coupé en deux autour du `<code>` : la
+                mise en forme reste, et chaque langue garde l'ordre de ses mots
+                (certaines placent le nom en fin de phrase).
+              */}
+              {t.deleteConfirmBody.split("{name}")[0]}
               <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-chalk ring-1 ring-edge">
                 {repo.full_name}
-              </code>{" "}
-              pour débloquer le bouton.
+              </code>
+              {t.deleteConfirmBody.split("{name}")[1]}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Input
@@ -272,7 +291,7 @@ export function RepoActions({
                 ) : (
                   <Trash2 className="h-4 w-4" />
                 )}
-                Supprimer définitivement
+                {t.deleteForever}
               </Button>
               <Button
                 variant="ghost"
@@ -282,7 +301,7 @@ export function RepoActions({
                   setConfirmText("");
                 }}
               >
-                Annuler
+                {t.cancel}
               </Button>
             </div>
           </div>
@@ -309,11 +328,11 @@ export function RepoActions({
 
       <div className="flex flex-wrap gap-1.5">
         <Badge variant={repo.private ? "muted" : "sky"}>
-          {repo.private ? "privé" : "public"}
+          {repo.private ? t.badgePrivate : t.badgePublic}
         </Badge>
-        {repo.archived && <Badge variant="amber">archivé</Badge>}
-        {repo.fork && <Badge variant="muted">fork</Badge>}
-        {!repo.can.push && <Badge variant="amber">lecture seule</Badge>}
+        {repo.archived && <Badge variant="amber">{t.badgeArchived}</Badge>}
+        {repo.fork && <Badge variant="muted">{t.badgeFork}</Badge>}
+        {!repo.can.push && <Badge variant="amber">{t.readOnly}</Badge>}
       </div>
     </div>
   );

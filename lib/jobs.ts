@@ -8,7 +8,7 @@
  */
 import path from "node:path";
 import fs from "node:fs";
-import { AppError, toUserMessage } from "./errors";
+import { AppError, toErrorPayload, toUserMessage } from "./errors";
 import { config } from "./config";
 import {
   getJob,
@@ -99,7 +99,13 @@ export function enqueueExtraction(jobId: string): void {
     void runExtraction(jobId).catch((err) => {
       console.error(`[job ${jobId}] extraction error:`, err);
       try {
-        updateJob(jobId, { status: "failed", error: toUserMessage(err) });
+        const payload = toErrorPayload(err);
+        updateJob(jobId, {
+          status: "failed",
+          error: null,
+          error_code: payload.code ?? "INTERNAL",
+          error_detail: payload.detail ?? null,
+        });
       } catch {
         /* base indisponible : rien de plus à faire */
       }
@@ -138,7 +144,13 @@ export function enqueuePush(jobId: string, opts: PushOptions, token: string): vo
       // Ne devrait pas arriver : runPush attrape déjà. Filet de sécurité.
       console.error(`[job ${jobId}] push error:`, err);
       try {
-        updateJob(jobId, { status: "failed", error: toUserMessage(err) });
+        const payload = toErrorPayload(err);
+        updateJob(jobId, {
+          status: "failed",
+          error: null,
+          error_code: payload.code ?? "INTERNAL",
+          error_detail: payload.detail ?? null,
+        });
       } catch {
         /* ignore */
       }
@@ -319,8 +331,18 @@ async function runPush(
   } catch (err) {
     // Log serveur sans token (le token n'apparaît jamais dans les erreurs).
     console.error(`[job ${jobId}] push failed:`, err);
+    // On stocke le CODE, pas la phrase : la page de suivi l'affiche dans la
+    // langue courante (y compris si l'utilisateur change de langue ensuite).
+    // Le journal staff et Discord, eux, gardent une phrase française lisible
+    // par l'équipe : elle n'est pas destinée à l'utilisateur.
+    const payload = toErrorPayload(err);
     const message = toUserMessage(err);
-    updateJob(jobId, { status: "failed", error: message });
+    updateJob(jobId, {
+      status: "failed",
+      error: null,
+      error_code: payload.code ?? "INTERNAL",
+      error_detail: payload.detail ?? null,
+    });
     logEvent({
       kind: "push",
       login: job.login,

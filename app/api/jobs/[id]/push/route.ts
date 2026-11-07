@@ -4,9 +4,9 @@
  */
 import { z } from "zod";
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { API_ERROR, json, jsonCodeError, jsonError, jsonErrorPayload } from "@/lib/http";
 import { config } from "@/lib/config";
-import { frMessage } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 import { countRecentPushes } from "@/lib/db";
 import { ensureWorkerInit, enqueuePush, jobOwnedBy } from "@/lib/jobs";
 
@@ -41,11 +41,11 @@ export async function POST(req: Request, { params }: Params): Promise<Response> 
   ensureWorkerInit();
 
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { id } = await params;
   const job = jobOwnedBy(id, session.login);
-  if (!job) return jsonError("Job introuvable.", 404);
+  if (!job) return jsonCodeError(API_ERROR.JOB_NOT_FOUND, 404);
 
   // « ready » = premier push. Un job « failed » dont l'aperçu (et donc
   // l'extraction) existe encore peut être RELANCÉ — typiquement en mode
@@ -54,20 +54,20 @@ export async function POST(req: Request, { params }: Params): Promise<Response> 
   // runPush échouera proprement en INTERRUPTED.
   const retryable = job.status === "failed" && job.preview !== null;
   if (job.status !== "ready" && !retryable) {
-    return jsonError("Ce job n'est pas prêt à être poussé.", 409);
+    return jsonCodeError(API_ERROR.JOB_NOT_PUSHABLE, 409);
   }
 
   // Rate-limit persistant : poussées réussies sur la dernière heure.
   const recent = countRecentPushes(session.login, Date.now() - 3_600_000);
   if (recent >= config.limits.pushesPerHour) {
-    return jsonError(frMessage("RATE_LIMITED"), 429, { retryAfterSec: 600 });
+    return jsonErrorPayload(new AppError("RATE_LIMITED"), 429);
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return jsonCodeError(API_ERROR.INVALID_JSON, 400);
   }
 
   const parsed = pushSchema.safeParse(body);

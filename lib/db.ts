@@ -5,7 +5,7 @@
 import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
-import { frMessage } from "./errors";
+import type { ErrorCode } from "./errors";
 import type { ArchiveFormat, ArchivePreview, JobRecord, JobStatus, PushOptions } from "./types";
 
 export interface JobRow {
@@ -15,6 +15,8 @@ export interface JobRow {
   format: ArchiveFormat | null;
   status: JobStatus;
   error: string | null;
+  error_code: string | null;
+  error_detail: string | null;
   preview: string | null;
   push_opts: string | null;
   push_result: string | null;
@@ -36,6 +38,8 @@ function open(): DatabaseSync {
       format      TEXT,
       status      TEXT NOT NULL,
       error       TEXT,
+      error_code  TEXT,
+      error_detail TEXT,
       preview     TEXT,
       push_opts   TEXT,
       push_result TEXT,
@@ -88,7 +92,27 @@ function open(): DatabaseSync {
     );
     CREATE INDEX IF NOT EXISTS idx_buckets_expires ON buckets(expires_at);
   `);
+
+  /*
+   * Migration « erreurs traduisibles ».
+   *
+   * Les jobs enregistraient une phrase française (`error`) : impossible à
+   * traduire une fois en base. On ajoute deux colonnes — `error_code` et
+   * `error_detail` — que l'interface traduit dans la langue courante.
+   * `ALTER TABLE` est idempotent ici grâce au test sur `PRAGMA table_info` :
+   * une base créée après cette version a déjà les colonnes.
+   */
+  migrateErrorColumns(db);
   return db;
+}
+
+/** Ajoute `error_code` / `error_detail` à une base antérieure (sans perte). */
+function migrateErrorColumns(db: DatabaseSync): void {
+  const cols = new Set(
+    (db.prepare(`PRAGMA table_info(jobs)`).all() as { name: string }[]).map((c) => c.name),
+  );
+  if (!cols.has("error_code")) db.exec(`ALTER TABLE jobs ADD COLUMN error_code TEXT`);
+  if (!cols.has("error_detail")) db.exec(`ALTER TABLE jobs ADD COLUMN error_detail TEXT`);
 }
 
 function configDbPath(): string {
@@ -126,7 +150,12 @@ export function updateJob(
   id: string,
   patch: Partial<{
     status: JobStatus;
+    /** Message hérité (FR) — conservé pour les jobs d'avant `error_code`. */
     error: string | null;
+    /** Code d'erreur traduisible (`ErrorCode`). */
+    error_code: ErrorCode | null;
+    /** Contexte neutre du code (nom de branche, stderr git nettoyé). */
+    error_detail: string | null;
     preview: ArchivePreview;
     push_opts: PushOptions;
     push_result: NonNullable<JobRecord["push"]>;
@@ -141,6 +170,14 @@ export function updateJob(
   if (patch.error !== undefined) {
     sets.push("error = ?");
     vals.push(patch.error);
+  }
+  if (patch.error_code !== undefined) {
+    sets.push("error_code = ?");
+    vals.push(patch.error_code);
+  }
+  if (patch.error_detail !== undefined) {
+    sets.push("error_detail = ?");
+    vals.push(patch.error_detail);
   }
   if (patch.preview !== undefined) {
     sets.push("preview = ?");
@@ -171,6 +208,8 @@ function rowToRecord(row: JobRow): JobRecord {
     format: row.format,
     status: row.status,
     error: row.error,
+    errorCode: row.error_code ?? null,
+    errorDetail: row.error_detail ?? null,
     preview: row.preview ? (JSON.parse(row.preview) as ArchivePreview) : null,
     pushOpts: row.push_opts ? (JSON.parse(row.push_opts) as PushOptions) : null,
     push: row.push_result ? (JSON.parse(row.push_result) as JobRecord["push"]) : null,
@@ -209,10 +248,10 @@ export function countRecentPushes(login: string, sinceMs: number): number {
 export function failStaleJobs(): number {
   const res = getDb()
     .prepare(
-      `UPDATE jobs SET status = 'failed', error = ?, updated_at = ?
+      `UPDATE jobs SET status = 'failed', error = NULL, error_code = ?, updated_at = ?
        WHERE status IN ('queued', 'extracting', 'pushing')`,
     )
-    .run(frMessage("INTERRUPTED"), Date.now());
+    .run("INTERRUPTED", Date.now());
   return Number(res.changes ?? 0);
 }
 

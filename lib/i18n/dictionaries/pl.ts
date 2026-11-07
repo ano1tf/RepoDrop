@@ -39,7 +39,7 @@ export const pl: Dict = {
     ctaHow: "Jak to działa",
     checkSandboxed: "Rozpakowywanie w sandboxie",
     checkToken: "Token GitHub nigdy nie zapisywany",
-    checkFrench: "Otwarty przepływ pracy",
+    checkFrench: "Otwarte: kod jest publiczny",
 
     statFormats: "formaty archiwów",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -47,6 +47,7 @@ export const pl: Dict = {
     statCommandsSub: "wszystko jednym kliknięciem",
     statDuration: "od wgrania do pusha",
     statDurationSub: "z podglądem",
+    statDurationValue: "2 min",
     statLanguages: "języków",
     statLanguagesSub: "interfejs i komunikaty",
 
@@ -204,5 +205,271 @@ export const pl: Dict = {
     title: "Nie znaleziono strony",
     body: "Ta strona nie istnieje — albo zadanie wygasło (archiwa są usuwane po pewnym czasie).",
     back: "Wróć na stronę główną",
+  },
+  jobs: {
+    metaTitle: "Śledzenie importu",
+
+    statusQueued: "W kolejce",
+    statusExtracting: "Rozpakowywanie",
+    statusReady: "Gotowe do wysłania",
+    statusPushing: "Wysyłanie…",
+    statusDone: "Zakończone",
+    statusFailed: "Błąd",
+
+    extractingTitle: "Rozpakowywanie…",
+    extractingBody:
+      "Sprawdzanie ścieżek i rozmiarów, wykrywanie katalogu głównego. Wszystko dzieje się po stronie serwera, w odizolowanej przestrzeni.",
+    pushingTitle: "Wysyłanie do GitHuba…",
+    pushingBody:
+      "Tworzenie commita i przesyłanie plików. Możesz zostawić tę kartę otwartą — damy znać, gdy skończymy.",
+
+    failedTitle: "Operacja nie powiodła się",
+    failedUnknown: "Nieznany błąd.",
+    lostConnection: "Utracono połączenie. Spróbuj ponownie.",
+    httpFailed: "Błąd (HTTP {status}).",
+    repoMoved:
+      "Repozytorium {repo} zmieniło się od Twojego importu. Możesz nadpisać jego gałąź dokładną zawartością tego archiwum: pliki, których nie ma w archiwum, zostaną usunięte z repozytorium, a wypchnięcie zostanie wymuszone. Istniejąca historia zostanie zachowana (nowy commit na wierzchu).",
+    repoMovedConfirm:
+      "Czy potwierdzasz zastąpienie całego kodu tego repozytorium tym archiwum?",
+    replaceAllYes: "Tak, zastąp cały kod",
+    replaceAllRetry: "Spróbuj ponownie, zastępując cały kod",
+    cancel: "Anuluj",
+    retryOtherArchive: "Spróbuj ponownie z innym archiwum",
+    backHome: "Powrót do strony głównej",
+
+    doneTitle: "Wysłano!",
+    doneBody: "{count} zaimportowanych na gałęzi",
+    doneCommit: "commit",
+    doneCreated: "· repozytorium utworzone",
+    openOnGithub: "Otwórz na GitHubie",
+    copyLink: "Kopiuj link",
+    downloadZip: "Pobierz jako .zip",
+    aiLinksTitle: "Linki gotowe do przekazania AI:",
+    anotherImport: "Zaimportuj inne archiwum",
+
+    linkRepo: "Repozytorium GitHub",
+    linkBranch: "Gałąź „{branch}”",
+    linkBranchSub: "Wypchnij na tę gałąź",
+    linkCommit: "Dokładny commit",
+    linkCodespaces: "Codespaces (agent AI GitHuba)",
+    linkCodespacesSub: "vscode.dev gotowe do użycia, Copilot podłączony",
+    linkVscode: "vscode.dev (oficjalny edytor webowy)",
+    linkVscodeSub: "Copilot + edycja + uruchamianie (Codespaces)",
+    linkClone: "URL klonowania (agent zewnętrzny)",
+    linkCloneSub: "Agent uwierzytelnia się własną sesją GitHuba",
+    linkGh: "Polecenie CLI `gh`",
+
+    previewTitle: "Podgląd archiwum",
+    previewLead: "Co zostanie wypchnięte, po filtrach bezpieczeństwa.",
+    previewFiles: "Pliki",
+    previewSize: "Rozmiar po rozpakowaniu",
+    previewIgnored: "Pominięte:",
+    ignoredGit: ".git ({count})",
+    ignoredSystemFiles: "pliki systemowe ({count})",
+    ignoredSymlinks: "dowiązania symboliczne ({count})",
+    ignoredHardlinks: "twarde dowiązania ({count})",
+    ignoredBlocked: "zablokowane ścieżki ({count})",
+    tooLargeForGithub:
+      "{count} plik(ów) przekracza 100 MB: GitHub prawdopodobnie je odrzuci. Np.:",
+
+    filtersTitle: "Filtry importu",
+    filtersNone: "Brak dostępnych filtrów dla tego archiwum.",
+    stripRootLabel: "Usuń katalog główny",
+    stripRootHint:
+      "Zalecane: zawartość projektu trafi bezpośrednio do katalogu głównego repozytorium.",
+    includeNodeModules: "Dołącz",
+    includeNodeModulesHint:
+      "Domyślnie odznaczone: ciężkie i rzadko przydatne w repozytorium.",
+
+    destTitle: "Cel",
+    destLead: "Dokąd wysłać te pliki?",
+    destNew: "Nowe repozytorium",
+    destExisting: "Istniejące repozytorium",
+    repoNameLabel: "Nazwa repozytorium",
+    repoNamePlaceholder: "moj-projekt",
+    repoNameInvalid:
+      "Tylko litery, cyfry, kropki, myślniki i podkreślenia (musi zaczynać się od litery lub cyfry).",
+    visibilityLabel: "Widoczność",
+    visibilityPrivate: "Prywatne",
+    visibilityPrivateHint: "Widoczne tylko dla Ciebie",
+    visibilityPublic: "Publiczne",
+    visibilityPublicHint: "Widoczne dla wszystkich",
+    searchRepo: "Szukaj repozytorium…",
+    loadingRepos: "Wczytywanie Twoich repozytoriów…",
+    reposLoadError: "Nie udało się wczytać Twoich repozytoriów.",
+    noWritableRepo:
+      "Brak repozytorium z prawem zapisu. Utwórz nowe!",
+    noRepoMatch: "Żadne repozytorium nie pasuje do wyszukiwania.",
+    dedicatedBranch: "Utwórz osobną gałąź",
+    dedicatedHintExisting:
+      "Nie ruszać gałęzi domyślnej: idealne dla współdzielonego repozytorium.",
+    dedicatedHintNew:
+      "Nazwa początkowej gałęzi nowego repozytorium (w przeciwnym razie gałąź domyślna).",
+    replaceAll: "Zastąp cały kod repozytorium",
+    replaceAllHint:
+      "Repozytorium będzie zawierać dokładnie pliki z archiwum: te, których w nim nie ma, zostaną usunięte, a wypchnięcie zostanie wymuszone — powiedzie się nawet, jeśli repozytorium zmieniło się w międzyczasie (koniec błędu „fetch first”). Użyj, gdy archiwum to pełna nowa wersja projektu.",
+    replaceConfirm:
+      "Potwierdzam: pliki repozytorium {repo}, których nie ma w tym archiwum, zostaną trwale usunięte z wypychanej gałęzi.",
+    replaceConfirmNoRepo:
+      "Potwierdzam: pliki repozytorium, których nie ma w tym archiwum, zostaną trwale usunięte z wypychanej gałęzi.",
+    advanced: "Opcje zaawansowane",
+    commitMessage: "Wiadomość commita",
+    commitPlaceholder: "Import {filename} przez RepoDrop",
+    pushAction: "Wypchnij na GitHuba",
+    replacePushAction: "Zastąp cały kod na GitHubie",
+    sending: "Wysyłanie…",
+    replaceNeedConfirm:
+      "Zaznacz potwierdzenie zastąpienia, aby aktywować przycisk.",
+    tokenNote:
+      "Twój token GitHub pozostaje w szyfrowanym pliku cookie — nigdy nie trafia do bazy danych.",
+  },
+
+  repos: {
+    metaTitle: "Moje repozytoria",
+    pageTitle: "Moje repozytoria",
+    pageLead:
+      "Przejrzyj swoje repozytoria, zanim cokolwiek zaimportujesz: drzewo, podgląd plików, wybrana gałąź. Zmiana nazwy, widoczność i usuwanie są na karcie {actions} repozytorium.",
+
+    filterPlaceholder: "Filtruj po nazwie, opisie lub języku…",
+    filterAria: "Filtruj repozytoria",
+    sortAria: "Sortuj",
+    sortPushed: "Ostatnia aktywność",
+    sortName: "Nazwa (A→Z)",
+    sortSize: "Rozmiar",
+    mine: "Moje",
+    refresh: "Odśwież",
+    errorList: "Lista niedostępna (HTTP {status}).",
+    errorServer: "Nie można połączyć się z serwerem.",
+    truncated:
+      "Wczytano tylko 300 najnowszych repozytoriów. Zawęź listę filtrem powyżej.",
+    loading: "Wczytywanie Twoich repozytoriów…",
+    emptyFilter: "Żadne repozytorium nie pasuje do tego filtra.",
+    emptyToken: "Żadne repozytorium nie jest widoczne z tym tokenem GitHuba.",
+    countAll: "{count} repozytoriów",
+    countFiltered: "{count} z {total}",
+    countHint: "— kliknij, aby przejrzeć zawartość.",
+    noDescription: "Bez opisu",
+    pushedAgo: "wypchnięto {when}",
+    issues: "{count} zgłoszeń",
+    readOnly: "tylko do odczytu",
+
+    backToList: "Powrót do listy",
+    list: "Lista",
+    badgePrivate: "prywatne",
+    badgePublic: "publiczne",
+    badgeArchived: "zarchiwizowane",
+    badgeFork: "fork",
+    badgeReadOnly: "tylko do odczytu",
+    branchProtected: "(chroniona)",
+    downloadTitle: "Pobierz {repo} jako .{format}",
+    downloadTitleRef: "Pobierz {repo} ({ref}) jako .{format}",
+    actionsTab: "Działania",
+    loadingRepo: "Wczytywanie repozytorium…",
+    inaccessible: "Repozytorium niedostępne.",
+    inaccessibleHttp: "Repozytorium niedostępne (HTTP {status}).",
+    errorServerJoin: "Nie można połączyć się z serwerem.",
+    copyDenied: "Przeglądarka odmówiła kopiowania.",
+    reloadFolder: "Odśwież ten folder",
+    root: "katalog główny",
+    entries: "{count} pozycji",
+    loadingShort: "Wczytywanie…",
+    emptyRepo:
+      "To repozytorium nie zawiera jeszcze plików. Zaimportuj archiwum, aby je zapełnić.",
+    loadingFile: "Wczytywanie pliku…",
+    selectFile: "Wybierz plik, aby zobaczyć podgląd.",
+    lines: "{count} wierszy",
+    copy: "Kopiuj",
+    copied: "Skopiowano",
+    raw: "Surowy",
+    fileTooBig:
+      "Plik zbyt duży do podglądu ({size}). Otwórz go na GitHubie.",
+    fileBinary: "Plik binarny ({size}): brak podglądu tekstowego.",
+
+    actionsTitle: "Zmień nazwę / opis",
+    nameLabel: "Nazwa repozytorium",
+    renameWarning:
+      "Zmiana nazwy psuje istniejące klony, linki i strony GitHuba. GitHub przekierowuje starą nazwę, ale nie bez końca.",
+    descLabel: "Opis",
+    descPlaceholder: "Do czego służy to repozytorium?",
+    save: "Zapisz",
+    writeInsufficient: "Niewystarczające prawa zapisu w tym repozytorium.",
+    visibilityTitle: "Widoczność",
+    visibilityCurrently: "Obecnie {visibility}.",
+    visibilityToPrivate:
+      " Uczynienie go prywatnym odbiera dostęp wszystkim anonimowym użytkownikom.",
+    visibilityToPublic:
+      " Uczynienie go publicznym ujawnia całą historię commitów.",
+    makePublic: "Ustaw jako publiczne",
+    makePrivate: "Ustaw jako prywatne",
+    dangerZone: "Strefa niebezpieczna",
+    deleteWarning:
+      "Usunięcie jest nieodwracalne: kod, historia, zgłoszenia i wiki.",
+    deleteRepo: "Usuń repozytorium",
+    deleteTitle: "Usuń {repo}",
+    deleteConfirmBody:
+      "Nie ma możliwości przywrócenia. Wpisz {name}, aby odblokować przycisk.",
+    deleteForever: "Usuń trwale",
+    cancel: "Anuluj",
+    updated: "Repozytorium zaktualizowane.",
+    deleted: "Repozytorium {repo} usunięte.",
+    httpFailed: "Błąd (HTTP {status}).",
+  },
+
+  api: {
+    authRequired: "Wymagane uwierzytelnienie.",
+    jobNotFound: "Nie znaleziono zadania.",
+    jobNotReady: "To zadanie nie jest jeszcze gotowe.",
+    jobNotPushable: "To zadanie nie jest gotowe do wypchnięcia.",
+    invalidJson: "Nieprawidłowa treść JSON.",
+    invalidMultipart: "Nieprawidłowe żądanie (oczekiwano multipart/form-data).",
+    emptyBody: "Pusta treść żądania.",
+    emptyArchive: "Archiwum jest puste.",
+    uploadFailed: "Nie udało się odebrać pliku. Spróbuj ponownie.",
+    repoNameRequired:
+      "Nazwa repozytorium jest wymagana do utworzenia nowego repozytorium.",
+    branchNameTooLong: "Nazwa gałęzi jest zbyt długa.",
+    invalidOptions: "Nieprawidłowe opcje.",
+    invalidChange: "Nieprawidłowa zmiana.",
+    noChange: "Brak zmian.",
+    pathRequired: "Wymagany parametr „path”.",
+  },
+  errors: {
+    encrypted:
+      "To archiwum jest chronione hasłem, co nie jest jeszcze obsługiwane.",
+    tooManyFiles: "Zbyt wiele plików w archiwum (osiągnięto limit).",
+    tooBig:
+      "Rozpakowana zawartość przekracza dozwolony rozmiar. Zmniejsz archiwum (node_modules?).",
+    empty: "To archiwum nie zawiera żadnego użytecznego pliku.",
+    corrupt:
+      "Archiwum nieczytelne lub uszkodzone. Sprawdź plik i spróbuj ponownie.",
+    unsupported:
+      "Nieobsługiwany format (nieznana metoda kompresji lub wariant archiwum).",
+    volume:
+      "Wieloczęściowe archiwa RAR (.part1.rar, .part2.rar…) nie są obsługiwane.",
+    unsafePaths:
+      "Archiwum zawiera niebezpieczne ścieżki plików (traversal) i zostało odrzucone.",
+    pathLimits:
+      "Ścieżka pliku przekracza dozwolone limity (głębokość lub długość).",
+    timeout: "Rozpakowanie trwało zbyt długo i zostało przerwane.",
+    rateLimited: "Zbyt wiele żądań. Odczekaj chwilę i spróbuj ponownie.",
+    notFound: "Nie znaleziono zasobu.",
+    forbidden:
+      "Nie masz prawa zapisu w tym repozytorium (lub token GitHub nie ma właściwego zakresu).",
+    repoExists: "Repozytorium o tej nazwie już istnieje na Twoim koncie.",
+    nameInvalid: "Nieprawidłowa nazwa repozytorium lub gałęzi.",
+    noChanges:
+      "Nie ma czego wypychać: pliki już odpowiadają repozytorium docelowemu.",
+    conflict:
+      "Repozytorium docelowe zmieniło się w międzyczasie. Spróbuj ponownie, wypchnij na osobną gałąź albo uruchom ponownie z opcją „Zastąp cały kod”, aby nadpisać gałąź zawartością archiwum.",
+    scopeMissing:
+      "GitHub odmawia zmiany plików workflow (.github/workflows/…): token nie ma zakresu „workflow”. Wyloguj się i zaloguj ponownie, aby go przyznać.",
+    gitFailed: "Wypchnięcie na GitHuba nie powiodło się.",
+    interrupted: "Przetwarzanie zostało przerwane (restart serwera).",
+    badPath: "Nieprawidłowa ścieżka pliku.",
+    confirmMismatch:
+      "Potwierdzenie nie odpowiada nazwie repozytorium: nic nie zostało usunięte.",
+    archiveTooBig:
+      "To repozytorium jest zbyt duże, aby pobrać je jako archiwum.",
+    internal: "Nieoczekiwany błąd wewnętrzny. Spróbuj ponownie za chwilę.",
   },
 };

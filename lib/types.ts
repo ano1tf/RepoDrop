@@ -9,7 +9,7 @@ export type JobStatus =
   | "ready" // aperçu disponible, en attente de « Pousser »
   | "pushing" // push GitHub en cours
   | "done" // poussé ✅
-  | "failed"; // échec (error contient le message FR)
+  | "failed"; // échec (errorCode + errorDetail, traduits à l'affichage)
 
 export type ArchiveFormat = "zip" | "rar" | "tar";
 
@@ -77,7 +77,18 @@ export interface JobRecord {
   filename: string;
   format: ArchiveFormat | null;
   status: JobStatus;
+  /**
+   * Message d'échec, **déjà traduit** pour l'affichage (`legacy`).
+   *
+   * Historique : les jobs écrivaient ici une phrase française figée. Le champ
+   * est conservé pour ne pas casser les lignes déjà en base, mais les nouveaux
+   * échecs passent par `errorCode` + `errorDetail`. Voir `lib/errors.ts`.
+   */
   error: string | null;
+  /** Code d'erreur métier (`ErrorCode`), traduit à l'affichage. */
+  errorCode?: string | null;
+  /** Contexte neutre du code (`la branche existe déjà`, stderr git nettoyé). */
+  errorDetail?: string | null;
   preview: ArchivePreview | null;
   /** Options du dernier push tenté (null tant qu'aucun push n'a été lancé).
    *  Sert à proposer une relance (ex. en mode « remplacer tout ») après un

@@ -39,7 +39,7 @@ export const nl: Dict = {
     ctaHow: "Hoe het werkt",
     checkSandboxed: "Extractie in sandbox",
     checkToken: "GitHub-token nooit opgeslagen",
-    checkFrench: "Open werkwijze",
+    checkFrench: "Open: de code is openbaar",
 
     statFormats: "archiefformaten",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -47,6 +47,7 @@ export const nl: Dict = {
     statCommandsSub: "alles met één klik",
     statDuration: "van upload tot push",
     statDurationSub: "voorbeeld inbegrepen",
+    statDurationValue: "2 min",
     statLanguages: "talen",
     statLanguagesSub: "interface en meldingen",
 
@@ -204,5 +205,271 @@ export const nl: Dict = {
     title: "Pagina niet gevonden",
     body: "Deze pagina bestaat niet — of de job is verlopen (archieven worden na verloop van tijd opgeruimd).",
     back: "Terug naar start",
+  },
+  jobs: {
+    metaTitle: "Import volgen",
+
+    statusQueued: "In de wachtrij",
+    statusExtracting: "Uitpakken",
+    statusReady: "Klaar om te pushen",
+    statusPushing: "Bezig met pushen…",
+    statusDone: "Voltooid",
+    statusFailed: "Mislukt",
+
+    extractingTitle: "Bezig met uitpakken…",
+    extractingBody:
+      "Paden en groottes worden gecontroleerd, de hoofdmap wordt gedetecteerd. Alles gebeurt op de server, in een geïsoleerde ruimte.",
+    pushingTitle: "Pushen naar GitHub…",
+    pushingBody:
+      "De commit wordt aangemaakt en de bestanden worden verstuurd. Je kunt dit tabblad open laten: we houden je op de hoogte.",
+
+    failedTitle: "De bewerking is mislukt",
+    failedUnknown: "Onbekende fout.",
+    lostConnection: "Verbinding verbroken. Probeer het opnieuw.",
+    httpFailed: "Mislukt (HTTP {status}).",
+    repoMoved:
+      "De repository {repo} is sinds je import verder gegaan. Je kunt zijn branch overschrijven met de exacte inhoud van dit archief: bestanden die niet in het archief zitten, worden uit de repository verwijderd en de push wordt geforceerd. De bestaande geschiedenis blijft behouden (nieuwe commit erbovenop).",
+    repoMovedConfirm:
+      "Bevestig je dat alle code van deze repository door dit archief wordt vervangen?",
+    replaceAllYes: "Ja, alle code vervangen",
+    replaceAllRetry: "Opnieuw proberen met vervanging van alle code",
+    cancel: "Annuleren",
+    retryOtherArchive: "Opnieuw proberen met een ander archief",
+    backHome: "Terug naar home",
+
+    doneTitle: "Gepusht!",
+    doneBody: "{count} geïmporteerd op de branch",
+    doneCommit: "commit",
+    doneCreated: "· repository aangemaakt",
+    openOnGithub: "Openen op GitHub",
+    copyLink: "Link kopiëren",
+    downloadZip: "Downloaden als .zip",
+    aiLinksTitle: "Links die je zo aan een AI kunt geven:",
+    anotherImport: "Nog een archief importeren",
+
+    linkRepo: "GitHub-repository",
+    linkBranch: "Branch ‘{branch}’",
+    linkBranchSub: "Push naar deze branch",
+    linkCommit: "Exacte commit",
+    linkCodespaces: "Codespaces (AI-agent van GitHub)",
+    linkCodespacesSub: "vscode.dev direct bruikbaar, Copilot verbonden",
+    linkVscode: "vscode.dev (officiële webeditor)",
+    linkVscodeSub: "Copilot + bewerken + uitvoeren (Codespaces)",
+    linkClone: "Clone-URL (externe agent)",
+    linkCloneSub: "De agent authenticeert zichzelf via zijn GitHub-sessie",
+    linkGh: "`gh`-CLI-opdracht",
+
+    previewTitle: "Voorbeeld van het archief",
+    previewLead: "Wat er wordt gepusht, na de veiligheidsfilters.",
+    previewFiles: "Bestanden",
+    previewSize: "Uitgepakte grootte",
+    previewIgnored: "Genegeerd:",
+    ignoredGit: ".git ({count})",
+    ignoredSystemFiles: "systeembestanden ({count})",
+    ignoredSymlinks: "symlinks ({count})",
+    ignoredHardlinks: "hardlinks ({count})",
+    ignoredBlocked: "geblokkeerde paden ({count})",
+    tooLargeForGithub:
+      "{count} bestand(en) zijn groter dan 100 MB: GitHub weigert ze waarschijnlijk. Bijv.:",
+
+    filtersTitle: "Importfilters",
+    filtersNone: "Geen filter beschikbaar voor dit archief.",
+    stripRootLabel: "De hoofdmap verwijderen",
+    stripRootHint:
+      "Aanbevolen: de projectinhoud komt dan direct in de hoofdmap van de repository.",
+    includeNodeModules: "Meenemen",
+    includeNodeModulesHint:
+      "Standaard uitgeschakeld: zwaar en zelden nuttig in een repository.",
+
+    destTitle: "Bestemming",
+    destLead: "Waar moeten deze bestanden naartoe?",
+    destNew: "Nieuwe repository",
+    destExisting: "Bestaande repository",
+    repoNameLabel: "Naam van de repository",
+    repoNamePlaceholder: "mijn-project",
+    repoNameInvalid:
+      "Alleen letters, cijfers, punten, koppeltekens en underscores (moet beginnen met een letter of cijfer).",
+    visibilityLabel: "Zichtbaarheid",
+    visibilityPrivate: "Privé",
+    visibilityPrivateHint: "Alleen voor jou zichtbaar",
+    visibilityPublic: "Openbaar",
+    visibilityPublicHint: "Voor iedereen zichtbaar",
+    searchRepo: "Een repository zoeken…",
+    loadingRepos: "Je repositories worden geladen…",
+    reposLoadError: "Je repositories konden niet worden geladen.",
+    noWritableRepo:
+      "Geen repository met schrijfrechten gevonden. Maak er een nieuwe aan!",
+    noRepoMatch: "Geen repository komt overeen met de zoekopdracht.",
+    dedicatedBranch: "Een aparte branch aanmaken",
+    dedicatedHintExisting:
+      "De standaardbranch niet aanraken: ideaal voor een gedeelde repository.",
+    dedicatedHintNew:
+      "Naam van de eerste branch van de nieuwe repository (anders de standaardbranch).",
+    replaceAll: "Alle code van de repository vervangen",
+    replaceAllHint:
+      "De repository bevat daarna precies de bestanden van het archief: wat er niet in zit, wordt verwijderd en de push wordt geforceerd — hij lukt dus ook als de repository intussen is gewijzigd (geen ‘fetch first’-fout meer). Gebruik dit wanneer het archief de volledige nieuwe versie van het project is.",
+    replaceConfirm:
+      "Ik bevestig: bestanden van de repository {repo} die niet in dit archief zitten, worden definitief uit de gepushte branch verwijderd.",
+    replaceConfirmNoRepo:
+      "Ik bevestig: bestanden van de repository die niet in dit archief zitten, worden definitief uit de gepushte branch verwijderd.",
+    advanced: "Geavanceerde opties",
+    commitMessage: "Commit-bericht",
+    commitPlaceholder: "Import van {filename} via RepoDrop",
+    pushAction: "Naar GitHub pushen",
+    replacePushAction: "Alle code op GitHub vervangen",
+    sending: "Versturen…",
+    replaceNeedConfirm:
+      "Vink de bevestiging van het vervangen aan om de knop te activeren.",
+    tokenNote:
+      "Je GitHub-token blijft in een versleutelde cookie — het wordt nooit in de database opgeslagen.",
+  },
+
+  repos: {
+    metaTitle: "Mijn repositories",
+    pageTitle: "Mijn repositories",
+    pageLead:
+      "Bekijk je repositories voordat je iets importeert: boomstructuur, bestandsvoorbeeld, branch naar keuze. Hernoemen, zichtbaarheid en verwijderen vind je op het tabblad {actions} van een repository.",
+
+    filterPlaceholder: "Filteren op naam, beschrijving of taal…",
+    filterAria: "Repositories filteren",
+    sortAria: "Sorteren",
+    sortPushed: "Recente activiteit",
+    sortName: "Naam (A→Z)",
+    sortSize: "Grootte",
+    mine: "De mijne",
+    refresh: "Vernieuwen",
+    errorList: "Lijst niet beschikbaar (HTTP {status}).",
+    errorServer: "Kan de server niet bereiken.",
+    truncated:
+      "Alleen de 300 meest recente repositories zijn geladen. Verfijn met het filter hierboven.",
+    loading: "Je repositories worden geladen…",
+    emptyFilter: "Geen repository komt overeen met dit filter.",
+    emptyToken: "Geen repository zichtbaar met dit GitHub-token.",
+    countAll: "{count} repository('s)",
+    countFiltered: "{count} van {total}",
+    countHint: "— klik om de inhoud te bekijken.",
+    noDescription: "Geen beschrijving",
+    pushedAgo: "gepusht {when}",
+    issues: "{count} issue(s)",
+    readOnly: "alleen lezen",
+
+    backToList: "Terug naar de lijst",
+    list: "Lijst",
+    badgePrivate: "privé",
+    badgePublic: "openbaar",
+    badgeArchived: "gearchiveerd",
+    badgeFork: "fork",
+    badgeReadOnly: "alleen lezen",
+    branchProtected: "(beschermd)",
+    downloadTitle: "{repo} downloaden als .{format}",
+    downloadTitleRef: "{repo} ({ref}) downloaden als .{format}",
+    actionsTab: "Acties",
+    loadingRepo: "Repository wordt geladen…",
+    inaccessible: "Repository niet bereikbaar.",
+    inaccessibleHttp: "Repository niet bereikbaar (HTTP {status}).",
+    errorServerJoin: "Kan de server niet bereiken.",
+    copyDenied: "Kopiëren geweigerd door de browser.",
+    reloadFolder: "Deze map opnieuw laden",
+    root: "hoofdmap",
+    entries: "{count} item(s)",
+    loadingShort: "Laden…",
+    emptyRepo:
+      "Deze repository bevat nog geen bestanden. Importeer een archief om hem te vullen.",
+    loadingFile: "Bestand wordt geladen…",
+    selectFile: "Selecteer een bestand om het te bekijken.",
+    lines: "{count} regels",
+    copy: "Kopiëren",
+    copied: "Gekopieerd",
+    raw: "Ruw",
+    fileTooBig:
+      "Bestand te groot voor het voorbeeld ({size}). Open het op GitHub.",
+    fileBinary: "Binair bestand ({size}): geen tekstvoorbeeld.",
+
+    actionsTitle: "Hernoemen / beschrijven",
+    nameLabel: "Naam van de repository",
+    renameWarning:
+      "Hernoemen breekt bestaande clones, links en GitHub-pagina's. GitHub verwijst de oude naam door, maar niet voor altijd.",
+    descLabel: "Beschrijving",
+    descPlaceholder: "Waar dient deze repository voor?",
+    save: "Opslaan",
+    writeInsufficient: "Onvoldoende schrijfrechten op deze repository.",
+    visibilityTitle: "Zichtbaarheid",
+    visibilityCurrently: "Momenteel {visibility}.",
+    visibilityToPrivate:
+      " Privé maken ontneemt alle anonieme gebruikers de toegang.",
+    visibilityToPublic:
+      " Openbaar maken stelt de hele commitgeschiedenis tentoon.",
+    makePublic: "Openbaar maken",
+    makePrivate: "Privé maken",
+    dangerZone: "Gevarenzone",
+    deleteWarning:
+      "Verwijderen is definitief: code, geschiedenis, issues en wiki.",
+    deleteRepo: "De repository verwijderen",
+    deleteTitle: "{repo} verwijderen",
+    deleteConfirmBody:
+      "Geen herstel mogelijk. Typ {name} om de knop vrij te geven.",
+    deleteForever: "Definitief verwijderen",
+    cancel: "Annuleren",
+    updated: "Repository bijgewerkt.",
+    deleted: "Repository {repo} verwijderd.",
+    httpFailed: "Mislukt (HTTP {status}).",
+  },
+
+  api: {
+    authRequired: "Authenticatie vereist.",
+    jobNotFound: "Job niet gevonden.",
+    jobNotReady: "Deze job is nog niet klaar.",
+    jobNotPushable: "Deze job is niet klaar om te pushen.",
+    invalidJson: "Ongeldige JSON-inhoud.",
+    invalidMultipart: "Ongeldig verzoek (multipart/form-data verwacht).",
+    emptyBody: "Lege verzoekinhoud.",
+    emptyArchive: "Het archief is leeg.",
+    uploadFailed: "Het bestand kon niet worden ontvangen. Probeer het opnieuw.",
+    repoNameRequired:
+      "Een repositorynaam is vereist om een nieuwe repository aan te maken.",
+    branchNameTooLong: "Branchnaam te lang.",
+    invalidOptions: "Ongeldige opties.",
+    invalidChange: "Ongeldige wijziging.",
+    noChange: "Geen wijziging.",
+    pathRequired: "Parameter ‘path’ vereist.",
+  },
+  errors: {
+    encrypted:
+      "Dit archief is met een wachtwoord beveiligd, wat nog niet wordt ondersteund.",
+    tooManyFiles: "Te veel bestanden in het archief (limiet bereikt).",
+    tooBig:
+      "De uitgepakte inhoud overschrijdt de toegestane grootte. Verklein het archief (node_modules?).",
+    empty: "Dit archief bevat geen bruikbaar bestand.",
+    corrupt:
+      "Archief onleesbaar of beschadigd. Controleer het bestand en probeer het opnieuw.",
+    unsupported:
+      "Niet-ondersteund formaat (onbekende compressiemethode of archiefvariant).",
+    volume:
+      "RAR-archieven in meerdere delen (.part1.rar, .part2.rar…) worden niet ondersteund.",
+    unsafePaths:
+      "Het archief bevat gevaarlijke bestandspaden (traversal) en is geweigerd.",
+    pathLimits:
+      "Een bestandspad overschrijdt de toegestane grenzen (diepte of lengte).",
+    timeout: "Het uitpakken duurde te lang en is afgebroken.",
+    rateLimited: "Te veel verzoeken. Wacht even en probeer het opnieuw.",
+    notFound: "Bron niet gevonden.",
+    forbidden:
+      "Je hebt geen schrijfrechten op deze repository (of het GitHub-token heeft niet de juiste scope).",
+    repoExists: "Er bestaat al een repository met die naam op je account.",
+    nameInvalid: "Ongeldige repository- of branchnaam.",
+    noChanges:
+      "Niets te pushen: de bestanden komen al overeen met de doelrepository.",
+    conflict:
+      "De doelrepository is intussen gewijzigd. Probeer het opnieuw, push naar een aparte branch, of start opnieuw met ‘Alle code vervangen’ om de branch met de inhoud van het archief te overschrijven.",
+    scopeMissing:
+      "GitHub weigert wijzigingen aan workflowbestanden (.github/workflows/…): het token mist de scope ‘workflow’. Log uit en weer in om die toe te kennen.",
+    gitFailed: "De push naar GitHub is mislukt.",
+    interrupted: "De verwerking is onderbroken (herstart van de server).",
+    badPath: "Ongeldig bestandspad.",
+    confirmMismatch:
+      "De bevestiging komt niet overeen met de repositorynaam: er is niets verwijderd.",
+    archiveTooBig:
+      "Deze repository is te groot om als archief te downloaden.",
+    internal: "Onverwachte interne fout. Probeer het zo opnieuw.",
   },
 };

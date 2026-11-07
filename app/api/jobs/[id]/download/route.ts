@@ -8,9 +8,9 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { config } from "@/lib/config";
-import { AppError, frMessage, toUserMessage } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 import { getSession } from "@/lib/session";
-import { jsonError } from "@/lib/http";
+import { API_ERROR, jsonCodeError, jsonErrorPayload } from "@/lib/http";
 import { jobOwnedBy } from "@/lib/jobs";
 import { zipJob } from "@/lib/zip";
 
@@ -22,15 +22,15 @@ interface Params {
 
 export async function GET(_req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { id } = await params;
   const job = jobOwnedBy(id, session.login);
-  if (!job) return jsonError("Job introuvable.", 404);
+  if (!job) return jsonCodeError(API_ERROR.JOB_NOT_FOUND, 404);
 
   // Le zip n'a de sens que si l'extraction est disponible.
   if (job.status !== "done" && job.status !== "ready") {
-    return jsonError("Ce job n'est pas encore prêt.", 409);
+    return jsonCodeError(API_ERROR.JOB_NOT_READY, 409);
   }
 
   const jobDir = path.join(config.jobsDir, id);
@@ -40,7 +40,7 @@ export async function GET(_req: Request, { params }: Params): Promise<Response> 
   }
   const st = await fs.stat(src).catch(() => null);
   if (!st?.isDirectory()) {
-    return jsonError(frMessage("INTERRUPTED"), 410);
+    return jsonErrorPayload(new AppError("INTERRUPTED"), 410);
   }
 
   try {
@@ -54,6 +54,6 @@ export async function GET(_req: Request, { params }: Params): Promise<Response> 
       },
     });
   } catch (err) {
-    return jsonError(toUserMessage(err), err instanceof AppError ? 500 : 502);
+    return jsonErrorPayload(err, err instanceof AppError ? 500 : 502);
   }
 }

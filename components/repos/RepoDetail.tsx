@@ -28,7 +28,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RepoActions } from "./RepoActions";
-import { cn, formatBytes, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { formatBytes, timeAgo } from "@/lib/i18n/format-client";
+import { translateError } from "@/lib/i18n/errors";
+import type { Dict } from "@/lib/i18n/types";
 import type { BlobView, Branch, RepoSummary, TreeEntry } from "@/lib/repo-types";
 import type { RepoView } from "@/lib/repo-view";
 
@@ -51,6 +54,9 @@ export function RepoDetail({
   onBack,
   onChanged,
   onDeleted,
+  t,
+  tErrors,
+  locale,
 }: {
   fullName: string;
   view: RepoView;
@@ -59,6 +65,9 @@ export function RepoDetail({
   /** Le dépôt a été renommé / modifié : la liste doit se rafraîchir. */
   onChanged: (next: RepoSummary) => void;
   onDeleted: (fullName: string) => void;
+  t: Dict["repos"];
+  tErrors: Pick<Dict, "errors" | "api">;
+  locale: string;
 }) {
   const [owner, name] = fullName.split("/");
   const [repo, setRepo] = useState<RepoSummary | null>(null);
@@ -95,10 +104,15 @@ export function RepoDetail({
         const data = (await res.json().catch(() => ({}))) as {
           repo?: RepoSummary;
           error?: string;
+          code?: string;
         };
         if (cancelled) return;
         if (!res.ok || !data.repo) {
-          setError(data.error ?? `Dépôt inaccessible (HTTP ${res.status}).`);
+          setError(
+            data.code
+              ? translateError(tErrors, { code: data.code })
+              : data.error ?? t.inaccessibleHttp.replace("{status}", String(res.status)),
+          );
           setLoading(false);
           return;
         }
@@ -115,7 +129,7 @@ export function RepoDetail({
         const brData = (await br.json().catch(() => ({}))) as { branches?: Branch[] };
         if (!cancelled && br.ok) setBranches(brData.branches ?? []);
       } catch {
-        if (!cancelled) setError("Impossible de joindre le serveur.");
+        if (!cancelled) setError(t.errorServerJoin);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -144,21 +158,26 @@ export function RepoDetail({
           entries?: TreeEntry[];
           empty?: boolean;
           error?: string;
+          code?: string;
         };
         if (!res.ok) {
-          setError(data.error ?? `Dossier illisible (HTTP ${res.status}).`);
+          setError(
+            data.code
+              ? translateError(tErrors, { code: data.code })
+              : data.error ?? t.inaccessibleHttp.replace("{status}", String(res.status)),
+          );
           setEntries(null);
           return;
         }
         setEntries(data.entries ?? []);
         setEmpty(data.empty === true);
       } catch {
-        setError("Impossible de joindre le serveur.");
+        setError(t.errorServerJoin);
       } finally {
         setLoading(false);
       }
     },
-    [owner, name],
+    [owner, name, t, tErrors],
   );
 
   // Recharge le dossier dès qu'on navigue, qu'on change de branche, ou que le
@@ -190,17 +209,22 @@ export function RepoDetail({
         const data = (await res.json().catch(() => ({}))) as {
           blob?: BlobView;
           error?: string;
+          code?: string;
         };
         if (cancelled) return;
         if (!res.ok || !data.blob) {
-          setError(data.error ?? `Fichier illisible (HTTP ${res.status}).`);
+          setError(
+            data.code
+              ? translateError(tErrors, { code: data.code })
+              : data.error ?? t.inaccessibleHttp.replace("{status}", String(res.status)),
+          );
           setFile(null);
           return;
         }
         setFile(data.blob);
       } catch {
         if (!cancelled) {
-          setError("Impossible de joindre le serveur.");
+          setError(t.errorServerJoin);
           setFile(null);
         }
       } finally {
@@ -230,7 +254,7 @@ export function RepoDetail({
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      setError("Copie refusée par le navigateur.");
+      setError(t.copyDenied);
     }
   }
 
@@ -240,7 +264,7 @@ export function RepoDetail({
     return (
       <div className="flex items-center gap-3 rounded-2xl bg-panel p-8 text-sm text-mist ring-1 ring-edge">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Chargement du dépôt…
+        {t.loadingRepo}
       </div>
     );
   }
@@ -248,10 +272,10 @@ export function RepoDetail({
   if (!repo) {
     return (
       <div className="rounded-2xl bg-panel p-6 ring-1 ring-edge">
-        <p className="text-sm text-danger">{error || "Dépôt inaccessible."}</p>
+        <p className="text-sm text-danger">{error || t.inaccessible}</p>
         <Button variant="outline" size="sm" className="mt-4" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />
-          Retour à la liste
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+          {t.backToList}
         </Button>
       </div>
     );
@@ -265,8 +289,8 @@ export function RepoDetail({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <Button variant="ghost" size="sm" onClick={onBack}>
-                <ArrowLeft className="h-4 w-4" />
-                Liste
+                <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+                {t.list}
               </Button>
               <h2 className="truncate text-lg font-semibold tracking-tight">
                 <span className="text-mist">{repo.owner}/</span>
@@ -278,14 +302,16 @@ export function RepoDetail({
             )}
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-mist">
               <Badge variant={repo.private ? "muted" : "sky"}>
-                {repo.private ? "privé" : "public"}
+                {repo.private ? t.badgePrivate : t.badgePublic}
               </Badge>
               {repo.language && <Badge variant="muted">{repo.language}</Badge>}
-              {repo.archived && <Badge variant="amber">archivé</Badge>}
-              {repo.fork && <Badge variant="muted">fork</Badge>}
-              <span>{formatBytes(repo.size * 1024)}</span>
+              {repo.archived && <Badge variant="amber">{t.badgeArchived}</Badge>}
+              {repo.fork && <Badge variant="muted">{t.badgeFork}</Badge>}
+              <span>{formatBytes(repo.size * 1024, locale)}</span>
               {repo.pushed_at && (
-                <span>· poussé {timeAgo(new Date(repo.pushed_at).getTime())}</span>
+                <span>
+                  · {t.pushedAgo.replace("{when}", timeAgo(new Date(repo.pushed_at).getTime(), locale))}
+                </span>
               )}
             </div>
           </div>
@@ -304,7 +330,7 @@ export function RepoDetail({
                   {branches.map((b) => (
                     <option key={b.name} value={b.name} className="bg-panel">
                       {b.name}
-                      {b.protected ? " (protégée)" : ""}
+                      {b.protected ? ` ${t.branchProtected}` : ""}
                     </option>
                   ))}
                 </select>
@@ -324,7 +350,16 @@ export function RepoDetail({
                   ref ? `&ref=${encodeURIComponent(ref)}` : ""
                 }`}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-panel2 px-3 py-1.5 text-xs text-chalk ring-1 ring-edge transition-colors hover:bg-edge/60"
-                title={`Télécharger ${repo.full_name}${ref ? ` (${ref})` : ""} en .${fmt}`}
+                title={
+                  ref
+                    ? t.downloadTitleRef
+                        .replace("{repo}", repo.full_name)
+                        .replace("{ref}", ref)
+                        .replace("{format}", fmt)
+                    : t.downloadTitle
+                        .replace("{repo}", repo.full_name)
+                        .replace("{format}", fmt)
+                }
               >
                 <Download className="h-3.5 w-3.5 text-go" />
                 .{fmt}
@@ -345,7 +380,7 @@ export function RepoDetail({
               onClick={() => setShowActions((v) => !v)}
             >
               <Settings2 className="h-3.5 w-3.5" />
-              Actions
+              {t.actionsTab}
             </Button>
           </div>
         </div>
@@ -354,6 +389,8 @@ export function RepoDetail({
           <div className="mt-4 border-t border-edge/60 pt-4">
             <RepoActions
               repo={repo}
+              t={t}
+              tErrors={tErrors}
               onUpdated={(next) => {
                 setRepo(next);
                 onChanged(next);
@@ -406,8 +443,8 @@ export function RepoDetail({
           type="button"
           onClick={() => void loadTree(path, ref)}
           className="ml-2 inline-flex items-center gap-1 rounded px-1.5 py-1 text-mist transition-colors hover:bg-panel2 hover:text-chalk"
-          title="Recharger ce dossier"
-          aria-label="Recharger ce dossier"
+          title={t.reloadFolder}
+          aria-label={t.reloadFolder}
         >
           <RefreshCw className="h-3 w-3" />
         </button>
@@ -420,20 +457,21 @@ export function RepoDetail({
           <header className="flex items-center justify-between gap-2 border-b border-edge/60 px-4 py-2.5 text-xs text-mist">
             <span className="flex items-center gap-2">
               <Folder className="h-3.5 w-3.5 text-go/80" />
-              {path || "racine"}
+              {path || t.root}
             </span>
-            <span>{entries ? `${entries.length} entrée(s)` : "…"}</span>
+            <span>
+              {entries ? t.entries.replace("{count}", String(entries.length)) : "…"}
+            </span>
           </header>
 
           {loading ? (
             <p className="flex items-center gap-2 px-4 py-8 text-sm text-mist">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Chargement…
+              {t.loadingShort}
             </p>
           ) : empty && !file ? (
             <p className="px-4 py-8 text-sm text-mist">
-              Ce dépôt ne contient encore aucun fichier. Importez une archive
-              pour le remplir.
+              {t.emptyRepo}
             </p>
           ) : (
             <ul className="max-h-[32rem] divide-y divide-edge/40 overflow-y-auto">
@@ -457,7 +495,7 @@ export function RepoDetail({
                       )}
                       <span className="truncate">{entry.name}</span>
                       <span className="ml-auto shrink-0 text-[11px] text-mist/70">
-                        {isDir ? "" : formatBytes(entry.size)}
+                        {isDir ? "" : formatBytes(entry.size, locale)}
                       </span>
                     </button>
                   </li>
@@ -471,9 +509,7 @@ export function RepoDetail({
         <section className="overflow-hidden rounded-2xl bg-panel ring-1 ring-edge">
           {!file ? (
             <p className="px-4 py-10 text-center text-sm text-mist">
-              {fileLoading
-                ? "Chargement du fichier…"
-                : "Sélectionnez un fichier pour l'apercevoir."}
+              {fileLoading ? t.loadingFile : t.selectFile}
             </p>
           ) : (
             <>
@@ -481,8 +517,8 @@ export function RepoDetail({
                 <div className="min-w-0">
                   <p className="truncate font-mono text-xs text-chalk">{file.path}</p>
                   <p className="mt-0.5 text-[11px] text-mist">
-                    {formatBytes(file.size)}
-                    {file.lines > 0 ? ` · ${file.lines} lignes` : ""}
+                    {formatBytes(file.size, locale)}
+                    {file.lines > 0 ? ` · ${t.lines.replace("{count}", String(file.lines))}` : ""}
                     {file.language !== "text" ? ` · ${file.language}` : ""}
                   </p>
                 </div>
@@ -494,7 +530,7 @@ export function RepoDetail({
                       ) : (
                         <Copy className="h-3.5 w-3.5" />
                       )}
-                      {copied ? "Copié" : "Copier"}
+                      {copied ? t.copied : t.copy}
                     </Button>
                   )}
                   <a
@@ -504,19 +540,18 @@ export function RepoDetail({
                     className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-mist ring-1 ring-edge transition-colors hover:text-chalk"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    Brut
+                    {t.raw}
                   </a>
                 </div>
               </header>
 
               {file.tooBig ? (
                 <p className="px-4 py-10 text-center text-sm text-mist">
-                  Fichier trop volumineux pour l'aperçu ({formatBytes(file.size)}).
-                  Ouvrez-le sur GitHub.
+                  {t.fileTooBig.replace("{size}", formatBytes(file.size, locale))}
                 </p>
               ) : file.binary ? (
                 <p className="px-4 py-10 text-center text-sm text-mist">
-                  Fichier binaire ({formatBytes(file.size)}) : aucun aperçu texte.
+                  {t.fileBinary.replace("{size}", formatBytes(file.size, locale))}
                 </p>
               ) : (
                 <pre className="max-h-[32rem] overflow-auto bg-ink/60 p-4 font-mono text-[11.5px] leading-relaxed text-chalk/90">

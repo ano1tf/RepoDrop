@@ -21,6 +21,30 @@ import {
 } from "@/lib/i18n/locales";
 import { DICTIONARIES, getDictionary, section } from "@/lib/i18n/dictionary";
 import { fill, formatNumber, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
+import {
+  formatBytes,
+  formatDateTime,
+  formatNumberLocale,
+  formatRelative,
+  timeAgo,
+  timeUntil,
+} from "@/lib/i18n/format-client";
+import {
+  API_ERROR_KEYS,
+  isApiErrorCode,
+  translateApiError,
+  translateError,
+} from "@/lib/i18n/errors";
+import {
+  asErrorCode,
+  ERROR_KEYS,
+  isErrorCode,
+  AppError,
+  cleanDetail,
+  toErrorPayload,
+  toUserMessage,
+} from "@/lib/errors";
+import { API_ERROR } from "@/lib/http";
 
 /** Aplatit un dictionnaire en `section.clé` → valeur. */
 function flatten(obj: Record<string, unknown>, prefix = ""): Map<string, string> {
@@ -232,5 +256,153 @@ describe("safeNextPath (bascule par lien direct)", () => {
     expect(safeNextPath("//evil.com")).toBe("/");
     expect(safeNextPath("/\\evil.com")).toBe("/");
     expect(safeNextPath("/\tlangues")).toBe("/");
+  });
+});
+
+/* ------------------------------------------------------------------ erreurs */
+
+describe("erreurs traduisibles", () => {
+  it("associe chaque code métier à une clé présente dans les 16 dictionnaires", () => {
+    for (const [code, key] of Object.entries(ERROR_KEYS)) {
+      for (const l of LOCALES) {
+        const value = DICTIONARIES[l.code].errors[key];
+        expect(value, `${l.code} → errors.${key} (${code})`).toBeTruthy();
+      }
+    }
+  });
+
+  it("associe chaque code d'API à une clé traduite", () => {
+    for (const [code, key] of Object.entries(API_ERROR_KEYS)) {
+      expect(API_ERROR).toHaveProperty(code);
+      for (const l of LOCALES) {
+        expect(DICTIONARIES[l.code].api[key], `${l.code} → api.${key}`).toBeTruthy();
+      }
+    }
+  });
+
+  it("traduit un code dans la langue demandée, détail compris", () => {
+    expect(translateError(DICTIONARIES.fr, { code: "TOO_BIG" })).toContain("décompressé");
+    expect(translateError(DICTIONARIES.en, { code: "TOO_BIG" })).toContain(
+      "decompressed",
+    );
+    expect(translateError(DICTIONARIES.ja, { code: "TOO_BIG" })).toContain("展開");
+    // Le contexte technique reste entre parenthèses, identique dans toutes les
+    // langues : c'est un extrait (nom de branche, stderr git), pas une phrase.
+    const withDetail = translateError(DICTIONARIES.de, {
+      code: "NAME_INVALID",
+      detail: "la branche existe déjà",
+    });
+    expect(withDetail).toContain("Ungültiger");
+    expect(withDetail).toContain("(la branche existe déjà)");
+  });
+
+  it("traduit les codes d'API et retombe proprement sur l'inconnu", () => {
+    expect(translateApiError(DICTIONARIES.en, "AUTH_REQUIRED")).toBe(
+      "Authentication required.",
+    );
+    expect(translateError(DICTIONARIES.es, { code: "JOB_NOT_FOUND" })).toBe(
+      "Job no encontrado.",
+    );
+    expect(isApiErrorCode("AUTH_REQUIRED")).toBe(true);
+    expect(isApiErrorCode("NOPE")).toBe(false);
+    expect(translateError(DICTIONARIES.fr, { code: "CODE_INCONNU" })).toBe(
+      DICTIONARIES.fr.errors.internal,
+    );
+    expect(translateError(DICTIONARIES.fr, null)).toBe(DICTIONARIES.fr.errors.internal);
+  });
+
+  it("préserve un message hérité plutôt que de le remplacer", () => {
+    // Jobs enregistrés avant la traduction : la phrase reste affichable.
+    expect(
+      translateError(DICTIONARIES.en, { legacy: "Archive corrompue." }),
+    ).toBe("Archive corrompue.");
+    expect(translateError(DICTIONARIES.en, "  Archive corrompue.  ")).toBe(
+      "Archive corrompue.",
+    );
+  });
+
+  it("convertit une exception en charge utile { code, detail }", () => {
+    expect(toErrorPayload(new AppError("VOLUME"))).toEqual({ code: "VOLUME" });
+    expect(
+      toErrorPayload(new AppError("NAME_INVALID", undefined, "  la   branche  ")),
+    ).toEqual({ code: "NAME_INVALID", detail: "la branche" });
+    expect(toErrorPayload(new Error("boom"))).toEqual({ code: "INTERNAL" });
+    expect(toErrorPayload("inconnu")).toEqual({ code: "INTERNAL" });
+  });
+
+  it("reconnaît les codes et ignore tout le reste", () => {
+    expect(isErrorCode("TOO_BIG")).toBe(true);
+    expect(isErrorCode("too_big")).toBe(false);
+    expect(asErrorCode("CORRUPT")).toBe("CORRUPT");
+    // Une phrase française héritée n'est pas un code : le client l'affichera
+    // comme `legacy`, jamais comme « erreur interne ».
+    expect(asErrorCode("Archive corrompue.")).toBeNull();
+  });
+
+  it("borne le détail technique et refuse le vide", () => {
+    expect(cleanDetail(undefined)).toBeUndefined();
+    expect(cleanDetail("   \n ")).toBeUndefined();
+    expect(cleanDetail("a\nb")).toBe("a b");
+    expect(cleanDetail("x".repeat(400))?.length).toBe(300);
+  });
+
+  it("garde un message français lisible pour les réponses non traduites", () => {
+    expect(toUserMessage(new AppError("TOO_BIG"))).toContain("décompressé");
+    expect(toUserMessage(new AppError("TOO_BIG", undefined, "detail"))).toContain(
+      "(detail)",
+    );
+    expect(toUserMessage(new Error("boom"))).toBe(DICTIONARIES.fr.errors.internal);
+  });
+
+  it("ne laisse aucune phrase française dans les messages d'erreur", () => {
+    // Contrôle par phrase entière, pas par accent : l'espagnol et le portugais
+    // utilisent les mêmes accents que le français. On compare donc à la
+    // version française, qui n'a pas le droit d'être recopiée.
+    for (const l of LOCALES) {
+      if (l.code === "fr") continue;
+      const dict = DICTIONARIES[l.code];
+      for (const key of Object.keys(DICTIONARIES.fr.errors) as (keyof typeof dict.errors)[]) {
+        const frValue = DICTIONARIES.fr.errors[key];
+        if (frValue.length < 25) continue; // « Fork », « commit »… partagés
+        expect(dict.errors[key], `${l.code} → errors.${key}`).not.toBe(frValue);
+      }
+    }
+  });
+});
+
+/* ------------------------------------------------------------ formatage */
+
+describe("formatage localisé (client)", () => {
+  it("rend la taille avec l'unité de la langue", () => {
+    expect(formatBytes(1_572_864, "fr")).toMatch(/Mo/);
+    expect(formatBytes(1_572_864, "en")).toMatch(/MB/);
+    expect(formatBytes(1_572_864, "ru")).toMatch(/МБ/);
+    // En dessous de l'octet, aucune unité bizarre ne doit apparaître.
+    expect(formatBytes(512, "fr")).toMatch(/octet|o/);
+  });
+
+  it("formate les dates relatives dans la langue demandée", () => {
+    expect(timeAgo(Date.now() - 3 * 60_000, "fr")).toContain("3");
+    expect(timeAgo(Date.now() - 3 * 60_000, "en")).toMatch(/minute/);
+    expect(timeAgo(Date.now() - 3 * 60_000, "de")).toContain("Minute");
+    expect(timeUntil(Date.now() + 10 * 60_000, "en")).toMatch(/10/);
+    expect(formatRelative(-1, "day", "fr")).toBe("hier");
+    expect(formatRelative(-1, "day", "en")).toBe("yesterday");
+  });
+
+  it("survit à une locale invalide", () => {
+    expect(() => formatBytes(1024, "zxx-invalid-!!")).not.toThrow();
+    expect(() => timeAgo(Date.now(), "zxx-invalid-!!")).not.toThrow();
+    expect(() => formatDateTime(Date.now(), "zxx-invalid-!!")).not.toThrow();
+  });
+
+  it("laisse les chiffres et unités suivre la langue", () => {
+    // Même valeur, trois conventions de séparateur de milliers.
+    expect(formatNumberLocale(1234, "fr")).toMatch(/1\s?234/);
+    expect(formatNumberLocale(1234, "en")).toBe("1,234");
+    expect(formatNumberLocale(1234, "de")).toBe("1.234");
+    // Et l'unité de taille, elle, reste celle de la langue.
+    expect(formatBytes(1234, "fr")).toMatch(/o|Ko/);
+    expect(formatBytes(1234, "en")).toMatch(/byte|kB|KB/i);
   });
 });

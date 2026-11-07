@@ -13,8 +13,8 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import Busboy from "busboy";
 import { config } from "@/lib/config";
-import { json, jsonError } from "@/lib/http";
-import { frMessage } from "@/lib/errors";
+import { API_ERROR, json, jsonCodeError, jsonError, jsonErrorPayload } from "@/lib/http";
+import { AppError } from "@/lib/errors";
 import { getSession } from "@/lib/session";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { insertJob, logEvent } from "@/lib/db";
@@ -33,21 +33,19 @@ export async function POST(req: Request): Promise<Response> {
   ensureWorkerInit();
 
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const ip = clientIp(req.headers);
   const rl = rateLimit(`upload:${ip}`, config.limits.uploadsPerHour, 3_600_000);
   if (!rl.ok) {
-    return jsonError(frMessage("RATE_LIMITED"), 429, {
-      retryAfterSec: rl.retryAfterSec,
-    });
+    return jsonErrorPayload(new AppError("RATE_LIMITED"), 429);
   }
 
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().includes("multipart/form-data")) {
-    return jsonError("Requête invalide (multipart/form-data attendu).", 415);
+    return jsonCodeError(API_ERROR.INVALID_MULTIPART, 415);
   }
-  if (!req.body) return jsonError("Corps de requête vide.", 400);
+  if (!req.body) return jsonCodeError(API_ERROR.EMPTY_BODY, 400);
 
   const id = crypto.randomUUID();
   const jobPath = path.join(config.jobsDir, id);
@@ -78,7 +76,7 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
     if (result.size === 0) {
-      return jsonError("L'archive est vide.", 400);
+      return jsonCodeError(API_ERROR.EMPTY_ARCHIVE, 400);
     }
 
     // Nom final attendu par le worker : upload.<format>
@@ -118,7 +116,7 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
     console.error("[upload] erreur:", msg);
-    return jsonError("Réception du fichier impossible. Réessayez.", 500);
+    return jsonCodeError(API_ERROR.UPLOAD_FAILED, 500);
   } finally {
     if (cleanup) {
       fs.rmSync(jobPath, { recursive: true, force: true });

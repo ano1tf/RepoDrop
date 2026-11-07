@@ -9,15 +9,15 @@
  * pas multiplier les appels à l'API GitHub : `truncated` signale la troncature.
  */
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { API_ERROR, json, jsonCodeError, jsonErrorPayload } from "@/lib/http";
 import { listRepos } from "@/lib/github";
-import { toUserMessage, AppError } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const url = new URL(req.url);
   const maxPages = Number.parseInt(url.searchParams.get("max_pages") ?? "3", 10);
@@ -29,6 +29,6 @@ export async function GET(req: Request): Promise<Response> {
     return json({ repos, truncated, pages });
   } catch (e) {
     const status = e instanceof AppError && e.code === "RATE_LIMITED" ? 429 : 500;
-    return jsonError(toUserMessage(e), status);
+    return jsonErrorPayload(e, status);
   }
 }

@@ -1,4 +1,8 @@
 import { config } from "./config";
+import { frMessage, toErrorPayload, type ErrorCode } from "./errors";
+import { getDictionary } from "./i18n/dictionary";
+import { API_ERROR_KEYS } from "./i18n/errors";
+import { DEFAULT_LOCALE } from "./i18n/locales";
 
 /** Réponses JSON standardisées des API. */
 export function json(data: unknown, status = 200, headers?: Record<string, string>): Response {
@@ -19,6 +23,95 @@ export function jsonError(
 ): Response {
   return json({ error, ...extra }, status);
 }
+
+/**
+ * Réponse d'erreur **traduisible** : le client reçoit un code, pas une phrase.
+ *
+ *   { "error": "Authentification requise.", "code": "AUTH_REQUIRED" }
+ *
+ * `error` reste présent en français : c'est le repli pour un client qui ne
+ * connaîtrait pas le code (curl, ancien onglet ouvert) et la trace lisible dans
+ * les journaux. Un composant React, lui, affiche `t.api[...]` via le code.
+ *
+ * Les codes HTTP (`message`) et métier (`ErrorCode`) partagent la même
+ * enveloppe : `{"error", "code", "detail"}`.
+ */
+export function jsonCodeError(
+  code: ApiErrorCode | ErrorCode,
+  status: number,
+  extra?: Record<string, unknown>,
+): Response {
+  return json({ error: frApiMessage(code), code, ...extra }, status);
+}
+
+/**
+ * Message français d'un code API — repli lisible uniquement (`curl`, logs).
+ * L'interface, elle, traduit `code` via `lib/i18n/errors.ts`.
+ */
+function frApiMessage(code: ApiErrorCode | ErrorCode): string {
+  if (code in API_ERROR) {
+    return getDictionary(DEFAULT_LOCALE).api[API_ERROR_KEYS[code as ApiErrorCode]];
+  }
+  return frMessage(code as ErrorCode);
+}
+
+/**
+ * Réponse d'erreur à partir d'une exception : `{ error, code, detail }`.
+ *
+ *   jsonErrorPayload(new AppError("TOO_BIG")) → 500
+ *     { "error": "Le contenu décompressé dépasse…", "code": "TOO_BIG" }
+ *
+ * `error` (français) sert de repli lisible (curl, logs) ; `code` est ce que
+ * l'interface traduit. Un composant qui affiche `data.error` tel quel reste
+ * donc correct, un composant qui connaît `code` s'affiche dans sa langue.
+ */
+export function jsonErrorPayload(err: unknown, status: number): Response {
+  const payload = toErrorPayload(err);
+  const error = frMessage(payload.code ?? "INTERNAL");
+  return json({ error, ...payload }, status);
+}
+
+/**
+ * Codes d'erreur des routes API (clés de `api` dans les dictionnaires).
+ *
+ * Ils sont volontairement limités aux cas « de routine » — session absente,
+ * corps invalide, job inconnu — que l'interface affiche souvent. Les erreurs
+ * métier plus riches passent par `ErrorCode` (`lib/errors.ts`).
+ */
+export const API_ERROR = {
+  AUTH_REQUIRED: "AUTH_REQUIRED",
+  JOB_NOT_FOUND: "JOB_NOT_FOUND",
+  JOB_NOT_READY: "JOB_NOT_READY",
+  JOB_NOT_PUSHABLE: "JOB_NOT_PUSHABLE",
+  INVALID_JSON: "INVALID_JSON",
+  INVALID_MULTIPART: "INVALID_MULTIPART",
+  EMPTY_BODY: "EMPTY_BODY",
+  EMPTY_ARCHIVE: "EMPTY_ARCHIVE",
+  UPLOAD_FAILED: "UPLOAD_FAILED",
+  REPO_NAME_REQUIRED: "REPO_NAME_REQUIRED",
+  BRANCH_NAME_TOO_LONG: "BRANCH_NAME_TOO_LONG",
+  INVALID_OPTIONS: "INVALID_OPTIONS",
+  INVALID_CHANGE: "INVALID_CHANGE",
+  NO_CHANGE: "NO_CHANGE",
+  PATH_REQUIRED: "PATH_REQUIRED",
+} as const satisfies Record<string, ApiErrorCode>;
+
+export type ApiErrorCode =
+  | "AUTH_REQUIRED"
+  | "JOB_NOT_FOUND"
+  | "JOB_NOT_READY"
+  | "JOB_NOT_PUSHABLE"
+  | "INVALID_JSON"
+  | "INVALID_MULTIPART"
+  | "EMPTY_BODY"
+  | "EMPTY_ARCHIVE"
+  | "UPLOAD_FAILED"
+  | "REPO_NAME_REQUIRED"
+  | "BRANCH_NAME_TOO_LONG"
+  | "INVALID_OPTIONS"
+  | "INVALID_CHANGE"
+  | "NO_CHANGE"
+  | "PATH_REQUIRED";
 
 /**
  * `0.0.0.0` (et `::`) signifie « toutes les interfaces » côté serveur :

@@ -3,6 +3,18 @@
 /**
  * Vue d'un job : statuts en direct (polling), aperçu de l'archive,
  * choix de la destination, lancement du push, résultat.
+ *
+ * ---------------------------------------------------------------------------
+ * Traduction
+ * ---------------------------------------------------------------------------
+ * Composant client : la langue ne peut pas être relue ici (`cookies()` est
+ * réservé au serveur). Le serveur passe donc le dictionnaire de la section
+ * `jobs` en prop (`t`), et la page transmet aussi `errorMessage`, la traduction
+ * déjà faite du code d'échec du job. Conséquence : changer de langue recharge
+ * la page et retraduit tout, y compris un échec enregistré il y a trois jours.
+ *
+ * Les erreurs **réseau** levées ici (fetch qui échoue) passent par
+ * `translateError` avec un code : jamais une phrase codée en dur.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -33,7 +45,9 @@ import type { JobRecord, PreviewEntry } from "@/lib/types";
 import type { RepoLinks } from "@/lib/links";
 import { buildRepoLinks } from "@/lib/links";
 import type { PushableRepo } from "@/lib/github";
-import { formatBytes, formatCount } from "@/lib/utils";
+import { formatBytes, fillLoose } from "@/lib/i18n/format-client";
+import { translateError, type ErrorDictionary } from "@/lib/i18n/errors";
+import type { Dict } from "@/lib/i18n/types";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,21 +57,40 @@ import { cn } from "@/lib/utils";
 
 const POLLING = new Set(["queued", "extracting", "pushing"]);
 
-const STATUS_META: Record<
+/** Libellés de statut du dictionnaire (la variante de badge reste ici). */
+const STATUS_VARIANT: Record<
   JobRecord["status"],
-  { label: string; variant: "default" | "sky" | "muted" | "danger" | "amber" }
+  "default" | "sky" | "muted" | "danger" | "amber"
 > = {
-  queued: { label: "En file d'attente", variant: "muted" },
-  extracting: { label: "Extraction", variant: "sky" },
-  ready: { label: "Prêt à pousser", variant: "default" },
-  pushing: { label: "Poussage…", variant: "sky" },
-  done: { label: "Terminé", variant: "default" },
-  failed: { label: "Échec", variant: "danger" },
+  queued: "muted",
+  extracting: "sky",
+  ready: "default",
+  pushing: "sky",
+  done: "default",
+  failed: "danger",
 };
 
 const REPO_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 
-export function JobView({ initialJob }: { initialJob: JobRecord }) {
+/**
+ * Tout ce dont la vue a besoin du dictionnaire : la section `jobs` pour ses
+ * propres libellés, et les sections `errors`/`api` pour traduire les codes de
+ * réponse du serveur — le composant n'embarque pas les 500 autres chaînes.
+ */
+type JobDict = Pick<Dict, "jobs" | "errors" | "api">;
+type JobsStrings = Dict["jobs"];
+
+interface Props {
+  initialJob: JobRecord;
+  /** Sections du dictionnaire courant utiles ici. */
+  t: JobDict;
+  /** Traduction serveur du code d'échec (`null` si le job n'a pas échoué). */
+  errorMessage: string | null;
+  /** Langue courante : dates et tailles formatées avec elle. */
+  locale: string;
+}
+
+export function JobView({ initialJob, t, errorMessage, locale }: Props) {
   const [job, setJob] = useState(initialJob);
   const id = job.id;
 
@@ -91,7 +124,15 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
     };
   }, [id, job.status]);
 
-  const meta = STATUS_META[job.status];
+  const tJobs = t.jobs;
+  const statusLabel: Record<JobRecord["status"], string> = {
+    queued: tJobs.statusQueued,
+    extracting: tJobs.statusExtracting,
+    ready: tJobs.statusReady,
+    pushing: tJobs.statusPushing,
+    done: tJobs.statusDone,
+    failed: tJobs.statusFailed,
+  };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -106,23 +147,39 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
               {job.filename}
             </h1>
             <p className="text-xs text-mist">
-              {new Date(job.createdAt).toLocaleString("fr-FR")} ·{" "}
-              {formatBytes(job.archiveSize)} · {job.login}
+              {new Date(job.createdAt).toLocaleString(locale)} ·{" "}
+              {formatBytes(job.archiveSize, locale)} · {job.login}
             </p>
           </div>
         </div>
-        <Badge variant={meta.variant}>{meta.label}</Badge>
+        <Badge variant={STATUS_VARIANT[job.status]}>{statusLabel[job.status]}</Badge>
       </div>
 
       {/* ------------------------------------------------------ états */}
-      {(job.status === "queued" || job.status === "extracting") && <ExtractingState />}
-      {job.status === "pushing" && <PushingState />}
-      {job.status === "ready" && job.preview && (
-        <ReadyState job={job} onPushing={(j) => setJob(j)} />
+      {(job.status === "queued" || job.status === "extracting") && (
+        <ExtractingState t={t.jobs} />
       )}
-      {job.status === "done" && job.push && <DoneState job={job} />}
+      {job.status === "pushing" && <PushingState t={t.jobs} />}
+      {job.status === "ready" && job.preview && (
+        <ReadyState
+          job={job}
+          t={t.jobs}
+          errorsT={t}
+          locale={locale}
+          onPushing={(j) => setJob(j)}
+        />
+      )}
+      {job.status === "done" && job.push && (
+        <DoneState job={job} t={t.jobs} locale={locale} />
+      )}
       {job.status === "failed" && (
-        <FailedState job={job} onPushing={(j) => setJob(j)} />
+        <FailedState
+          job={job}
+          t={t.jobs}
+          errorsT={t}
+          errorMessage={errorMessage}
+          onPushing={(j) => setJob(j)}
+        />
       )}
     </div>
   );
@@ -130,7 +187,7 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
 
 /* ------------------------------------------------------------------ états */
 
-function ExtractingState() {
+function ExtractingState({ t }: { t: JobsStrings }) {
   return (
     <Card className="animate-fade-in">
       <CardContent className="flex flex-col items-center gap-5 py-14 text-center">
@@ -138,11 +195,8 @@ function ExtractingState() {
           <Spinner className="h-7 w-7" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">Extraction en cours…</h2>
-          <p className="mt-1.5 max-w-md text-sm text-mist">
-            Vérification des chemins, limite de taille, détection du dossier racine. Tout se
-            passe côté serveur, dans un espace isolé.
-          </p>
+          <h2 className="text-lg font-semibold">{t.extractingTitle}</h2>
+          <p className="mt-1.5 max-w-md text-sm text-mist">{t.extractingBody}</p>
         </div>
         <IndeterminateBar className="max-w-xs" />
       </CardContent>
@@ -150,7 +204,7 @@ function ExtractingState() {
   );
 }
 
-function PushingState() {
+function PushingState({ t }: { t: JobsStrings }) {
   return (
     <Card className="animate-fade-in">
       <CardContent className="flex flex-col items-center gap-5 py-14 text-center">
@@ -158,11 +212,8 @@ function PushingState() {
           <Spinner className="h-7 w-7" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">Poussage vers GitHub…</h2>
-          <p className="mt-1.5 max-w-md text-sm text-mist">
-            Création du commit et envoi des fichiers. L'onglet peut rester ouvert, on vous tient
-            au courant.
-          </p>
+          <h2 className="text-lg font-semibold">{t.pushingTitle}</h2>
+          <p className="mt-1.5 max-w-md text-sm text-mist">{t.pushingBody}</p>
         </div>
         <IndeterminateBar className="max-w-xs" />
       </CardContent>
@@ -172,19 +223,29 @@ function PushingState() {
 
 function FailedState({
   job,
+  t,
+  errorsT,
+  errorMessage,
   onPushing,
 }: {
   job: JobRecord;
+  t: JobsStrings;
+  errorsT: ErrorDictionary;
+  errorMessage: string | null;
   onPushing: (job: JobRecord) => void;
 }) {
   // Relance « remplacer tout » : proposée uniquement quand elle peut
   // débloquer la situation, c.-à-d. un rejet parce que le dépôt a avancé
   // (non-fast-forward) lors d'un push vers un dépôt existant dont on a
   // gardé les options. Pas besoin de ré-uploader l'archive.
+  //
+  // On teste le CODE d'erreur, pas le texte : la détection ne dépend donc plus
+  // de la langue dans laquelle le message a été écrit.
   const canReplaceRetry =
     job.pushOpts?.mode === "existing" &&
     Boolean(job.pushOpts.repo) &&
-    /changé entre-temps|non-fast-forward|\[rejected\]|fetch first/i.test(job.error ?? "");
+    (job.errorCode === "CONFLICT" ||
+      /non-fast-forward|\[rejected\]|fetch first/i.test(job.errorDetail ?? ""));
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [retryError, setRetryError] = useState<string | null>(null);
@@ -199,18 +260,27 @@ function FailedState({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...job.pushOpts, replaceAll: true }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        code?: string;
+      };
       if (res.status === 202) {
         onPushing({ ...job, status: "pushing", error: null });
         return;
       }
-      setRetryError(data.error ?? `Échec (HTTP ${res.status}).`);
+      // Repli : le serveur renvoie déjà `error` en français ; si un `code` est
+      // présent on préfère la traduction courante.
+      setRetryError(
+        data.code
+          ? translateError(errorsT, { code: data.code })
+          : data.error ?? fillLoose(t.httpFailed, { status: res.status }),
+      );
     } catch {
-      setRetryError("Connexion perdue. Réessayez.");
+      setRetryError(t.lostConnection);
     } finally {
       setBusy(false);
     }
-  }, [job, onPushing]);
+  }, [job, onPushing, t, errorsT]);
 
   return (
     <Card className="animate-fade-in border-danger/30">
@@ -219,9 +289,9 @@ function FailedState({
           <AlertTriangle className="h-7 w-7" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">L'opération a échoué</h2>
+          <h2 className="text-lg font-semibold">{t.failedTitle}</h2>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-mist">
-            {job.error ?? "Erreur inconnue."}
+            {errorMessage ?? job.error ?? t.failedUnknown}
           </p>
         </div>
 
@@ -230,17 +300,12 @@ function FailedState({
             <p className="flex items-start gap-2 text-sm leading-relaxed text-amber">
               <Trash2 className="mt-0.5 h-4 w-4 shrink-0" />
               <span>
-                Le dépôt <strong>{job.pushOpts?.repo}</strong> a avancé depuis votre import.
-                Vous pouvez écraser sa branche avec le contenu exact de cette archive :
-                les fichiers absents de l'archive seront supprimés du dépôt et le push
-                sera forcé. L'historique existant est conservé (nouveau commit par-dessus).
+                {fillLoose(t.repoMoved, { repo: job.pushOpts?.repo ?? "" })}
               </span>
             </p>
             {confirming ? (
               <div className="mt-3 flex flex-col gap-2">
-                <p className="text-xs text-amber">
-                  Confirmez-vous le remplacement complet du code de ce dépôt par cette archive ?
-                </p>
+                <p className="text-xs text-amber">{t.repoMovedConfirm}</p>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
@@ -249,7 +314,7 @@ function FailedState({
                     onClick={() => void retryReplace()}
                   >
                     {busy ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
-                    {busy ? "Envoi…" : "Oui, remplacer tout le code"}
+                    {busy ? t.sending : t.replaceAllYes}
                   </Button>
                   <Button
                     type="button"
@@ -257,7 +322,7 @@ function FailedState({
                     disabled={busy}
                     onClick={() => setConfirming(false)}
                   >
-                    Annuler
+                    {t.cancel}
                   </Button>
                 </div>
               </div>
@@ -269,7 +334,7 @@ function FailedState({
                 onClick={() => setConfirming(true)}
               >
                 <RefreshCw className="h-4 w-4" />
-                Réessayer en remplaçant tout le code
+                {t.replaceAllRetry}
               </Button>
             )}
             {retryError && (
@@ -282,10 +347,10 @@ function FailedState({
 
         <div className="flex flex-wrap justify-center gap-3">
           <Link href="/import" className={buttonVariants({})}>
-            Réessayer avec une autre archive
+            {t.retryOtherArchive}
           </Link>
           <Link href="/" className={buttonVariants({ variant: "ghost" })}>
-            Retour à l'accueil
+            {t.backHome}
           </Link>
         </div>
       </CardContent>
@@ -311,40 +376,47 @@ function LinkChip({ icon, label, href, sub }: { icon: React.ReactNode; label: st
   );
 }
 
-function LinkGrid({ links }: { links: RepoLinks }) {
+function LinkGrid({ links, t }: { links: RepoLinks; t: JobsStrings }) {
+  const branchName =
+    links.branchUrl.split("/tree/")[1]?.split("?")[0] ?? links.branchUrl;
   return (
     <div className="grid gap-2">
-      <LinkChip icon={<Link2 className="h-4 w-4" />} label="Dépôt GitHub" href={links.repoUrl} sub={links.fullName} />
+      <LinkChip icon={<Link2 className="h-4 w-4" />} label={t.linkRepo} href={links.repoUrl} sub={links.fullName} />
       <LinkChip
         icon={<GitBranch className="h-4 w-4" />}
-        label={`Branche « ${links.branchUrl.split("/tree/")[1]?.split("?")[0] ?? links.branchUrl} »`}
+        label={fillLoose(t.linkBranch, { branch: branchName })}
         href={links.branchUrl}
-        sub="Poussez sur cette branche"
+        sub={t.linkBranchSub}
       />
       {links.commitUrl && (
-        <LinkChip icon={<FileText className="h-4 w-4" />} label="Commit précis" href={links.commitUrl} sub={`SHA : ${links.commitUrl?.split("/commit/")[1]?.slice(0, 7) ?? "?"}`} />
+        <LinkChip
+          icon={<FileText className="h-4 w-4" />}
+          label={t.linkCommit}
+          href={links.commitUrl}
+          sub={`SHA : ${links.commitUrl?.split("/commit/")[1]?.slice(0, 7) ?? "?"}`}
+        />
       )}
       <LinkChip
         icon={<Rocket className="h-4 w-4" />}
-        label="Codespaces (agent IA GitHub)"
+        label={t.linkCodespaces}
         href={links.codespacesUrl}
-        sub="vscode.dev clé-en-main, Copilot connecté"
+        sub={t.linkCodespacesSub}
       />
       <LinkChip
         icon={<ExternalLink className="h-4 w-4" />}
-        label="vscode.dev (éditeur web officiel)"
+        label={t.linkVscode}
         href={links.vscodeUrl}
-        sub="Copilot + édition + exécution (Codespaces)"
+        sub={t.linkVscodeSub}
       />
       <LinkChip
         icon={<GitFork className="h-4 w-4" />}
-        label="URL de clone (agent externe)"
+        label={t.linkClone}
         href={links.cloneUrl}
-        sub="L'agent s'authentifie lui-même via sa session GitHub"
+        sub={t.linkCloneSub}
       />
       <LinkChip
         icon={<Clipboard className="h-4 w-4" />}
-        label="Commande CLI `gh`"
+        label={t.linkGh}
         href={`https://github.com/${links.fullName}`}
         sub={links.cloneCommand}
       />
@@ -352,7 +424,15 @@ function LinkGrid({ links }: { links: RepoLinks }) {
   );
 }
 
-function DoneState({ job }: { job: JobRecord }) {
+function DoneState({
+  job,
+  t,
+  locale,
+}: {
+  job: JobRecord;
+  t: JobsStrings;
+  locale: string;
+}) {
   const push = job.push!;
   const links = buildRepoLinks({
     url: push.url,
@@ -361,6 +441,7 @@ function DoneState({ job }: { job: JobRecord }) {
     commitSha: push.commitSha,
   });
   const shortSha = push.commitSha?.slice(0, 7);
+  const branchLabel = links.branchUrl.replace(/^.*\/tree\//, "");
   return (
     <Card className="animate-fade-in border-go/40 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_-20%,rgba(52,211,153,0.14),transparent)]" />
@@ -370,42 +451,47 @@ function DoneState({ job }: { job: JobRecord }) {
             <CheckCircle2 className="h-8 w-8" />
           </span>
           <div>
-            <h2 className="text-lg font-semibold">C'est poussé&nbsp;!</h2>
+            <h2 className="text-lg font-semibold">{t.doneTitle}</h2>
             <p className="mx-auto mt-2 max-w-lg text-sm text-mist">
-              {formatCount(job.preview?.fileCount ?? 0)} importés sur la branche{" "}
+              {fillLoose(t.doneBody, {
+                count: (job.preview?.fileCount ?? 0).toLocaleString(locale),
+              })}{" "}
               <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">
-                {links.branchUrl.replace(/^.*\/tree\//, "")}
+                {branchLabel}
               </code>
               {shortSha && (
                 <>
                   {" "}
-                  · commit <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">{shortSha}</code>
+                  · {t.doneCommit}{" "}
+                  <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">
+                    {shortSha}
+                  </code>
                 </>
               )}
-              {push.created && " · dépôt créé"}.
+              {push.created && ` ${t.doneCreated}`}.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <a href={links.repoUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "lg" })}>
               <GitFork className="h-4 w-4" />
-              Ouvrir sur GitHub
-              <ArrowRight className="h-4 w-4" />
+              {t.openOnGithub}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </a>
             <Button type="button" variant="outline" size="lg" onClick={() => void navigator.clipboard.writeText(links.repoUrl)}>
               <Clipboard className="h-4 w-4" />
-              Copier le lien
+              {t.copyLink}
             </Button>
             <Button type="button" variant="outline" size="lg" onClick={() => (window.location.href = `/api/jobs/${job.id}/download`)}>
               <Download className="h-4 w-4" />
-              Télécharger en .zip
+              {t.downloadZip}
             </Button>
           </div>
         </div>
         <div className="border-t border-edge pt-5">
           <p className="mb-3 text-xs font-medium uppercase tracking-wider text-mist">
-            Liens prêts à donner à une IA :
+            {t.aiLinksTitle}
           </p>
-          <LinkGrid links={links} />
+          <LinkGrid links={links} t={t} />
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-edge pt-4">
           <a
@@ -417,7 +503,7 @@ function DoneState({ job }: { job: JobRecord }) {
             {links.repoUrl.replace("https://", "")}
           </a>
           <Link href="/import" className="text-xs text-mist underline decoration-edge underline-offset-4 hover:text-chalk">
-            Importer une autre archive
+            {t.anotherImport}
           </Link>
         </div>
       </CardContent>
@@ -427,7 +513,7 @@ function DoneState({ job }: { job: JobRecord }) {
 
 /* --------------------------------------------------------------- aperçu */
 
-function TreeLine({ entry }: { entry: PreviewEntry }) {
+function TreeLine({ entry, locale }: { entry: PreviewEntry; locale: string }) {
   const isDir = entry.path.endsWith("/");
   const clean = isDir ? entry.path.slice(0, -1) : entry.path;
   const parts = clean.split("/");
@@ -437,7 +523,7 @@ function TreeLine({ entry }: { entry: PreviewEntry }) {
   return (
     <div
       className="flex items-center justify-between gap-3 rounded px-2 py-1 text-xs hover:bg-panel2"
-      style={{ paddingLeft: 8 + depth * 14 }}
+      style={{ paddingInlineStart: 8 + depth * 14 }}
     >
       <span className="flex min-w-0 items-center gap-1.5">
         <Icon
@@ -449,27 +535,41 @@ function TreeLine({ entry }: { entry: PreviewEntry }) {
         </span>
       </span>
       {!isDir && entry.size > 0 && (
-        <span className="shrink-0 tabular-nums text-mist/70">{formatBytes(entry.size)}</span>
+        <span className="shrink-0 tabular-nums text-mist/70">
+          {formatBytes(entry.size, locale)}
+        </span>
       )}
     </div>
   );
 }
 
-function PreviewPanel({ job }: { job: JobRecord }) {
+function PreviewPanel({
+  job,
+  t,
+  locale,
+}: {
+  job: JobRecord;
+  t: JobsStrings;
+  locale: string;
+}) {
   const p = job.preview!;
   const ignoredParts: string[] = [];
-  if (p.ignored.gitDirs > 0) ignoredParts.push(`.git (${p.ignored.gitDirs})`);
+  if (p.ignored.gitDirs > 0)
+    ignoredParts.push(fillLoose(t.ignoredGit, { count: p.ignored.gitDirs }));
   if (p.ignored.systemFiles > 0)
-    ignoredParts.push(`fichiers système (${p.ignored.systemFiles})`);
-  if (p.ignored.symlinks > 0) ignoredParts.push(`symlinks (${p.ignored.symlinks})`);
-  if (p.ignored.hardlinks) ignoredParts.push(`hardlinks (${p.ignored.hardlinks})`);
-  if (p.ignored.outside > 0) ignoredParts.push(`chemins bloqués (${p.ignored.outside})`);
+    ignoredParts.push(fillLoose(t.ignoredSystemFiles, { count: p.ignored.systemFiles }));
+  if (p.ignored.symlinks > 0)
+    ignoredParts.push(fillLoose(t.ignoredSymlinks, { count: p.ignored.symlinks }));
+  if (p.ignored.hardlinks)
+    ignoredParts.push(fillLoose(t.ignoredHardlinks, { count: p.ignored.hardlinks }));
+  if (p.ignored.outside > 0)
+    ignoredParts.push(fillLoose(t.ignoredBlocked, { count: p.ignored.outside }));
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle>Aperçu de l'archive</CardTitle>
+          <CardTitle>{t.previewTitle}</CardTitle>
           <Badge
             variant={
               job.format === "rar" ? "sky" : job.format === "tar" ? "default" : "muted"
@@ -478,17 +578,18 @@ function PreviewPanel({ job }: { job: JobRecord }) {
             {job.format === "tar" ? "TAR" : job.format?.toUpperCase()}
           </Badge>
         </div>
-        <CardDescription>Ce qui sera poussé, après filtres de sécurité.</CardDescription>
+        <CardDescription>{t.previewLead}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Fichiers" value={formatCount(p.fileCount)} />
-          <Stat label="Poids décompressé" value={formatBytes(p.totalSize)} />
+          <Stat label={t.previewFiles} value={p.fileCount.toLocaleString(locale)} />
+          <Stat label={t.previewSize} value={formatBytes(p.totalSize, locale)} />
         </div>
 
         {ignoredParts.length > 0 && (
           <p className="text-xs text-mist">
-            <span className="text-chalk/80">Ignorés :</span> {ignoredParts.join(" · ")}
+            <span className="text-chalk/80">{t.previewIgnored}</span>{" "}
+            {ignoredParts.join(" · ")}
           </p>
         )}
 
@@ -496,11 +597,12 @@ function PreviewPanel({ job }: { job: JobRecord }) {
           <div className="flex items-start gap-2 rounded-lg bg-amber/10 p-3 text-xs leading-relaxed text-amber ring-1 ring-amber/30">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
-              {p.tooLargeForGitHub.count} fichier(s) dépassent 100 Mo : GitHub les refusera
-              probablement. Ex. :{" "}
+              {fillLoose(t.tooLargeForGithub, {
+                count: p.tooLargeForGitHub.count.toLocaleString(locale),
+              })}{" "}
               <code className="text-chalk">
                 {p.tooLargeForGitHub.examples[0]?.path}{" "}
-                ({formatBytes(p.tooLargeForGitHub.examples[0]?.size ?? 0)})
+                ({formatBytes(p.tooLargeForGitHub.examples[0]?.size ?? 0, locale)})
               </code>
             </span>
           </div>
@@ -508,7 +610,7 @@ function PreviewPanel({ job }: { job: JobRecord }) {
 
         <div className="max-h-72 overflow-y-auto rounded-xl bg-ink/60 p-2 ring-1 ring-edge">
           {p.tree.map((e) => (
-            <TreeLine key={e.path} entry={e} />
+            <TreeLine key={e.path} entry={e} locale={locale} />
           ))}
         </div>
       </CardContent>
@@ -529,9 +631,15 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function ReadyState({
   job,
+  t,
+  errorsT,
+  locale,
   onPushing,
 }: {
   job: JobRecord;
+  t: JobsStrings;
+  errorsT: ErrorDictionary;
+  locale: string;
   onPushing: (job: JobRecord) => void;
 }) {
   const p = job.preview!;
@@ -568,24 +676,32 @@ function ReadyState({
     let cancelled = false;
     fetch("/api/repos", { cache: "no-store" })
       .then(async (r) => {
-        const data = (await r.json()) as { repos?: PushableRepo[]; error?: string };
+        const data = (await r.json()) as {
+          repos?: PushableRepo[];
+          error?: string;
+          code?: string;
+        };
         if (cancelled) return;
         if (r.ok) setRepos(data.repos ?? []);
         else {
           setRepos([]);
-          setReposError(data.error ?? "Impossible de charger vos dépôts.");
+          setReposError(
+            data.code
+              ? translateError(errorsT, { code: data.code })
+              : data.error ?? t.reposLoadError,
+          );
         }
       })
       .catch(() => {
         if (!cancelled) {
           setRepos([]);
-          setReposError("Impossible de charger vos dépôts.");
+          setReposError(t.reposLoadError);
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [dest, repos]);
+  }, [dest, repos, t, errorsT]);
 
   const filtered = useMemo(() => {
     if (!repos) return [];
@@ -623,14 +739,21 @@ function ReadyState({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        code?: string;
+      };
       if (res.status === 202) {
         onPushing({ ...job, status: "pushing" });
         return;
       }
-      setFormError(data.error ?? `Échec (HTTP ${res.status}).`);
+      setFormError(
+        data.code
+          ? translateError(errorsT, { code: data.code })
+          : data.error ?? fillLoose(t.httpFailed, { status: res.status }),
+      );
     } catch {
-      setFormError("Connexion perdue. Réessayez.");
+      setFormError(t.lostConnection);
     } finally {
       setBusy(false);
     }
@@ -648,6 +771,8 @@ function ReadyState({
     visibility,
     branchName,
     replaceActive,
+    t,
+    errorsT,
   ]);
 
   const defaultBranchHint = `import/${job.filename.replace(/\.[^.]+$/, "").toLowerCase()}`;
@@ -656,11 +781,11 @@ function ReadyState({
     <div className="grid gap-5 lg:grid-cols-2 animate-fade-in">
       {/* ---------------------------------------------------- aperçu */}
       <div className="flex flex-col gap-5">
-        <PreviewPanel job={job} />
+        <PreviewPanel job={job} t={t} locale={locale} />
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Filtres d'import</CardTitle>
+            <CardTitle className="text-sm">{t.filtersTitle}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 pt-1">
             {p.singleRootDir && (
@@ -670,10 +795,10 @@ function ReadyState({
                 onChange={setStripRoot}
                 label={
                   <>
-                    Retirer le dossier racine{" "}
+                    {t.stripRootLabel}{" "}
                     <code className="text-chalk">{p.singleRootDir}/</code>
                     <span className="block text-xs font-normal text-mist">
-                      Recommandé : le contenu du projet irait à la racine du dépôt.
+                      {t.stripRootHint}
                     </span>
                   </>
                 }
@@ -686,16 +811,16 @@ function ReadyState({
                 onChange={setIncludeNM}
                 label={
                   <>
-                    Inclure <code className="text-chalk">node_modules</code>
+                    {t.includeNodeModules} <code className="text-chalk">node_modules</code>
                     <span className="block text-xs font-normal text-mist">
-                      Décoché par défaut : lourd et rarement utile dans un dépôt.
+                      {t.includeNodeModulesHint}
                     </span>
                   </>
                 }
               />
             )}
             {!p.singleRootDir && !p.hasNodeModules && (
-              <p className="text-xs text-mist">Aucun filtre disponible pour cette archive.</p>
+              <p className="text-xs text-mist">{t.filtersNone}</p>
             )}
           </CardContent>
         </Card>
@@ -705,27 +830,27 @@ function ReadyState({
       <div className="flex flex-col gap-5">
         <Card>
           <CardHeader>
-            <CardTitle>Destination</CardTitle>
-            <CardDescription>Où pousser ces fichiers&nbsp;?</CardDescription>
+            <CardTitle>{t.destTitle}</CardTitle>
+            <CardDescription>{t.destLead}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 pt-1">
             {/* onglets radio */}
             <div className="grid grid-cols-2 gap-2 rounded-xl bg-panel2 p-1 ring-1 ring-edge">
               <DestTab active={dest === "new"} onClick={() => setDest("new")}>
-                <Rocket className="h-4 w-4" /> Nouveau dépôt
+                <Rocket className="h-4 w-4" /> {t.destNew}
               </DestTab>
               <DestTab active={dest === "existing"} onClick={() => setDest("existing")}>
-                <GitBranch className="h-4 w-4" /> Dépôt existant
+                <GitBranch className="h-4 w-4" /> {t.destExisting}
               </DestTab>
             </div>
 
             {dest === "new" ? (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="repo-name">Nom du dépôt</Label>
+                  <Label htmlFor="repo-name">{t.repoNameLabel}</Label>
                   <Input
                     id="repo-name"
-                    placeholder="mon-projet"
+                    placeholder={t.repoNamePlaceholder}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     maxLength={100}
@@ -733,28 +858,25 @@ function ReadyState({
                     spellCheck={false}
                   />
                   {name.length > 0 && !nameValid && (
-                    <p className="text-xs text-danger">
-                      Lettres, chiffres, points, tirets et tirets bas uniquement (doit commencer
-                      par une lettre ou un chiffre).
-                    </p>
+                    <p className="text-xs text-danger">{t.repoNameInvalid}</p>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label>Visibilité</Label>
+                  <Label>{t.visibilityLabel}</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <VisBtn
                       active={visibility === "private"}
                       onClick={() => setVisibility("private")}
                       icon={<Lock className="h-3.5 w-3.5" />}
-                      title="Privé"
-                      hint="Visible par vous seul"
+                      title={t.visibilityPrivate}
+                      hint={t.visibilityPrivateHint}
                     />
                     <VisBtn
                       active={visibility === "public"}
                       onClick={() => setVisibility("public")}
                       icon={<Unlock className="h-3.5 w-3.5" />}
-                      title="Public"
-                      hint="Visible par tout le monde"
+                      title={t.visibilityPublic}
+                      hint={t.visibilityPublicHint}
                     />
                   </div>
                 </div>
@@ -762,19 +884,19 @@ function ReadyState({
             ) : (
               <div className="flex flex-col gap-3">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mist" />
+                  <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mist" />
                   <Input
-                    placeholder="Rechercher un dépôt…"
+                    placeholder={t.searchRepo}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
+                    className="ps-9"
                     autoComplete="off"
                   />
                 </div>
 
                 {repos === null && (
                   <div className="flex items-center justify-center gap-2 rounded-xl bg-panel2 py-8 text-sm text-mist ring-1 ring-edge">
-                    <Spinner /> Chargement de vos dépôts…
+                    <Spinner /> {t.loadingRepos}
                   </div>
                 )}
                 {repos !== null && reposError && (
@@ -785,9 +907,7 @@ function ReadyState({
                 )}
                 {repos !== null && !reposError && filtered.length === 0 && (
                   <div className="rounded-xl bg-panel2 py-8 text-center text-sm text-mist ring-1 ring-edge">
-                    {repos.length === 0
-                      ? "Aucun dépôt accessible avec droits d'écriture. Créez-en un nouveau !"
-                      : "Aucun dépôt ne correspond à la recherche."}
+                    {repos.length === 0 ? t.noWritableRepo : t.noRepoMatch}
                   </div>
                 )}
                 {repos !== null && filtered.length > 0 && (
@@ -832,11 +952,9 @@ function ReadyState({
                   className="mt-0.5 h-4 w-4 accent-[#34d399]"
                 />
                 <span>
-                  Créer une branche dédiée
+                  {t.dedicatedBranch}
                   <span className="block text-xs font-normal text-mist">
-                    {dest === "existing"
-                      ? "Ne pas toucher à la branche par défaut : idéal pour un dépôt partagé."
-                      : "Nom de branche initial du nouveau dépôt (sinon la branche par défaut)."}
+                    {dest === "existing" ? t.dedicatedHintExisting : t.dedicatedHintNew}
                   </span>
                 </span>
               </label>
@@ -873,14 +991,10 @@ function ReadyState({
                   <span>
                     <span className="flex items-center gap-1.5 font-medium text-chalk">
                       <Trash2 className="h-4 w-4 text-danger" />
-                      Remplacer tout le code du dépôt
+                      {t.replaceAll}
                     </span>
                     <span className="block text-xs font-normal text-mist">
-                      Le dépôt contiendra exactement les fichiers de l'archive : ceux qui
-                      n'y sont pas seront supprimés, et le push sera forcé — il réussira
-                      même si le dépôt a été modifié entre-temps (plus d'erreur
-                      « fetch first »). À utiliser quand l'archive est la nouvelle
-                      version complète du projet.
+                      {t.replaceAllHint}
                     </span>
                   </span>
                 </label>
@@ -893,15 +1007,15 @@ function ReadyState({
                       className="mt-0.5 h-4 w-4 accent-[#f87171]"
                     />
                     <span>
-                      Je confirme : les fichiers du dépôt
                       {selectedRepo ? (
                         <>
+                          {fillLoose(t.replaceConfirm, { repo: "" })}
                           {" "}
                           <code className="text-chalk">{selectedRepo}</code>
                         </>
-                      ) : null}{" "}
-                      absents de cette archive seront définitivement supprimés de la
-                      branche poussée.
+                      ) : (
+                        t.replaceConfirmNoRepo
+                      )}
                     </span>
                   </label>
                 )}
@@ -912,13 +1026,13 @@ function ReadyState({
             <details className="group border-t border-edge/60 pt-4">
               <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm text-mist transition-colors hover:text-chalk">
                 <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-                Options avancées
+                {t.advanced}
               </summary>
               <div className="mt-3 flex flex-col gap-1.5">
-                <Label htmlFor="commit-msg">Message de commit</Label>
+                <Label htmlFor="commit-msg">{t.commitMessage}</Label>
                 <Input
                   id="commit-msg"
-                  placeholder={`Import de ${job.filename} via RepoDrop`}
+                  placeholder={fillLoose(t.commitPlaceholder, { filename: job.filename })}
                   value={commitMsg}
                   onChange={(e) => setCommitMsg(e.target.value)}
                   maxLength={200}
@@ -947,20 +1061,12 @@ function ReadyState({
             onClick={() => void submit()}
           >
             {busy ? <Spinner /> : replaceActive ? <Trash2 className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-            {busy
-              ? "Envoi…"
-              : replaceActive
-                ? "Remplacer tout le code sur GitHub"
-                : "Pousser sur GitHub"}
+            {busy ? t.sending : replaceActive ? t.replacePushAction : t.pushAction}
           </Button>
           {replaceActive && !replaceConfirm && (
-            <p className="text-center text-xs text-danger">
-              Cochez la confirmation de remplacement pour activer le bouton.
-            </p>
+            <p className="text-center text-xs text-danger">{t.replaceNeedConfirm}</p>
           )}
-          <p className="text-center text-xs text-mist">
-            Votre jeton GitHub reste dans un cookie chiffré — il n'est jamais écrit en base.
-          </p>
+          <p className="text-center text-xs text-mist">{t.tokenNote}</p>
         </div>
       </div>
     </div>
@@ -1011,9 +1117,7 @@ function VisBtn({
       onClick={onClick}
       className={cn(
         "flex flex-col items-start gap-0.5 rounded-xl p-3 text-left ring-1 transition-colors cursor-pointer",
-        active
-          ? "bg-go/10 ring-go/40"
-          : "bg-panel2 ring-edge hover:ring-mist/40",
+        active ? "bg-go/10 ring-go/40" : "bg-panel2 ring-edge hover:ring-mist/40",
       )}
     >
       <span className={cn("flex items-center gap-1.5 text-sm font-medium", active ? "text-go" : "text-chalk")}>

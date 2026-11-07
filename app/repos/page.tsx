@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { FolderSearch, UploadCloud } from "lucide-react";
@@ -5,16 +6,21 @@ import { getSession } from "@/lib/session";
 import { RepoBrowser } from "@/components/repos/RepoBrowser";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-export const metadata = {
-  title: "Mes dépôts",
-  robots: { index: false, follow: false },
-};
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/format";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return {
+    title: t.repos.metaTitle,
+    robots: { index: false, follow: false },
+  };
+}
+
 export default async function ReposPage() {
-  const session = await getSession();
+  const [session, { locale, t }] = await Promise.all([getSession(), getT()]);
   if (!session) redirect("/login");
 
   return (
@@ -31,14 +37,15 @@ export default async function ReposPage() {
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky/10 text-sky ring-1 ring-sky/25">
                   <FolderSearch className="h-5 w-5" />
                 </span>
-                Mes dépôts
+                {t.repos.pageTitle}
               </h1>
+              {/*
+                Le texte d'accroche mentionne l'onglet « Actions » : on
+                l'interpole depuis le dictionnaire (`{actions}`) pour qu'il
+                reste juste dans les langues où le libellé change de casse.
+              */}
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
-                Parcourez le contenu de vos dépôts avant d'importer quoi que ce
-                soit : arborescence, aperçu des fichiers, branche de votre choix.
-                Renommage, visibilité et suppression sont disponibles depuis
-                l'onglet <strong className="text-chalk">Actions</strong> d'un
-                dépôt.
+                {fill(t.repos.pageLead, { actions: t.repos.actionsTab })}
               </p>
             </div>
             <Link
@@ -46,12 +53,18 @@ export default async function ReposPage() {
               className={cn(buttonVariants({ variant: "secondary" }))}
             >
               <UploadCloud className="h-4 w-4" />
-              Importer une archive
+              {t.nav.importArchive}
             </Link>
           </div>
         </div>
 
-        <RepoBrowser login={session.login} />
+        <RepoBrowser
+          login={session.login}
+          t={t.repos}
+          tErrors={{ errors: t.errors, api: t.api }}
+          importLabel={t.nav.importArchive}
+          locale={locale}
+        />
       </div>
     </main>
   );

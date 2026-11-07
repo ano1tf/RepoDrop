@@ -134,7 +134,11 @@ export default async function Home() {
         <div className="mx-auto grid max-w-6xl gap-px overflow-hidden px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
           <Stat value="3" label={t.home.statFormats} sub={t.home.statFormatsSub} />
           <Stat value="0" label={t.home.statCommands} sub={t.home.statCommandsSub} />
-          <Stat value="2 min" label={t.home.statDuration} sub={t.home.statDurationSub} />
+          <Stat
+            value={t.home.statDurationValue}
+            label={t.home.statDuration}
+            sub={t.home.statDurationSub}
+          />
           <Stat
             value={String(LOCALES.length)}
             label={t.home.statLanguages}

@@ -455,6 +455,8 @@ lib/i18n/
   dictionary.ts         # Record<Locale, Dict> + accès (getDictionary, section)
   server.ts             # getLocale() / getT() : cookie → Accept-Language → fr
   format.ts             # fill("{upload} Mo") , placeholdersOf, formatNumber
+  format-client.ts      # octets, dates relatives, nombres — utilisables en client
+  errors.ts             # code d'erreur → message traduit (erreurs + api)
 app/api/lang/route.ts   # POST validation stricte + cookie rd_lang (1 an)
 app/api/lang/switch/     # GET ?to=xx&next=/chemin : bascule par lien, 307
 app/langues/page.tsx     # /langues : galerie de démo, 16 cartes cliquables
@@ -476,6 +478,30 @@ Trois décisions et ce qu'elles évitent :
 - **RTL pris au sérieux.** `<html lang dir>` suivent la langue (`dir="rtl"` en
   arabe) ; la maquette et les puces utilisent `padding-inline-start` et
   `rtl:rotate-180` au lieu de `left`/`right`.
+- **Erreurs par code, pas par phrase.** Une erreur naît dans le worker
+  (extraction, push) ou dans une route API, deux endroits qui ne connaissent
+  pas la langue de l'utilisateur au moment où elle survient. Le serveur ne
+  transmet donc jamais de phrase : il renvoie `{ code, detail }`
+  (`lib/errors.ts`), le job stocke `error_code` / `error_detail`, et
+  `lib/i18n/errors.ts` traduit à l'affichage — côté serveur pour les pages,
+  côté client pour les réponses JSON. Un job qui a échoué hier en français
+  s'affiche en japonais si vous basculez la langue aujourd'hui ; un même
+  journal d'activité reste lisible dans les seize langues. `errors.ts` garde
+  un repli français (`frMessage`) pour les rares réponses non traduisibles
+  (téléchargement direct d'une archive).
+
+  Concrètement, tout ce qui restait en français est couvert : page de suivi
+  d'import (`/jobs/[id]`), navigateur de dépôts (`/repos` : liste, filtres,
+  arborescence, aperçu, renommage / visibilité / suppression), messages des
+  routes API, `<title>` / `og:locale` du layout, manifeste PWA, et les
+  valeurs chiffrées (`1,2 Mo` / `1.2 MB`, `il y a 3 min` / `3 minutes ago`,
+  `1 234 fichiers`) via `lib/i18n/format-client.ts` — `Intl` fournit l'unité
+  et la date relatives, aucune table d'unités à maintenir.
+
+  Les 24 codes métier et 15 codes d'API ont chacun une clé dans les seize
+  dictionnaires ; une table `Record<ErrorCode, keyof Dict["errors"]>`
+  exhaustive fait échouer la compilation si un code est ajouté sans
+  traduction.
 
 Deux façons de changer de langue : le sélecteur de l'en-tête (sans JS requis
 pour le rendu, `POST /api/lang` + `router.refresh()`) et des liens partageables
@@ -551,5 +577,5 @@ docker compose up -d --build
 ## Backlog (post-v1)
 
 `.7z` · LFS pour fichiers > 100 Mo · sélection manuelle de fichiers ·
-i18n EN · import par URL · scan antivirus · notifications Discord par canal
-d'équipe.
+import par URL · scan antivirus · notifications Discord par canal d'équipe ·
+traduction du panel staff (réservé à l'équipe, volontairement en français).

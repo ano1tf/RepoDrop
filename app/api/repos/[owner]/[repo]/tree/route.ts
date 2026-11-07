@@ -6,9 +6,9 @@
  * Le chemin est validé par `safeRepoPath` (pas de `..`, pas de chemin absolu).
  */
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { API_ERROR, json, jsonCodeError, jsonErrorPayload } from "@/lib/http";
 import { getTree, safeRef, safeRepoPath } from "@/lib/github";
-import { toUserMessage, AppError } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ interface Params {
 
 export async function GET(req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { owner, repo } = await params;
   const url = new URL(req.url);
@@ -29,7 +29,7 @@ export async function GET(req: Request, { params }: Params): Promise<Response> {
     path = safeRepoPath(url.searchParams.get("path") ?? "");
     ref = safeRef(url.searchParams.get("ref"));
   } catch (e) {
-    return jsonError(toUserMessage(e), 400);
+    return jsonErrorPayload(e, 400);
   }
 
   try {
@@ -42,6 +42,6 @@ export async function GET(req: Request, { params }: Params): Promise<Response> {
         : e instanceof AppError && e.code === "RATE_LIMITED"
           ? 429
           : 500;
-    return jsonError(toUserMessage(e), status);
+    return jsonErrorPayload(e, status);
   }
 }

@@ -1,7 +1,32 @@
 /**
- * Erreurs métier traduites en messages utilisateur FR.
- * Les lib/ lancent des AppError avec un `code` ; jobs.ts les traduit.
+ * Erreurs métier **sans texte** : un `code` et, éventuellement, un `detail`
+ * technique (stderr git, nom de dossier fautif…).
+ *
+ * ---------------------------------------------------------------------------
+ * Pourquoi aucun message français ici ?
+ * ---------------------------------------------------------------------------
+ * Ces erreurs naissent dans le worker (extraction, push) et dans les routes
+ * API — deux endroits qui ne connaissent pas la langue de l'utilisateur au
+ * moment où elles ont lieu : un push peut échouer trois secondes après une
+ * bascule de langue, et une réponse JSON est consommée par un composant client
+ * qui, lui, sait quelle langue est affichée.
+ *
+ * Le serveur renvoie donc `{ code, detail }` :
+ *   - `lib/jobs.ts` stocke le code dans le job (`errorCode`) ;
+ *   - les routes API renvoient le code (`jsonCodeError`) ;
+ *   - l'interface (serveur ou client) traduit via `lib/i18n/errors.ts`.
+ *
+ * Conséquence concrète : un job en échec change de langue avec l'interface, et
+ * un même journal d'activité reste lisible dans les seize langues.
+ *
+ * `frMessage` / `toUserMessage` restent disponibles pour les rares réponses qui
+ * ne peuvent pas passer par l'interface (téléchargement direct d'une archive) ;
+ * elles s'appuient sur le dictionnaire français, source de vérité unique.
  */
+
+import { getDictionary } from "./i18n/dictionary";
+import { DEFAULT_LOCALE } from "./i18n/locales";
+import type { Dict } from "./i18n/types";
 
 export type ErrorCode =
   | "ENCRYPTED"
@@ -29,11 +54,46 @@ export type ErrorCode =
   | "ARCHIVE_TOO_BIG"
   | "INTERNAL";
 
+/**
+ * Code d'erreur → clé du dictionnaire `errors`.
+ *
+ * Table exhaustive : ajouter un code à `ErrorCode` sans son entrée ici casse la
+ * compilation, et le test `tests/i18n.test.ts` vérifie que chaque clé existe
+ * réellement dans les seize dictionnaires.
+ */
+export const ERROR_KEYS: Record<ErrorCode, keyof Dict["errors"]> = {
+  ENCRYPTED: "encrypted",
+  TOO_MANY_FILES: "tooManyFiles",
+  TOO_BIG: "tooBig",
+  EMPTY: "empty",
+  CORRUPT: "corrupt",
+  UNSUPPORTED: "unsupported",
+  VOLUME: "volume",
+  UNSAFE_PATHS: "unsafePaths",
+  PATH_LIMITS: "pathLimits",
+  TIMEOUT: "timeout",
+  RATE_LIMITED: "rateLimited",
+  NOT_FOUND: "notFound",
+  FORBIDDEN: "forbidden",
+  REPO_EXISTS: "repoExists",
+  NAME_INVALID: "nameInvalid",
+  NO_CHANGES: "noChanges",
+  CONFLICT: "conflict",
+  SCOPE_MISSING: "scopeMissing",
+  GIT_FAILED: "gitFailed",
+  INTERRUPTED: "interrupted",
+  BAD_PATH: "badPath",
+  CONFIRM_MISMATCH: "confirmMismatch",
+  ARCHIVE_TOO_BIG: "archiveTooBig",
+  INTERNAL: "internal",
+};
+
 export class AppError extends Error {
   code: ErrorCode;
   detail?: string;
 
   constructor(code: ErrorCode, message?: string, detail?: string) {
+    // `message` n'est qu'un confort de débogage (logs serveur) : jamais affiché.
     super(message ?? code);
     this.name = "AppError";
     this.code = code;
@@ -41,58 +101,70 @@ export class AppError extends Error {
   }
 }
 
-const FR: Record<ErrorCode, string> = {
-  ENCRYPTED:
-    "Cette archive est protégée par un mot de passe, ce qui n'est pas supporté pour l'instant.",
-  TOO_MANY_FILES: "Trop de fichiers dans l'archive (limite atteinte).",
-  TOO_BIG:
-    "Le contenu décompressé dépasse la taille autorisée. Réduisez l'archive (node_modules ?).",
-  EMPTY: "Cette archive ne contient aucun fichier exploitable.",
-  CORRUPT: "Archive illisible ou corrompue. Vérifiez le fichier puis réessayez.",
-  UNSUPPORTED:
-    "Format non pris en charge (méthode de compression ou variante d'archive inconnue).",
-  VOLUME: "Les archives RAR multi-volumes (.part1.rar, .part2.rar…) ne sont pas supportées.",
-  UNSAFE_PATHS:
-    "L'archive contient des chemins de fichiers dangereux (traversal) et a été refusée.",
-  PATH_LIMITS:
-    "Un chemin de fichier dépasse les limites autorisées (profondeur ou longueur).",
-  TIMEOUT: "L'extraction a pris trop de temps et a été interrompue.",
-  RATE_LIMITED: "Trop de requêtes. Patientez un instant puis réessayez.",
-  NOT_FOUND: "Ressource introuvable.",
-  FORBIDDEN:
-    "Vous n'avez pas les droits d'écriture sur ce dépôt (ou le jeton GitHub n'a pas le bon scope).",
-  REPO_EXISTS: "Un dépôt porte déjà ce nom sur votre compte.",
-  NAME_INVALID: "Nom de dépôt ou de branche invalide.",
-  NO_CHANGES: "Rien à pousser : les fichiers correspondent déjà au dépôt destination.",
-  CONFLICT:
-    "Le dépôt destination a changé entre-temps. Réessayez, poussez sur une branche dédiée, ou relancez en mode « Remplacer tout le code » pour écraser la branche avec le contenu de l'archive.",
-  SCOPE_MISSING:
-    "GitHub refuse la modification des fichiers de workflow (.github/workflows/…) : le jeton n'a pas le scope « workflow ». Déconnectez-vous puis reconnectez-vous pour l'accorder.",
-  GIT_FAILED: "Le push vers GitHub a échoué.",
-  INTERRUPTED: "Le traitement a été interrompu (redémarrage du serveur).",
-  BAD_PATH: "Chemin de fichier invalide.",
-  CONFIRM_MISMATCH:
-    "La confirmation ne correspond pas au nom du dépôt : rien n'a été supprimé.",
-  ARCHIVE_TOO_BIG:
-    "Ce dépôt est trop volumineux pour être téléchargé en une archive.",
-  INTERNAL: "Erreur interne inattendue. Réessayez dans un instant.",
-};
+const CODES = new Set<string>(Object.keys(ERROR_KEYS));
 
-export function frMessage(code: ErrorCode): string {
-  return FR[code] ?? FR.INTERNAL;
+/** Vrai si la valeur est un code d'erreur connu. */
+export function isErrorCode(value: unknown): value is ErrorCode {
+  return typeof value === "string" && CODES.has(value);
 }
 
-/** Traduit une erreur inconnue en message FR sûr (jamais de détail technique/token). */
+/**
+ * Décode un code lu en base (ou reçu d'une réponse JSON).
+ *
+ * Une base plus ancienne peut contenir une phrase française complète ; on ne
+ * peut pas la retraduire, mais elle reste affichable. Le client la préfixe
+ * donc comme un texte brut (`detail`) plutôt que de la perdre.
+ */
+export function asErrorCode(value: unknown): ErrorCode | null {
+  return isErrorCode(value) ? value : null;
+}
+
+/**
+ * Nettoie un détail technique avant stockage/affichage : une seule ligne,
+ * longueur bornée, et jamais de jeton (l'authentification passe par
+ * `GIT_ASKPASS`, donc l'URL git ne contient pas de secret — ce nettoyage est
+ * une ceinture supplémentaire, pas la seule barrière).
+ */
+export function cleanDetail(detail: string | undefined): string | undefined {
+  if (!detail) return undefined;
+  const one = detail.replace(/\s+/g, " ").trim().slice(0, 300);
+  return one.length > 0 ? one : undefined;
+}
+
+/** Charge utile d'erreur échangée entre serveur et client. */
+export interface ErrorPayload {
+  /** Code traduisible ; absent pour un message hérité déjà rédigé. */
+  code?: ErrorCode;
+  /** Contexte technique neutre (nom de dépôt, stderr git…). */
+  detail?: string;
+  /** Message déjà rédigé (jobs antérieurs à la traduction). */
+  legacy?: string;
+}
+
+/** Construit la charge utile à partir d'une exception quelconque. */
+export function toErrorPayload(err: unknown): ErrorPayload {
+  if (err instanceof AppError) {
+    return { code: err.code, detail: cleanDetail(err.detail) };
+  }
+  return { code: "INTERNAL" };
+}
+
+/**
+ * Message français d'un code.
+ *
+ * Réservé aux réponses qui ne passent pas par l'interface (téléchargement
+ * direct, en-têtes). Le reste du code doit renvoyer le **code**.
+ */
+export function frMessage(code: ErrorCode): string {
+  return getDictionary(DEFAULT_LOCALE).errors[ERROR_KEYS[code] ?? "internal"];
+}
+
+/** Message français sûr d'une exception (jamais de détail technique brut seul). */
 export function toUserMessage(err: unknown): string {
   if (err instanceof AppError) {
     const base = frMessage(err.code);
-    if (err.detail) {
-      // Détail fourni par la lib (ex : stderr git) — jamais de token ici,
-      // l'auth se fait via GIT_ASKPASS (env), jamais via l'URL ou les args.
-      const d = err.detail.replace(/\s+/g, " ").trim().slice(0, 300);
-      if (d) return `${base} (${d})`;
-    }
-    return base;
+    const detail = cleanDetail(err.detail);
+    return detail ? `${base} (${detail})` : base;
   }
-  return FR.INTERNAL;
+  return frMessage("INTERNAL");
 }

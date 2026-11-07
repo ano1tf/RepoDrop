@@ -412,17 +412,24 @@ export function buildRobots(baseUrl: string): MetadataRoute.Robots {
  * en `purpose: "any maskable"` sur la même entrée) pour que le rognage Android
  * s'applique à la version déjà margée.
  */
-export function buildManifest(): MetadataRoute.Manifest {
+export function buildManifest(
+  /**
+   * Traductions du manifeste : le nom et la description de l'application
+   * installée suivent la langue de la visite (le reste — icônes, couleurs,
+   * portée — ne dépend pas d'elle).
+   */
+  content: { locale?: string; name?: string; description?: string } = {},
+): MetadataRoute.Manifest {
   return {
-    name: SITE_DEFAULT_TITLE,
+    name: content.name ?? SITE_DEFAULT_TITLE,
     short_name: SITE_NAME,
-    description: SITE_DESCRIPTION,
+    description: content.description ?? SITE_DESCRIPTION,
     start_url: "/",
     scope: "/",
     display: "standalone",
     background_color: "#080b12",
     theme_color: "#080b12",
-    lang: "fr",
+    lang: content.locale ?? "fr",
     categories: ["developer tools", "productivity", "utilities"],
     icons: [
       {
@@ -472,6 +479,10 @@ export function buildStructuredData(
   /**
    * Contenu localisé : titres, description et FAQ de la langue rendue. Par
    * défaut, le français — le comportement d'origine est donc préservé.
+   *
+   * `inLanguage` suit `locale` : sans cela, une page rendue en japonais
+   * déclarait `inLanguage: "fr"`, ce qui n'aide pas les moteurs à comprendre
+   * qu'il s'agit de la même entité traduite.
    */
   content: {
     locale?: string;

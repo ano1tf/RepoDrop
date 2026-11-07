@@ -26,7 +26,10 @@ import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RepoDetail } from "./RepoDetail";
-import { cn, formatBytes, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { formatBytes, timeAgo } from "@/lib/i18n/format-client";
+import { translateError } from "@/lib/i18n/errors";
+import type { Dict } from "@/lib/i18n/types";
 import {
   REPO_SORTS,
   type RepoListResponse,
@@ -35,7 +38,37 @@ import {
 } from "@/lib/repo-types";
 import { parseRepoView, serializeRepoView, type RepoView } from "@/lib/repo-view";
 
-export function RepoBrowser({ login }: { login: string }) {
+/** Ordre de tri → clé du dictionnaire (`repos.sort*`). */
+const SORT_LABEL_KEYS: Record<RepoSort, "sortPushed" | "sortName" | "sortSize"> = {
+  pushed: "sortPushed",
+  name: "sortName",
+  size: "sortSize",
+};
+
+/**
+ * Chaînes traduites passées par la page serveur.
+ *
+ * Composant client : il ne peut pas lire le cookie de langue (`cookies()` est
+ * réservé au serveur). `t` porte donc la section `repos`, `tErrors` les
+ * sections `errors`/`api` (traduction des codes renvoyés par les routes), et
+ * `locale` sert aux nombres, aux octets et aux dates relatives.
+ */
+export interface RepoBrowserProps {
+  login: string;
+  t: Dict["repos"];
+  tErrors: Pick<Dict, "errors" | "api">;
+  /** Libellé « Importer une archive » (section `nav`, réutilisé ici). */
+  importLabel: string;
+  locale: string;
+}
+
+export function RepoBrowser({
+  login,
+  t,
+  tErrors,
+  importLabel,
+  locale,
+}: RepoBrowserProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -83,17 +116,21 @@ export function RepoBrowser({ login }: { login: string }) {
     try {
       const res = await fetch("/api/repos", { cache: "no-store" });
       const data = (await res.json().catch(() => ({}))) as
-        | (Partial<RepoListResponse> & { error?: string })
+        | (Partial<RepoListResponse> & { error?: string; code?: string })
         | undefined;
       if (!res.ok || !data?.repos) {
-        setError(data?.error ?? `Liste indisponible (HTTP ${res.status}).`);
+        setError(
+          data?.code
+            ? translateError(tErrors, { code: data.code })
+            : data?.error ?? t.errorList.replace("{status}", String(res.status)),
+        );
         setRepos(null);
         return;
       }
       setRepos(data.repos);
       setTruncated(data.truncated === true);
     } catch {
-      setError("Impossible de joindre le serveur.");
+      setError(t.errorServer);
     } finally {
       setLoading(false);
     }
@@ -131,6 +168,9 @@ export function RepoBrowser({ login }: { login: string }) {
     return (
       <RepoDetail
         fullName={selected}
+        t={t}
+        tErrors={tErrors}
+        locale={locale}
         view={view}
         onViewChange={handleViewChange}
         onBack={() => update({ repo: "", ref: "", path: "", file: "" })}
@@ -159,21 +199,21 @@ export function RepoBrowser({ login }: { login: string }) {
           <Input
             value={query}
             onChange={(e) => update({ query: e.target.value })}
-            placeholder="Filtrer par nom, description ou langage…"
-            className="pl-9"
-            aria-label="Filtrer les dépôts"
+            placeholder={t.filterPlaceholder}
+            className="ps-9"
+            aria-label={t.filterAria}
           />
         </label>
 
         <select
           value={sort}
           onChange={(e) => update({ sort: e.target.value as RepoSort })}
-          aria-label="Trier"
+          aria-label={t.sortAria}
           className="h-10 rounded-lg bg-panel2 px-3 text-sm text-chalk ring-1 ring-edge outline-none focus-visible:ring-2 focus-visible:ring-go/50"
         >
-          {REPO_SORTS.map((s) => (
-            <option key={s.id} value={s.id} className="bg-panel">
-              {s.label}
+          {REPO_SORTS.map((sort_) => (
+            <option key={sort_.id} value={sort_.id} className="bg-panel">
+              {t[SORT_LABEL_KEYS[sort_.id]]}
             </option>
           ))}
         </select>
@@ -183,7 +223,7 @@ export function RepoBrowser({ login }: { login: string }) {
           onClick={() => update({ onlyMine: !onlyMine })}
         >
           <Lock className="h-4 w-4" />
-          Les miens
+          {t.mine}
         </Button>
 
         <Button variant="ghost" onClick={() => void load()} disabled={loading}>
@@ -192,7 +232,7 @@ export function RepoBrowser({ login }: { login: string }) {
           ) : (
             <RefreshCw className="h-4 w-4" />
           )}
-          Actualiser
+          {t.refresh}
         </Button>
       </div>
 
@@ -206,8 +246,7 @@ export function RepoBrowser({ login }: { login: string }) {
       {truncated && (
         <p className="flex items-center gap-2 rounded-lg bg-amber/10 px-3 py-2 text-xs text-amber ring-1 ring-amber/30">
           <AlertTriangle className="h-3.5 w-3.5" />
-          Seuls les 300 dépôts les plus récents sont chargés. Affinez avec le
-          filtre ci-dessus.
+          {t.truncated}
         </p>
       )}
 
@@ -215,26 +254,27 @@ export function RepoBrowser({ login }: { login: string }) {
       {loading && !repos ? (
         <p className="flex items-center gap-3 rounded-2xl bg-panel p-8 text-sm text-mist ring-1 ring-edge">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Chargement de vos dépôts…
+          {t.loading}
         </p>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-panel p-10 text-center ring-1 ring-edge">
           <FolderArchive className="mx-auto h-8 w-8 text-mist" />
           <p className="mt-3 text-sm text-mist">
-            {repos?.length
-              ? "Aucun dépôt ne correspond à ce filtre."
-              : "Aucun dépôt visible avec ce jeton GitHub."}
+            {repos?.length ? t.emptyFilter : t.emptyToken}
           </p>
           <Link href="/import" className={cn(buttonVariants({ size: "sm" }), "mt-4")}>
-            Importer une archive
+            {importLabel}
           </Link>
         </div>
       ) : (
         <>
           <p className="text-xs text-mist">
-            {filtered.length} dépôt(s)
-            {query || onlyMine ? ` sur ${repos?.length ?? 0}` : ""} — cliquez pour
-            en parcourir le contenu.
+            {query || onlyMine
+              ? t.countFiltered
+                  .replace("{count}", String(filtered.length))
+                  .replace("{total}", String(repos?.length ?? 0))
+              : t.countAll.replace("{count}", String(filtered.length))}{" "}
+            {t.countHint}
           </p>
           <ul className="grid gap-2 sm:grid-cols-2">
             {filtered.map((r) => (
@@ -254,23 +294,21 @@ export function RepoBrowser({ login }: { login: string }) {
                   </span>
 
                   <span className="line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-mist">
-                    {r.description || <em className="text-mist/60">Sans description</em>}
+                    {r.description || <em className="text-mist/60">{t.noDescription}</em>}
                   </span>
 
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-mist/80">
                     {r.language && (
                       <Badge variant="muted">{r.language}</Badge>
                     )}
-                    <span>{formatBytes(r.size * 1024)}</span>
+                    <span>{formatBytes(r.size * 1024, locale)}</span>
                     {r.pushed_at && (
-                      <span>poussé {timeAgo(new Date(r.pushed_at).getTime())}</span>
+                      <span>{t.pushedAgo.replace("{when}", timeAgo(new Date(r.pushed_at).getTime(), locale))}</span>
                     )}
                     {r.open_issues_count > 0 && (
-                      <span>{r.open_issues_count} issue(s)</span>
+                      <span>{t.issues.replace("{count}", String(r.open_issues_count))}</span>
                     )}
-                    {!r.can.push && (
-                      <span className="text-amber">lecture seule</span>
-                    )}
+                    {!r.can.push && <span className="text-amber">{t.readOnly}</span>}
                   </span>
                 </button>
               </li>

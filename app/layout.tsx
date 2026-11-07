@@ -3,14 +3,12 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { getLocale } from "@/lib/i18n/server";
-import { dirOf } from "@/lib/i18n/locales";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { dirOf, ogLocaleOf } from "@/lib/i18n/locales";
 import {
   buildIcons,
   buildVerification,
   resolveSiteUrl,
-  SITE_DEFAULT_TITLE,
-  SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
   SITE_OG_IMAGE,
@@ -20,15 +18,24 @@ import {
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = resolveSiteUrl({ headers: await headers() });
+  /*
+   * Titre, description et `og:locale` suivent la langue de la requête.
+   *
+   * Sans cela, la balise `<html lang="ja">` disait « japonais » pendant que le
+   * `<title>` et la carte de partage restaient français — exactement le genre
+   * d'incohérence qui fait mal classer une page traduite. Les mots-clés
+   * restent, eux, dans les deux langues de recherche du produit.
+   */
+  const { locale, t } = await getT();
 
   return {
     metadataBase: new URL(baseUrl),
     applicationName: SITE_NAME,
     title: {
-      default: SITE_DEFAULT_TITLE,
+      default: t.meta.title,
       template: `%s · ${SITE_NAME}`,
     },
-    description: SITE_DESCRIPTION,
+    description: t.meta.description,
     keywords: SITE_KEYWORDS,
     authors: [{ name: SITE_NAME }],
     creator: SITE_NAME,
@@ -51,17 +58,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      locale: "fr_FR",
+      locale: ogLocaleOf(locale),
       siteName: SITE_NAME,
       url: "/",
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: t.meta.title,
+      description: t.meta.description,
       images: [SITE_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: t.meta.title,
+      description: t.meta.description,
       images: [SITE_TWITTER_IMAGE],
       ...twitterHandleFields(),
     },

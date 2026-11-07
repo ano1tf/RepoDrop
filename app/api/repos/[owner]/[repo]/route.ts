@@ -10,11 +10,11 @@
  */
 import { z } from "zod";
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { API_ERROR, json, jsonCodeError, jsonError, jsonErrorPayload } from "@/lib/http";
 import { clientIp } from "@/lib/ratelimit";
 import { deleteRepo, getRepoInfo, updateRepo } from "@/lib/github";
 import { logEvent } from "@/lib/db";
-import { toUserMessage, AppError } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -49,26 +49,26 @@ function statusOf(e: unknown): number {
 
 export async function GET(_req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { owner, repo } = await params;
   try {
     return json({ repo: await getRepoInfo(session.token, owner, repo) });
   } catch (e) {
-    return jsonError(toUserMessage(e), statusOf(e));
+    return jsonErrorPayload(e, statusOf(e));
   }
 }
 
 export async function PATCH(req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { owner, repo } = await params;
   let raw: unknown;
   try {
     raw = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return jsonCodeError(API_ERROR.INVALID_JSON, 400);
   }
   const parsed = patchSchema.safeParse(raw);
   if (!parsed.success) {
@@ -95,20 +95,20 @@ export async function PATCH(req: Request, { params }: Params): Promise<Response>
     });
     return json({ repo: updated });
   } catch (e) {
-    return jsonError(toUserMessage(e), statusOf(e));
+    return jsonErrorPayload(e, statusOf(e));
   }
 }
 
 export async function DELETE(req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { owner, repo } = await params;
   let raw: unknown;
   try {
     raw = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return jsonCodeError(API_ERROR.INVALID_JSON, 400);
   }
   const parsed = deleteSchema.safeParse(raw);
   if (!parsed.success) return jsonError("Confirmation manquante.", 400);
@@ -121,7 +121,7 @@ export async function DELETE(req: Request, { params }: Params): Promise<Response
     if (e instanceof AppError && e.code === "CONFIRM_MISMATCH") {
       // Confirmation erronée : aucun appel GitHub n'a été fait, donc rien à
       // journaliser côté « tentative de suppression ».
-      return jsonError(toUserMessage(e), 409);
+      return jsonErrorPayload(e, 409);
     }
     logEvent({
       kind: "system",
@@ -129,7 +129,7 @@ export async function DELETE(req: Request, { params }: Params): Promise<Response
       ip: clientIp(req.headers),
       detail: { scope: "repo.delete", repo: `${owner}/${repo}`, ok: false },
     });
-    return jsonError(toUserMessage(e), statusOf(e));
+    return jsonErrorPayload(e, statusOf(e));
   }
 
   logEvent({

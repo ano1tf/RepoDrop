@@ -39,7 +39,7 @@ export const tr: Dict = {
     ctaHow: "Nasıl çalışır",
     checkSandboxed: "Korumalı çıkarma",
     checkToken: "GitHub belirteci asla saklanmaz",
-    checkFrench: "Açık iş akışı",
+    checkFrench: "Açık: kaynak kodu herkese açık",
 
     statFormats: "arşiv biçimi",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -47,6 +47,7 @@ export const tr: Dict = {
     statCommandsSub: "her şey tek tıkla",
     statDuration: "yüklemeden gönderime",
     statDurationSub: "önizleme dahil",
+    statDurationValue: "2 dk",
     statLanguages: "dil",
     statLanguagesSub: "arayüz ve mesajlar",
 
@@ -204,5 +205,271 @@ export const tr: Dict = {
     title: "Sayfa bulunamadı",
     body: "Bu sayfa yok — ya da iş sona erdi (arşivler bir süre sonra silinir).",
     back: "Ana sayfaya dön",
+  },
+  jobs: {
+    metaTitle: "İçe aktarma takibi",
+
+    statusQueued: "Sırada",
+    statusExtracting: "Çıkarılıyor",
+    statusReady: "Göndermeye hazır",
+    statusPushing: "Gönderiliyor…",
+    statusDone: "Tamamlandı",
+    statusFailed: "Başarısız",
+
+    extractingTitle: "Çıkarma sürüyor…",
+    extractingBody:
+      "Yollar ve boyutlar doğrulanıyor, kök klasör tespit ediliyor. Her şey sunucu tarafında, yalıtılmış bir alanda olur.",
+    pushingTitle: "GitHub'a gönderiliyor…",
+    pushingBody:
+      "Commit oluşturuluyor ve dosyalar gönderiliyor. Bu sekmeyi açık bırakabilirsiniz — sizi bilgilendireceğiz.",
+
+    failedTitle: "İşlem başarısız oldu",
+    failedUnknown: "Bilinmeyen hata.",
+    lostConnection: "Bağlantı kesildi. Tekrar deneyin.",
+    httpFailed: "Başarısız (HTTP {status}).",
+    repoMoved:
+      "{repo} deposu içe aktarmanızdan bu yana ilerledi. Dalını bu arşivin tam içeriğiyle üzerine yazabilirsiniz: arşivde olmayan dosyalar depodan silinir ve gönderim zorlanır. Mevcut geçmiş korunur (üzerine yeni bir commit eklenir).",
+    repoMovedConfirm:
+      "Bu deponun tüm kodunun bu arşivle değiştirilmesini onaylıyor musunuz?",
+    replaceAllYes: "Evet, tüm kodu değiştir",
+    replaceAllRetry: "Tüm kodu değiştirerek yeniden dene",
+    cancel: "Vazgeç",
+    retryOtherArchive: "Başka bir arşivle yeniden dene",
+    backHome: "Ana sayfaya dön",
+
+    doneTitle: "Gönderildi!",
+    doneBody: "{count} dosya şu dala aktarıldı:",
+    doneCommit: "commit",
+    doneCreated: "· depo oluşturuldu",
+    openOnGithub: "GitHub'da aç",
+    copyLink: "Bağlantıyı kopyala",
+    downloadZip: ".zip olarak indir",
+    aiLinksTitle: "Bir yapay zekâya vermeye hazır bağlantılar:",
+    anotherImport: "Başka bir arşiv içe aktar",
+
+    linkRepo: "GitHub deposu",
+    linkBranch: "«{branch}» dalı",
+    linkBranchSub: "Bu dala gönderin",
+    linkCommit: "Tam commit",
+    linkCodespaces: "Codespaces (GitHub yapay zekâ aracısı)",
+    linkCodespacesSub: "vscode.dev kullanıma hazır, Copilot bağlı",
+    linkVscode: "vscode.dev (resmî web düzenleyici)",
+    linkVscodeSub: "Copilot + düzenleme + çalıştırma (Codespaces)",
+    linkClone: "Klonlama URL'si (harici aracı)",
+    linkCloneSub: "Aracı kendi GitHub oturumuyla kimlik doğrular",
+    linkGh: "`gh` CLI komutu",
+
+    previewTitle: "Arşiv önizlemesi",
+    previewLead: "Güvenlik filtrelerinden sonra gönderilecek olanlar.",
+    previewFiles: "Dosyalar",
+    previewSize: "Açılmış boyut",
+    previewIgnored: "Yok sayılanlar:",
+    ignoredGit: ".git ({count})",
+    ignoredSystemFiles: "sistem dosyaları ({count})",
+    ignoredSymlinks: "sembolik bağlantılar ({count})",
+    ignoredHardlinks: "sabit bağlantılar ({count})",
+    ignoredBlocked: "engellenen yollar ({count})",
+    tooLargeForGithub:
+      "{count} dosya 100 MB'ı aşıyor: GitHub bunları büyük olasılıkla reddeder. Örn.:",
+
+    filtersTitle: "İçe aktarma filtreleri",
+    filtersNone: "Bu arşiv için kullanılabilir filtre yok.",
+    stripRootLabel: "Kök klasörü kaldır",
+    stripRootHint:
+      "Önerilir: proje içeriği doğrudan depo köküne yerleşir.",
+    includeNodeModules: "Dahil et",
+    includeNodeModulesHint:
+      "Varsayılan olarak işaretsiz: ağır ve depoda nadiren yararlı.",
+
+    destTitle: "Hedef",
+    destLead: "Bu dosyalar nereye gönderilsin?",
+    destNew: "Yeni depo",
+    destExisting: "Mevcut depo",
+    repoNameLabel: "Depo adı",
+    repoNamePlaceholder: "benim-projem",
+    repoNameInvalid:
+      "Yalnızca harf, rakam, nokta, tire ve alt çizgi (bir harf veya rakamla başlamalı).",
+    visibilityLabel: "Görünürlük",
+    visibilityPrivate: "Özel",
+    visibilityPrivateHint: "Yalnızca siz görürsünüz",
+    visibilityPublic: "Herkese açık",
+    visibilityPublicHint: "Herkes görür",
+    searchRepo: "Depo ara…",
+    loadingRepos: "Depolarınız yükleniyor…",
+    reposLoadError: "Depolarınız yüklenemedi.",
+    noWritableRepo:
+      "Yazma izni olan erişilebilir depo yok. Yeni bir tane oluşturun!",
+    noRepoMatch: "Aramayla eşleşen depo yok.",
+    dedicatedBranch: "Ayrı bir dal oluştur",
+    dedicatedHintExisting:
+      "Varsayılan dala dokunmamak: paylaşılan bir depo için ideal.",
+    dedicatedHintNew:
+      "Yeni deponun ilk dal adı (aksi hâlde varsayılan dal).",
+    replaceAll: "Deponun tüm kodunu değiştir",
+    replaceAllHint:
+      "Depo tam olarak arşivdeki dosyaları içerecek: arşivde olmayanlar silinecek ve gönderim zorlanacak — depo bu arada değişmiş olsa bile başarılı olacak («fetch first» hatası artık yok). Arşiv projenin tam yeni sürümüyse kullanın.",
+    replaceConfirm:
+      "Onaylıyorum: {repo} deposunda bu arşivde olmayan dosyalar gönderilen daldan kalıcı olarak silinecek.",
+    replaceConfirmNoRepo:
+      "Onaylıyorum: depoda bu arşivde olmayan dosyalar gönderilen daldan kalıcı olarak silinecek.",
+    advanced: "Gelişmiş seçenekler",
+    commitMessage: "Commit mesajı",
+    commitPlaceholder: "{filename} RepoDrop ile içe aktarıldı",
+    pushAction: "GitHub'a gönder",
+    replacePushAction: "GitHub'daki tüm kodu değiştir",
+    sending: "Gönderiliyor…",
+    replaceNeedConfirm:
+      "Düğmeyi etkinleştirmek için değiştirme onayını işaretleyin.",
+    tokenNote:
+      "GitHub belirteciniz şifreli bir çerezde kalır — veritabanına asla yazılmaz.",
+  },
+
+  repos: {
+    metaTitle: "Depolarım",
+    pageTitle: "Depolarım",
+    pageLead:
+      "Bir şey içe aktarmadan önce depolarınıza göz atın: ağaç, dosya önizlemesi, istediğiniz dal. Yeniden adlandırma, görünürlük ve silme bir deponun {actions} sekmesinde bulunur.",
+
+    filterPlaceholder: "Ada, açıklamaya veya dile göre filtrele…",
+    filterAria: "Depoları filtrele",
+    sortAria: "Sırala",
+    sortPushed: "Son etkinlik",
+    sortName: "Ad (A→Z)",
+    sortSize: "Boyut",
+    mine: "Benimkiler",
+    refresh: "Yenile",
+    errorList: "Liste kullanılamıyor (HTTP {status}).",
+    errorServer: "Sunucuya ulaşılamıyor.",
+    truncated:
+      "Yalnızca en yeni 300 depo yüklendi. Yukarıdaki filtreyle daraltın.",
+    loading: "Depolarınız yükleniyor…",
+    emptyFilter: "Bu filtreyle eşleşen depo yok.",
+    emptyToken: "Bu GitHub belirteciyle görünür depo yok.",
+    countAll: "{count} depo",
+    countFiltered: "{total} depodan {count}",
+    countHint: "— içeriğe göz atmak için tıklayın.",
+    noDescription: "Açıklama yok",
+    pushedAgo: "{when} gönderildi",
+    issues: "{count} issue",
+    readOnly: "salt okunur",
+
+    backToList: "Listeye dön",
+    list: "Liste",
+    badgePrivate: "özel",
+    badgePublic: "herkese açık",
+    badgeArchived: "arşivlenmiş",
+    badgeFork: "fork",
+    badgeReadOnly: "salt okunur",
+    branchProtected: "(korumalı)",
+    downloadTitle: "{repo} deposunu .{format} olarak indir",
+    downloadTitleRef: "{repo} ({ref}) deposunu .{format} olarak indir",
+    actionsTab: "İşlemler",
+    loadingRepo: "Depo yükleniyor…",
+    inaccessible: "Depoya erişilemiyor.",
+    inaccessibleHttp: "Depoya erişilemiyor (HTTP {status}).",
+    errorServerJoin: "Sunucuya ulaşılamıyor.",
+    copyDenied: "Tarayıcı kopyalamayı reddetti.",
+    reloadFolder: "Bu klasörü yenile",
+    root: "kök",
+    entries: "{count} öğe",
+    loadingShort: "Yükleniyor…",
+    emptyRepo:
+      "Bu depoda henüz dosya yok. Doldurmak için bir arşiv içe aktarın.",
+    loadingFile: "Dosya yükleniyor…",
+    selectFile: "Önizlemek için bir dosya seçin.",
+    lines: "{count} satır",
+    copy: "Kopyala",
+    copied: "Kopyalandı",
+    raw: "Ham",
+    fileTooBig:
+      "Dosya önizleme için çok büyük ({size}). GitHub'da açın.",
+    fileBinary: "İkili dosya ({size}): metin önizlemesi yok.",
+
+    actionsTitle: "Yeniden adlandır / açıkla",
+    nameLabel: "Depo adı",
+    renameWarning:
+      "Yeniden adlandırma mevcut klonları, bağlantıları ve GitHub sayfalarını bozar. GitHub eski adı yönlendirir, ama sonsuza kadar değil.",
+    descLabel: "Açıklama",
+    descPlaceholder: "Bu depo ne için?",
+    save: "Kaydet",
+    writeInsufficient: "Bu depoda yazma izni yetersiz.",
+    visibilityTitle: "Görünürlük",
+    visibilityCurrently: "Şu anda {visibility}.",
+    visibilityToPrivate:
+      " Özel yapmak, tüm anonim kullanıcıların erişimini kaldırır.",
+    visibilityToPublic:
+      " Herkese açık yapmak, tüm commit geçmişini ortaya çıkarır.",
+    makePublic: "Herkese açık yap",
+    makePrivate: "Özel yap",
+    dangerZone: "Tehlikeli bölge",
+    deleteWarning:
+      "Silme kalıcıdır: kod, geçmiş, issue'lar ve wiki.",
+    deleteRepo: "Depoyu sil",
+    deleteTitle: "{repo} deposunu sil",
+    deleteConfirmBody:
+      "Geri dönüş yok. Düğmeyi etkinleştirmek için {name} yazın.",
+    deleteForever: "Kalıcı olarak sil",
+    cancel: "Vazgeç",
+    updated: "Depo güncellendi.",
+    deleted: "{repo} deposu silindi.",
+    httpFailed: "Başarısız (HTTP {status}).",
+  },
+
+  api: {
+    authRequired: "Kimlik doğrulama gerekli.",
+    jobNotFound: "İş bulunamadı.",
+    jobNotReady: "Bu iş henüz hazır değil.",
+    jobNotPushable: "Bu iş göndermeye hazır değil.",
+    invalidJson: "Geçersiz JSON gövdesi.",
+    invalidMultipart: "Geçersiz istek (multipart/form-data bekleniyordu).",
+    emptyBody: "Boş istek gövdesi.",
+    emptyArchive: "Arşiv boş.",
+    uploadFailed: "Dosya alınamadı. Tekrar deneyin.",
+    repoNameRequired:
+      "Yeni depo oluşturmak için depo adı gereklidir.",
+    branchNameTooLong: "Dal adı çok uzun.",
+    invalidOptions: "Geçersiz seçenekler.",
+    invalidChange: "Geçersiz değişiklik.",
+    noChange: "Değişiklik yok.",
+    pathRequired: "«path» parametresi gerekli.",
+  },
+  errors: {
+    encrypted:
+      "Bu arşiv parola korumalı; bu henüz desteklenmiyor.",
+    tooManyFiles: "Arşivde çok fazla dosya var (sınıra ulaşıldı).",
+    tooBig:
+      "Açılmış içerik izin verilen boyutu aşıyor. Arşivi küçültün (node_modules?).",
+    empty: "Bu arşivde kullanılabilir hiçbir dosya yok.",
+    corrupt:
+      "Arşiv okunamıyor veya bozuk. Dosyayı kontrol edip tekrar deneyin.",
+    unsupported:
+      "Desteklenmeyen biçim (bilinmeyen sıkıştırma yöntemi veya arşiv türü).",
+    volume:
+      "Çok parçalı RAR arşivleri (.part1.rar, .part2.rar…) desteklenmiyor.",
+    unsafePaths:
+      "Arşiv tehlikeli dosya yolları (traversal) içeriyor ve reddedildi.",
+    pathLimits:
+      "Bir dosya yolu izin verilen sınırları aşıyor (derinlik veya uzunluk).",
+    timeout: "Çıkarma çok uzun sürdü ve durduruldu.",
+    rateLimited: "Çok fazla istek. Biraz bekleyip tekrar deneyin.",
+    notFound: "Kaynak bulunamadı.",
+    forbidden:
+      "Bu depoda yazma izniniz yok (veya GitHub belirtecinde doğru kapsam yok).",
+    repoExists: "Hesabınızda bu adla bir depo zaten var.",
+    nameInvalid: "Geçersiz depo veya dal adı.",
+    noChanges:
+      "Gönderilecek bir şey yok: dosyalar hedef depoyla zaten aynı.",
+    conflict:
+      "Hedef depo bu arada değişti. Tekrar deneyin, ayrı bir dala gönderin veya dalı arşivin içeriğiyle ezmek için «Tüm kodu değiştir» ile yeniden başlatın.",
+    scopeMissing:
+      "GitHub workflow dosyalarının (.github/workflows/…) değiştirilmesini reddediyor: belirteçte «workflow» kapsamı yok. Vermek için çıkış yapıp yeniden giriş yapın.",
+    gitFailed: "GitHub'a gönderme başarısız oldu.",
+    interrupted: "İşlem kesildi (sunucu yeniden başlatıldı).",
+    badPath: "Geçersiz dosya yolu.",
+    confirmMismatch:
+      "Onay, depo adıyla eşleşmiyor: hiçbir şey silinmedi.",
+    archiveTooBig:
+      "Bu depo tek bir arşiv olarak indirilemeyecek kadar büyük.",
+    internal: "Beklenmeyen iç hata. Birazdan tekrar deneyin.",
   },
 };

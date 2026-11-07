@@ -397,3 +397,56 @@ Vérifié en HTTP sur un build de production : les 16 langues rendent le bon
 `pt-BR` (→ `pt`) et `ar`. Le parcours complet d'un clic sur `/langues` vers
 `/api/lang/switch?to=ja&next=/langues` rend bien la page en japonais.
 360 tests, lint, typecheck et build passent.
+
+---
+
+## Complément — traductions complètes (finitions)
+
+La première vague traduisait les pages publiques ; quatre écrans restaient en
+français dur, et les erreurs étaient **stockées en phrases**. Ce complément
+ferme l'écart.
+
+| Écran / sujet | Avant | Après |
+| --- | --- | --- |
+| `/jobs/[id]` (suivi d'import) | 100 % français en dur (statuts, aperçu, destination, « c'est poussé ! », liens IA) | 3 sections de dictionnaire (`jobs`) + `errorMessage` traduit côté serveur |
+| `/repos` (liste) | filtres, tris, compteurs, « poussé il y a… », erreurs | section `repos` + `formatBytes`/`timeAgo` localisés |
+| `/repos` (détail) | arborescence, aperçu de fichier, « racine », « entrée(s) », actions | section `repos` (`RepoDetail`) |
+| `/repos` (actions) | renommer, visibilité, suppression | section `repos` (`RepoActions`) |
+| Erreurs de job | phrase française en base (`error`) | code en base (`error_code` + `error_detail`), traduit à l'affichage |
+| Erreurs d'API | phrase française dans `{ error }` | `{ error, code }` : `jsonCodeError` / `jsonErrorPayload` |
+| Unités et dates | `1,2 Mo`, `il y a 3 min`, `1 234` en dur | `Intl` : `1.2 MB`, `3 minutes ago`, `1.234` |
+| `<title>` du layout | français en dur | `t.meta.title` + `og:locale` de la langue |
+| Manifeste PWA | nom/description français + `lang: "fr"` | localisés (+ `lang`) |
+| JSON-LD | `inLanguage` figé à `fr` | suit la langue rendue |
+
+Décisions :
+
+- **Le serveur ne parle plus, il code.** `lib/errors.ts` ne contient plus de
+  table de phrases : `AppError` porte un `code` et un `detail` technique
+  nettoyé (300 caractères, une ligne). Les routes renvoient
+  `{ error, code, detail }` — `error` reste une phrase française de repli
+  (curl, logs, ancien onglet), `code` est ce que l'interface traduit.
+- **Tables exhaustives.** `ERROR_KEYS` (24 codes métier) et `API_ERROR_KEYS`
+  (15 codes d'API) sont des `Record<…, keyof Dict[…]>` : ajouter un code sans
+  traduction casse la compilation. Les tests vérifient en plus que les 16
+  dictionnaires fournissent chaque clé.
+- **Pas de régression pour l'historique.** Une base antérieure est migrée
+  (`ALTER TABLE jobs ADD COLUMN error_code / error_detail`, idempotent). Un job
+  qui n'a qu'une phrase française l'affiche telle quelle (`legacy`) au lieu de
+  tomber sur « erreur interne ».
+- **`Intl` plutôt qu'un dictionnaire d'unités.** `formatBytes(1.5e6, "de")`
+  donne `1,5 MB`, `"ru"` donne `1,5 МБ`, sans table à maintenir ; les nombres
+  suivent les conventions locales (`1 234` / `1,234` / `1.234`).
+- **Hors périmètre assumé.** Le panel staff (`/staff`) reste en français : il
+  est réservé à l'équipe, derrière mot de passe et allowlist. Les images
+  sociales OpenGraph/Twitter sont rendues une fois (`force-static`) et restent
+  françaises — un PNG ne peut pas suivre un cookie.
+- **Corrigé au passage.** La puce d'accueil « Interface 100 % française »
+  contredisait les 16 langues : devenue « Ouvert : le code est public », et le
+  manifeste déclare enfin la bonne `lang`.
+
+Vérifié en HTTP sur un build de production : `/` rend le bon `<title>` en fr,
+en, de, ja, ar, zh ; `/manifest.webmanifest` suit le cookie (`lang: "ja"`,
+nom japonais) ; `/login` titre « GitHub でログイン » avec `rd_lang=ja` ;
+`/api/repos` sans session renvoie `{"error":"Authentification requise.",
+"code":"AUTH_REQUIRED"}`. 375 tests, lint, typecheck et build passent.

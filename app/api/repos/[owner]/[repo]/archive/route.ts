@@ -11,11 +11,11 @@
  * progression et l'enregistrement du fichier.
  */
 import { getSession } from "@/lib/session";
-import { jsonError } from "@/lib/http";
+import { API_ERROR, jsonCodeError, jsonErrorPayload } from "@/lib/http";
 import { clientIp } from "@/lib/ratelimit";
 import { safeRef, streamArchive, type ArchiveFormat } from "@/lib/github";
 import { logEvent } from "@/lib/db";
-import { toUserMessage, AppError } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ function disposition(filename: string): string {
 
 export async function GET(req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { owner, repo } = await params;
   const url = new URL(req.url);
@@ -42,7 +42,7 @@ export async function GET(req: Request, { params }: Params): Promise<Response> {
   try {
     ref = safeRef(url.searchParams.get("ref"));
   } catch (e) {
-    return jsonError(toUserMessage(e), 400);
+    return jsonErrorPayload(e, 400);
   }
 
   try {
@@ -82,6 +82,6 @@ export async function GET(req: Request, { params }: Params): Promise<Response> {
               (e.code === "ARCHIVE_TOO_BIG" || e.code === "NAME_INVALID")
             ? 400
             : 500;
-    return jsonError(toUserMessage(e), status);
+    return jsonErrorPayload(e, status);
   }
 }

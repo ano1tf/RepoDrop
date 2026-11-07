@@ -39,7 +39,7 @@ export const hi: Dict = {
     ctaHow: "यह कैसे काम करता है",
     checkSandboxed: "सैंडबॉक्स एक्सट्रैक्शन",
     checkToken: "GitHub टोकन कभी संग्रहीत नहीं",
-    checkFrench: "खुला वर्कफ़्लो",
+    checkFrench: "खुला: सोर्स कोड सार्वजनिक है",
 
     statFormats: "आर्काइव फ़ॉर्मैट",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -47,6 +47,7 @@ export const hi: Dict = {
     statCommandsSub: "सब कुछ एक क्लिक में",
     statDuration: "छोड़ने से पुश तक",
     statDurationSub: "पूर्वावलोकन सहित",
+    statDurationValue: "2 मिनट",
     statLanguages: "भाषाएँ",
     statLanguagesSub: "इंटरफ़ेस और संदेश",
 
@@ -204,5 +205,271 @@ export const hi: Dict = {
     title: "पृष्ठ नहीं मिला",
     body: "यह पृष्ठ मौजूद नहीं है — या जॉब समाप्त हो गया (आर्काइव कुछ समय बाद मिटा दिए जाते हैं)।",
     back: "होम पर लौटें",
+  },
+  jobs: {
+    metaTitle: "इम्पोर्ट की प्रगति",
+
+    statusQueued: "कतार में",
+    statusExtracting: "एक्सट्रैक्ट हो रहा है",
+    statusReady: "पुश के लिए तैयार",
+    statusPushing: "पुश हो रहा है…",
+    statusDone: "पूरा हुआ",
+    statusFailed: "विफल",
+
+    extractingTitle: "एक्सट्रैक्शन चल रहा है…",
+    extractingBody:
+      "पाथ और आकार की जाँच, रूट फ़ोल्डर की पहचान। सब कुछ सर्वर पर, एक अलग सुरक्षित जगह में होता है।",
+    pushingTitle: "GitHub पर पुश हो रहा है…",
+    pushingBody:
+      "कमिट बनाया जा रहा है और फ़ाइलें भेजी जा रही हैं। आप यह टैब खुला छोड़ सकते हैं — हम आपको जानकारी देते रहेंगे।",
+
+    failedTitle: "कार्रवाई विफल रही",
+    failedUnknown: "अज्ञात त्रुटि।",
+    lostConnection: "कनेक्शन टूट गया। फिर से कोशिश करें।",
+    httpFailed: "विफल (HTTP {status})।",
+    repoMoved:
+      "आपके इम्पोर्ट के बाद रिपॉज़िटरी {repo} आगे बढ़ चुकी है। आप इस आर्काइव की ठीक वही सामग्री से उसकी ब्रांच को बदल सकते हैं: जो फ़ाइलें आर्काइव में नहीं हैं, वे रिपॉज़िटरी से हटा दी जाएँगी और पुश ज़बरदस्ती होगा। मौजूदा इतिहास सुरक्षित रहता है (ऊपर नया कमिट)।",
+    repoMovedConfirm:
+      "क्या आप पुष्टि करते हैं कि इस रिपॉज़िटरी का सारा कोड इस आर्काइव से बदल दिया जाए?",
+    replaceAllYes: "हाँ, सारा कोड बदलें",
+    replaceAllRetry: "सारा कोड बदलकर फिर से कोशिश करें",
+    cancel: "रद्द करें",
+    retryOtherArchive: "दूसरे आर्काइव के साथ फिर से कोशिश करें",
+    backHome: "होम पर लौटें",
+
+    doneTitle: "पुश हो गया!",
+    doneBody: "{count} फ़ाइलें इस ब्रांच पर इम्पोर्ट हुईं:",
+    doneCommit: "कमिट",
+    doneCreated: "· रिपॉज़िटरी बनाई गई",
+    openOnGithub: "GitHub पर खोलें",
+    copyLink: "लिंक कॉपी करें",
+    downloadZip: ".zip में डाउनलोड करें",
+    aiLinksTitle: "किसी AI को देने के लिए तैयार लिंक:",
+    anotherImport: "दूसरा आर्काइव इम्पोर्ट करें",
+
+    linkRepo: "GitHub रिपॉज़िटरी",
+    linkBranch: "ब्रांच «{branch}»",
+    linkBranchSub: "इस ब्रांच पर पुश करें",
+    linkCommit: "ठीक वही कमिट",
+    linkCodespaces: "Codespaces (GitHub AI एजेंट)",
+    linkCodespacesSub: "vscode.dev तुरंत तैयार, Copilot जुड़ा हुआ",
+    linkVscode: "vscode.dev (आधिकारिक वेब एडिटर)",
+    linkVscodeSub: "Copilot + एडिटिंग + चलाना (Codespaces)",
+    linkClone: "क्लोन URL (बाहरी एजेंट)",
+    linkCloneSub: "एजेंट अपनी GitHub सत्र से खुद प्रमाणित होता है",
+    linkGh: "`gh` CLI कमांड",
+
+    previewTitle: "आर्काइव का पूर्वावलोकन",
+    previewLead: "सुरक्षा फ़िल्टर के बाद क्या पुश होगा।",
+    previewFiles: "फ़ाइलें",
+    previewSize: "खुलने के बाद आकार",
+    previewIgnored: "छोड़ी गईं:",
+    ignoredGit: ".git ({count})",
+    ignoredSystemFiles: "सिस्टम फ़ाइलें ({count})",
+    ignoredSymlinks: "सिमलिंक ({count})",
+    ignoredHardlinks: "हार्डलिंक ({count})",
+    ignoredBlocked: "अवरुद्ध पाथ ({count})",
+    tooLargeForGithub:
+      "{count} फ़ाइलें 100 MB से बड़ी हैं: GitHub संभवतः उन्हें अस्वीकार कर देगा। उदा.:",
+
+    filtersTitle: "इम्पोर्ट फ़िल्टर",
+    filtersNone: "इस आर्काइव के लिए कोई फ़िल्टर उपलब्ध नहीं।",
+    stripRootLabel: "रूट फ़ोल्डर हटाएँ",
+    stripRootHint:
+      "सुझाया गया: प्रोजेक्ट की सामग्री सीधे रिपॉज़िटरी की जड़ में आ जाएगी।",
+    includeNodeModules: "शामिल करें",
+    includeNodeModulesHint:
+      "डिफ़ॉल्ट रूप से बिना चिह्न: भारी और रिपॉज़िटरी में शायद ही उपयोगी।",
+
+    destTitle: "गंतव्य",
+    destLead: "ये फ़ाइलें कहाँ पुश करें?",
+    destNew: "नई रिपॉज़िटरी",
+    destExisting: "मौजूदा रिपॉज़िटरी",
+    repoNameLabel: "रिपॉज़िटरी का नाम",
+    repoNamePlaceholder: "mera-project",
+    repoNameInvalid:
+      "केवल अक्षर, अंक, बिंदु, हाइफ़न और अंडरस्कोर (अक्षर या अंक से शुरू होना चाहिए)।",
+    visibilityLabel: "दृश्यता",
+    visibilityPrivate: "निजी",
+    visibilityPrivateHint: "केवल आपको दिखेगी",
+    visibilityPublic: "सार्वजनिक",
+    visibilityPublicHint: "सबको दिखेगी",
+    searchRepo: "रिपॉज़िटरी खोजें…",
+    loadingRepos: "आपकी रिपॉज़िटरियाँ लोड हो रही हैं…",
+    reposLoadError: "आपकी रिपॉज़िटरियाँ लोड नहीं हो सकीं।",
+    noWritableRepo:
+      "लिखने के अधिकार वाली कोई रिपॉज़िटरी नहीं मिली। नई बनाएँ!",
+    noRepoMatch: "खोज से कोई रिपॉज़िटरी मेल नहीं खाती।",
+    dedicatedBranch: "अलग ब्रांच बनाएँ",
+    dedicatedHintExisting:
+      "डिफ़ॉल्ट ब्रांच को न छुएँ: साझा रिपॉज़िटरी के लिए आदर्श।",
+    dedicatedHintNew:
+      "नई रिपॉज़िटरी की पहली ब्रांच का नाम (वरना डिफ़ॉल्ट ब्रांच)।",
+    replaceAll: "रिपॉज़िटरी का सारा कोड बदलें",
+    replaceAllHint:
+      "रिपॉज़िटरी में ठीक आर्काइव की फ़ाइलें रहेंगी: जो नहीं हैं वे हटा दी जाएँगी और पुश ज़बरदस्ती होगा — रिपॉज़िटरी इस बीच बदल भी गई हो तो भी सफल होगा («fetch first» त्रुटि अब नहीं)। जब आर्काइव प्रोजेक्ट का पूरा नया संस्करण हो तब इस्तेमाल करें।",
+    replaceConfirm:
+      "मैं पुष्टि करता/करती हूँ: रिपॉज़िटरी {repo} की जो फ़ाइलें इस आर्काइव में नहीं हैं, वे पुश की गई ब्रांच से हमेशा के लिए हट जाएँगी।",
+    replaceConfirmNoRepo:
+      "मैं पुष्टि करता/करती हूँ: रिपॉज़िटरी की जो फ़ाइलें इस आर्काइव में नहीं हैं, वे पुश की गई ब्रांच से हमेशा के लिए हट जाएँगी।",
+    advanced: "उन्नत विकल्प",
+    commitMessage: "कमिट संदेश",
+    commitPlaceholder: "{filename} को RepoDrop से इम्पोर्ट",
+    pushAction: "GitHub पर पुश करें",
+    replacePushAction: "GitHub पर सारा कोड बदलें",
+    sending: "भेजा जा रहा है…",
+    replaceNeedConfirm:
+      "बटन सक्रिय करने के लिए बदलने की पुष्टि पर चिह्न लगाएँ।",
+    tokenNote:
+      "आपका GitHub टोकन एक एन्क्रिप्टेड कुकी में रहता है — यह कभी डेटाबेस में नहीं लिखा जाता।",
+  },
+
+  repos: {
+    metaTitle: "मेरी रिपॉज़िटरियाँ",
+    pageTitle: "मेरी रिपॉज़िटरियाँ",
+    pageLead:
+      "कुछ भी इम्पोर्ट करने से पहले अपनी रिपॉज़िटरियाँ देखें: ट्री, फ़ाइलों का पूर्वावलोकन, अपनी पसंद की ब्रांच। नाम बदलना, दृश्यता और हटाना रिपॉज़िटरी के {actions} टैब में उपलब्ध हैं।",
+
+    filterPlaceholder: "नाम, विवरण या भाषा से फ़िल्टर करें…",
+    filterAria: "रिपॉज़िटरियाँ फ़िल्टर करें",
+    sortAria: "क्रम में लगाएँ",
+    sortPushed: "हाल की गतिविधि",
+    sortName: "नाम (A→Z)",
+    sortSize: "आकार",
+    mine: "मेरी",
+    refresh: "रीफ़्रेश करें",
+    errorList: "सूची उपलब्ध नहीं (HTTP {status})।",
+    errorServer: "सर्वर से संपर्क नहीं हो पा रहा।",
+    truncated:
+      "केवल 300 सबसे नई रिपॉज़िटरियाँ लोड हुई हैं। ऊपर के फ़िल्टर से सीमित करें।",
+    loading: "आपकी रिपॉज़िटरियाँ लोड हो रही हैं…",
+    emptyFilter: "इस फ़िल्टर से कोई रिपॉज़िटरी मेल नहीं खाती।",
+    emptyToken: "इस GitHub टोकन से कोई रिपॉज़िटरी दिखाई नहीं देती।",
+    countAll: "{count} रिपॉज़िटरियाँ",
+    countFiltered: "{total} में से {count}",
+    countHint: "— सामग्री देखने के लिए क्लिक करें।",
+    noDescription: "कोई विवरण नहीं",
+    pushedAgo: "{when} पुश हुई",
+    issues: "{count} issue",
+    readOnly: "केवल पढ़ने योग्य",
+
+    backToList: "सूची पर लौटें",
+    list: "सूची",
+    badgePrivate: "निजी",
+    badgePublic: "सार्वजनिक",
+    badgeArchived: "संग्रहीत",
+    badgeFork: "fork",
+    badgeReadOnly: "केवल पढ़ने योग्य",
+    branchProtected: "(सुरक्षित)",
+    downloadTitle: "{repo} को .{format} में डाउनलोड करें",
+    downloadTitleRef: "{repo} ({ref}) को .{format} में डाउनलोड करें",
+    actionsTab: "कार्रवाइयाँ",
+    loadingRepo: "रिपॉज़िटरी लोड हो रही है…",
+    inaccessible: "रिपॉज़िटरी पहुँच से बाहर है।",
+    inaccessibleHttp: "रिपॉज़िटरी पहुँच से बाहर है (HTTP {status})।",
+    errorServerJoin: "सर्वर से संपर्क नहीं हो पा रहा।",
+    copyDenied: "ब्राउज़र ने कॉपी करने से मना कर दिया।",
+    reloadFolder: "यह फ़ोल्डर फिर से लोड करें",
+    root: "जड़",
+    entries: "{count} प्रविष्टियाँ",
+    loadingShort: "लोड हो रहा है…",
+    emptyRepo:
+      "इस रिपॉज़िटरी में अभी कोई फ़ाइल नहीं है। इसे भरने के लिए आर्काइव इम्पोर्ट करें।",
+    loadingFile: "फ़ाइल लोड हो रही है…",
+    selectFile: "देखने के लिए कोई फ़ाइल चुनें।",
+    lines: "{count} पंक्तियाँ",
+    copy: "कॉपी करें",
+    copied: "कॉपी हो गया",
+    raw: "मूल",
+    fileTooBig:
+      "फ़ाइल पूर्वावलोकन के लिए बहुत बड़ी है ({size})। इसे GitHub पर खोलें।",
+    fileBinary: "बाइनरी फ़ाइल ({size}): कोई टेक्स्ट पूर्वावलोकन नहीं।",
+
+    actionsTitle: "नाम बदलें / विवरण",
+    nameLabel: "रिपॉज़िटरी का नाम",
+    renameWarning:
+      "नाम बदलने से मौजूदा क्लोन, लिंक और GitHub पेज टूट जाते हैं। GitHub पुराने नाम को रीडायरेक्ट करता है, पर हमेशा नहीं।",
+    descLabel: "विवरण",
+    descPlaceholder: "यह रिपॉज़िटरी किसलिए है?",
+    save: "सहेजें",
+    writeInsufficient: "इस रिपॉज़िटरी पर लिखने के अधिकार अपर्याप्त हैं।",
+    visibilityTitle: "दृश्यता",
+    visibilityCurrently: "अभी {visibility}।",
+    visibilityToPrivate:
+      " इसे निजी बनाने पर सभी अनाम उपयोगकर्ताओं की पहुँच हट जाती है।",
+    visibilityToPublic:
+      " इसे सार्वजनिक बनाने पर पूरा कमिट इतिहास दिखने लगता है।",
+    makePublic: "सार्वजनिक करें",
+    makePrivate: "निजी करें",
+    dangerZone: "संवेदनशील क्षेत्र",
+    deleteWarning:
+      "हटाना स्थायी है: कोड, इतिहास, issues और wiki।",
+    deleteRepo: "रिपॉज़िटरी हटाएँ",
+    deleteTitle: "{repo} हटाएँ",
+    deleteConfirmBody:
+      "कोई वापसी संभव नहीं। बटन खोलने के लिए {name} लिखें।",
+    deleteForever: "हमेशा के लिए हटाएँ",
+    cancel: "रद्द करें",
+    updated: "रिपॉज़िटरी अपडेट हुई।",
+    deleted: "रिपॉज़िटरी {repo} हटा दी गई।",
+    httpFailed: "विफल (HTTP {status})।",
+  },
+
+  api: {
+    authRequired: "प्रमाणीकरण आवश्यक है।",
+    jobNotFound: "जॉब नहीं मिला।",
+    jobNotReady: "यह जॉब अभी तैयार नहीं है।",
+    jobNotPushable: "यह जॉब पुश के लिए तैयार नहीं है।",
+    invalidJson: "अमान्य JSON सामग्री।",
+    invalidMultipart: "अमान्य अनुरोध (multipart/form-data अपेक्षित)।",
+    emptyBody: "अनुरोध सामग्री खाली है।",
+    emptyArchive: "आर्काइव खाली है।",
+    uploadFailed: "फ़ाइल प्राप्त नहीं हो सकी। फिर से कोशिश करें।",
+    repoNameRequired:
+      "नई रिपॉज़िटरी बनाने के लिए रिपॉज़िटरी का नाम आवश्यक है।",
+    branchNameTooLong: "ब्रांच का नाम बहुत लंबा है।",
+    invalidOptions: "अमान्य विकल्प।",
+    invalidChange: "अमान्य बदलाव।",
+    noChange: "कोई बदलाव नहीं।",
+    pathRequired: "«path» पैरामीटर आवश्यक है।",
+  },
+  errors: {
+    encrypted:
+      "यह आर्काइव पासवर्ड से सुरक्षित है, जो अभी समर्थित नहीं है।",
+    tooManyFiles: "आर्काइव में बहुत अधिक फ़ाइलें हैं (सीमा पूरी)।",
+    tooBig:
+      "खुलने के बाद सामग्री अनुमत आकार से अधिक है। आर्काइव छोटा करें (node_modules?)।",
+    empty: "इस आर्काइव में कोई काम की फ़ाइल नहीं है।",
+    corrupt:
+      "आर्काइव पढ़ा नहीं जा सकता या खराब है। फ़ाइल जाँचें और फिर से कोशिश करें।",
+    unsupported:
+      "असमर्थित फ़ॉर्मैट (अज्ञात कम्प्रेशन विधि या आर्काइव प्रकार)।",
+    volume:
+      "मल्टी-वॉल्यूम RAR आर्काइव (.part1.rar, .part2.rar…) समर्थित नहीं हैं।",
+    unsafePaths:
+      "आर्काइव में खतरनाक फ़ाइल पाथ (traversal) हैं और इसे अस्वीकार कर दिया गया।",
+    pathLimits:
+      "एक फ़ाइल पाथ अनुमत सीमा से अधिक है (गहराई या लंबाई)।",
+    timeout: "एक्सट्रैक्शन में बहुत समय लगा और इसे रोक दिया गया।",
+    rateLimited: "बहुत अधिक अनुरोध। थोड़ी देर रुककर फिर कोशिश करें।",
+    notFound: "संसाधन नहीं मिला।",
+    forbidden:
+      "इस रिपॉज़िटरी पर आपको लिखने का अधिकार नहीं है (या GitHub टोकन में सही स्कोप नहीं है)।",
+    repoExists: "आपके खाते में इस नाम की रिपॉज़िटरी पहले से है।",
+    nameInvalid: "रिपॉज़िटरी या ब्रांच का नाम अमान्य है।",
+    noChanges:
+      "पुश करने को कुछ नहीं: फ़ाइलें पहले से गंतव्य रिपॉज़िटरी से मेल खाती हैं।",
+    conflict:
+      "गंतव्य रिपॉज़िटरी इस बीच बदल गई। फिर से कोशिश करें, अलग ब्रांच पर पुश करें, या «सारा कोड बदलें» के साथ दोबारा चलाएँ ताकि ब्रांच आर्काइव की सामग्री से बदल जाए।",
+    scopeMissing:
+      "GitHub workflow फ़ाइलों (.github/workflows/…) में बदलाव अस्वीकार करता है: टोकन में «workflow» स्कोप नहीं है। इसे देने के लिए साइन आउट करके दोबारा साइन इन करें।",
+    gitFailed: "GitHub पर पुश विफल रहा।",
+    interrupted: "प्रोसेसिंग रोक दी गई (सर्वर रीस्टार्ट)।",
+    badPath: "फ़ाइल पाथ अमान्य है।",
+    confirmMismatch:
+      "पुष्टि रिपॉज़िटरी के नाम से मेल नहीं खाती: कुछ भी नहीं हटाया गया।",
+    archiveTooBig:
+      "यह रिपॉज़िटरी एक आर्काइव के रूप में डाउनलोड करने के लिए बहुत बड़ी है।",
+    internal: "अप्रत्याशित आंतरिक त्रुटि। थोड़ी देर में फिर कोशिश करें।",
   },
 };

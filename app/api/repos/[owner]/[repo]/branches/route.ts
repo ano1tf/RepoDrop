@@ -1,8 +1,8 @@
 /** GET /api/repos/[owner]/[repo]/branches — branches du dépôt (sélecteur de ref). */
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { API_ERROR, json, jsonCodeError, jsonErrorPayload } from "@/lib/http";
 import { listBranches } from "@/lib/github";
-import { toUserMessage, AppError } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ interface Params {
 
 export async function GET(_req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return jsonCodeError(API_ERROR.AUTH_REQUIRED, 401);
 
   const { owner, repo } = await params;
   try {
@@ -24,6 +24,6 @@ export async function GET(_req: Request, { params }: Params): Promise<Response> 
         : e instanceof AppError && e.code === "RATE_LIMITED"
           ? 429
           : 500;
-    return jsonError(toUserMessage(e), status);
+    return jsonErrorPayload(e, status);
   }
 }
