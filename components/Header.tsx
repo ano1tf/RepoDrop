@@ -4,10 +4,12 @@ import { getSession } from "@/lib/session";
 import { GitHubIcon, Wordmark } from "@/components/Brand";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-/** En-tête global (server component) — reflète l'état de session. */
+/** En-tête global (server component) — reflète la session et la langue. */
 export async function Header() {
-  const session = await getSession();
+  const [session, { locale, t }] = await Promise.all([getSession(), getT()]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-edge/70 glass">
@@ -25,16 +27,23 @@ export async function Header() {
         </Link>
 
         <nav
-          aria-label="Navigation principale"
+          aria-label={t.nav.howItWorks}
           className="flex items-center gap-1.5 sm:gap-2"
         >
           <Link
             href="/#comment"
-            className="hidden rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-panel2 hover:text-chalk md:inline-block"
+            className="hidden rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-panel2 hover:text-chalk lg:inline-block"
           >
-            Comment ça marche
+            {t.nav.howItWorks}
           </Link>
 
+          <LanguageSwitcher
+            locale={locale}
+            label={t.nav.language}
+            changeLabel={t.nav.languageChange}
+            searchLabel={t.nav.languageSearch}
+            currentLabel={t.nav.languageCurrent.replace("{name}", locale.toUpperCase())}
+          />
 
           {session ? (
             <>
@@ -43,25 +52,25 @@ export async function Header() {
                 className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-panel2 hover:text-chalk md:inline-flex"
               >
                 <FolderSearch className="h-4 w-4" />
-                Mes dépôts
+                {t.nav.myRepos}
               </Link>
               <Link
                 href="/import"
-                className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}
+                className={cn(buttonVariants({ size: "sm" }), "hidden xl:inline-flex")}
               >
-                Importer une archive
+                {t.nav.importArchive}
               </Link>
               <Link
                 href="/import"
-                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "sm:hidden")}
+                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "xl:hidden")}
               >
-                Importer
+                {t.nav.importShort}
               </Link>
-              <span className="flex items-center gap-2 rounded-full bg-panel2 py-1 pl-1 pr-3 ring-1 ring-edge">
+              <span className="hidden items-center gap-2 rounded-full bg-panel2 py-1 pl-1 pr-3 ring-1 ring-edge sm:flex">
                 {session.avatar ? (
                   <img
                     src={session.avatar}
-                    alt={`Avatar de ${session.login}`}
+                    alt={t.nav.avatarAlt.replace("{login}", session.login)}
                     className="h-6 w-6 rounded-full ring-1 ring-edge"
                     referrerPolicy="no-referrer"
                   />
@@ -77,9 +86,9 @@ export async function Header() {
               <a
                 href="/api/auth/logout"
                 rel="nofollow"
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}
               >
-                Déconnexion
+                {t.nav.logout}
               </a>
             </>
           ) : (
@@ -88,11 +97,11 @@ export async function Header() {
                 href="/login"
                 className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
               >
-                Connexion
+                {t.nav.login}
               </Link>
               <Link href="/login" className={cn(buttonVariants({ size: "sm" }))}>
                 <GitHubIcon />
-                <span className="hidden sm:inline">Commencer</span>
+                <span className="hidden sm:inline">{t.nav.start}</span>
                 <ArrowUpRight className="h-3.5 w-3.5 sm:hidden" />
               </Link>
             </>

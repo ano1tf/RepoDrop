@@ -8,16 +8,27 @@ import { useCallback, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Archive, AlertTriangle, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fill } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
 
 interface Props {
   maxLabel: string;
   extractLabel: string;
+  /** Chaînes de la section `uploader` du dictionnaire courant. */
+  t: Dict["uploader"];
 }
 
 const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
-export function Uploader({ maxLabel, extractLabel }: Props) {
+export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
   const router = useRouter();
+  /*
+   * Les chaînes viennent d'un objet recréé à chaque rendu serveur : on les
+   * fige dans une ref pour que `send` garde une identité stable (sinon le
+   * `useCallback` se recrée à chaque rendu et le gestionnaire de dépôt avec).
+   */
+  const tRef = useRef(strings);
+  tRef.current = strings;
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -27,13 +38,11 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
     (file: File) => {
       setError(null);
       if (!OK_EXT.test(file.name)) {
-        setError(
-          "Format non supporté : seuls les fichiers .rar, .zip, .tar et .tar.gz sont acceptés.",
-        );
+        setError(tRef.current.errorFormat);
         return;
       }
       if (file.size === 0) {
-        setError("Ce fichier est vide.");
+        setError(tRef.current.errorEmpty);
         return;
       }
 
@@ -55,13 +64,13 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
         setError(
           xhr.response?.error ??
             (xhr.status === 413
-              ? `Archive trop volumineuse (max ${maxLabel}).`
-              : `Échec de l'envoi (HTTP ${xhr.status}). Réessayez.`),
+              ? fill(tRef.current.errorTooLarge, { max: maxLabel })
+              : fill(tRef.current.errorHttp, { status: xhr.status })),
         );
       };
       xhr.onerror = () => {
         setProgress(null);
-        setError("Connexion perdue pendant l'envoi. Réessayez.");
+        setError(tRef.current.errorNetwork);
       };
       xhr.send(form);
     },
@@ -83,7 +92,7 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Déposer une archive .rar, .zip ou .tar"
+        aria-label={strings.dropLabel}
         onClick={() => !uploading && inputRef.current?.click()}
         onKeyDown={(e) => {
           if ((e.key === "Enter" || e.key === " ") && !uploading) inputRef.current?.click();
@@ -117,7 +126,7 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
           <div className="w-full max-w-sm">
             <div className="mb-3 flex items-center justify-center gap-2 text-sm text-chalk">
               <UploadCloud className="h-5 w-5 text-go" />
-              Envoi de l'archive… {progress}%
+              {fill(strings.uploading, { progress: progress ?? 0 })}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
               <div
@@ -125,7 +134,7 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-3 text-xs text-mist">Ne fermez pas cet onglet.</p>
+            <p className="mt-3 text-xs text-mist">{strings.keepOpen}</p>
           </div>
         ) : (
           <>
@@ -138,11 +147,9 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
               <Archive className={cn("h-8 w-8", drag && "text-go")} />
             </div>
             <div>
-              <p className="text-base font-medium text-chalk">
-                Glissez votre archive ici, ou cliquez pour parcourir
-              </p>
+              <p className="text-base font-medium text-chalk">{strings.dropHint}</p>
               <p className="mt-1 text-sm text-mist">
-                .rar, .zip, .tar &amp; .tar.gz — {maxLabel} max ({extractLabel} décompressés)
+                {fill(strings.formatsHint, { max: maxLabel, extract: extractLabel })}
               </p>
             </div>
           </>
