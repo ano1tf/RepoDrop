@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { getLocale } from "@/lib/i18n/server";
+import { dirOf } from "@/lib/i18n/locales";
 import {
   buildIcons,
   buildVerification,
@@ -71,11 +73,15 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
+
+  // `lang`/`dir` reflètent la langue réellement rendue : indispensable pour la
+  // synthèse vocale, la césure et le rendu droite-à-gauche (arabe).
   return (
-    <html lang="fr">
+    <html lang={locale} dir={dirOf(locale)}>
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />

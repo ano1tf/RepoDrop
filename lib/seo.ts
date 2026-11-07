@@ -110,12 +110,22 @@ export function buildPageMetadata(opts: {
   description?: string;
   path: string;
   noIndex?: boolean;
+  /**
+   * Titre complet déjà localisé (accueil multilingue) : il remplace le titre
+   * par défaut et n'est pas recomposé avec le gabarit `%s · RepoDrop`.
+   */
+  overrideTitle?: string;
+  /** Locale OpenGraph de la page (`fr_FR`, `en_US`…), `fr_FR` par défaut. */
+  ogLocale?: string;
 }): Metadata {
-  const fullTitle = opts.title ? `${opts.title} · ${SITE_NAME}` : SITE_DEFAULT_TITLE;
+  const fullTitle = opts.title
+    ? `${opts.title} · ${SITE_NAME}`
+    : (opts.overrideTitle ?? SITE_DEFAULT_TITLE);
   const description = opts.description ?? SITE_DESCRIPTION;
 
   return {
     ...(opts.title ? { title: opts.title } : {}),
+    ...(opts.overrideTitle ? { title: { absolute: opts.overrideTitle } } : {}),
     description,
     alternates: {
       canonical: opts.path,
@@ -124,7 +134,7 @@ export function buildPageMetadata(opts: {
     ...(opts.noIndex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: "website",
-      locale: "fr_FR",
+      locale: opts.ogLocale ?? "fr_FR",
       siteName: SITE_NAME,
       url: opts.path,
       title: fullTitle,
@@ -457,8 +467,24 @@ export function buildManifest(): MetadataRoute.Manifest {
  * - `WebApplication` reste le nœud principal de la page, l'entité à propos de
  *   laquelle la page existe.
  */
-export function buildStructuredData(baseUrl: string) {
+export function buildStructuredData(
+  baseUrl: string,
+  /**
+   * Contenu localisé : titres, description et FAQ de la langue rendue. Par
+   * défaut, le français — le comportement d'origine est donc préservé.
+   */
+  content: {
+    locale?: string;
+    title?: string;
+    description?: string;
+    faq?: readonly FaqItem[];
+  } = {},
+) {
   const origin = baseUrl.replace(/\/+$/, "");
+  const lang = content.locale ?? "fr";
+  const title = content.title ?? SITE_DEFAULT_TITLE;
+  const description = content.description ?? SITE_DESCRIPTION;
+  const faq = content.faq ?? FAQ_ITEMS;
   const graph: Record<string, unknown>[] = [
     {
       "@type": "Organization",
@@ -484,17 +510,17 @@ export function buildStructuredData(baseUrl: string) {
       "@id": `${origin}/#website`,
       url: origin,
       name: SITE_NAME,
-      description: SITE_DESCRIPTION,
-      inLanguage: "fr-FR",
+      description,
+      inLanguage: lang,
       publisher: { "@id": `${origin}/#organization` },
     },
     {
       "@type": "WebPage",
       "@id": `${origin}/#webpage`,
       url: origin,
-      name: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
-      inLanguage: "fr-FR",
+      name: title,
+      description,
+      inLanguage: lang,
       isPartOf: { "@id": `${origin}/#website` },
       about: { "@id": `${origin}/#app` },
       primaryImageOfPage: { "@id": `${origin}/#primaryimage` },
@@ -516,8 +542,8 @@ export function buildStructuredData(baseUrl: string) {
       applicationCategory: "DeveloperApplication",
       operatingSystem: "All",
       browserRequirements: "Requires JavaScript",
-      inLanguage: "fr-FR",
-      description: SITE_DESCRIPTION,
+      inLanguage: lang,
+      description,
       image: `${origin}${SITE_OG_IMAGE.url}`,
       isPartOf: { "@id": `${origin}/#website` },
       publisher: { "@id": `${origin}/#organization` },
@@ -538,9 +564,9 @@ export function buildStructuredData(baseUrl: string) {
       "@type": "FAQPage",
       "@id": `${origin}/#faq`,
       url: `${origin}/#faq`,
-      inLanguage: "fr-FR",
+      inLanguage: lang,
       isPartOf: { "@id": `${origin}/#webpage` },
-      mainEntity: FAQ_ITEMS.map((item) => ({
+      mainEntity: faq.map((item) => ({
         "@type": "Question",
         name: item.question,
         acceptedAnswer: {

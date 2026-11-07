@@ -22,99 +22,55 @@ import { getSession } from "@/lib/session";
 import {
   buildPageMetadata,
   buildStructuredData,
-  FAQ_ITEMS,
   resolveSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
+import { LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
+import { fill } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
 
-export const metadata: Metadata = buildPageMetadata({ path: "/" });
-
-const STEPS = [
-  {
-    n: "1",
-    title: "Connectez GitHub",
-    body: "Un simple clic d'autorisation. Nous demandons uniquement les scopes nécessaires — votre jeton reste chiffré dans votre navigateur.",
-    icon: Lock,
-  },
-  {
-    n: "2",
-    title: "Déposez l'archive",
-    body: "Glissez votre .rar, .zip ou .tar. Extraction sandboxée, chemins vérifiés, aperçu complet avant l'envoi.",
-    icon: MousePointerClick,
-  },
-  {
-    n: "3",
-    title: "Pushez en un clic",
-    body: "Créez un dépôt ou poussez dans un dépôt existant. Le commit est créé avec votre identité GitHub.",
-    icon: GitBranch,
-  },
-] as const;
-
-const FEATURES = [
-  {
-    icon: Archive,
-    title: "RAR, ZIP et TAR natifs",
-    body: "Les .rar (RAR4/RAR5), .zip et .tar/.tar.gz s'ouvrent côté serveur — aucun logiciel à installer, nulle part.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Extraction verrouillée",
-    body: "Anti zip-slip, anti bombes de décompression, .git embarqué et liens symboliques écartés. Vos dépôts restent propres.",
-  },
-  {
-    icon: Eye,
-    title: "Aperçu avant push",
-    body: "Fichiers, poids, dossier racine, node_modules : vous voyez exactement ce qui part, et vous gardez le contrôle.",
-  },
-  {
-    icon: Terminal,
-    title: "Zéro ligne de commande",
-    body: "Pas de clone, pas de credentials git, pas de « git push -u origin ». L'outil fait tout à votre place.",
-  },
-  {
-    icon: GitBranch,
-    title: "Dépôt existant ou neuf",
-    body: "Créez un dépôt privé ou public, ou ajoutez l'archive à un dépôt existant — en branche dédiée si vous préférez.",
-  },
-  {
-    icon: Sparkles,
-    title: "Liens prêts pour une IA",
-    body: "Après le push : Codespaces, vscode.dev, URL de clone, commande gh et archive .zip. Un copier-coller suffit.",
-  },
-] as const;
-
-const GUARANTEES = [
-  {
-    icon: ShieldCheck,
-    title: "Zip-slip & traversal",
-    body: "Chaque chemin est validé (../, absolus, UNC, NUL). Une seule tentative et l'archive entière est refusée.",
-  },
-  {
-    icon: FileWarning,
-    title: "Bombes de décompression",
-    body: "Les tailles déclarées sont cumulées avant écriture : 500 Mo décompressés et 20 000 fichiers au maximum.",
-  },
-  {
-    icon: Lock,
-    title: "Jeton GitHub",
-    body: "Cookie httpOnly chiffré (JWE A256GCM), push via GIT_ASKPASS. Jamais en base, jamais dans les logs.",
-  },
-  {
-    icon: Gauge,
-    title: "Quotas",
-    body: "30 uploads/h par IP et 10 push/h par utilisateur, compteurs persistants : le service reste sain.",
-  },
-] as const;
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale, t } = await getT();
+  return buildPageMetadata({
+    title: undefined,
+    description: t.meta.description,
+    path: "/",
+    // Le titre localisé remplace le titre par défaut du layout.
+    overrideTitle: t.meta.title,
+    ogLocale: ogLocaleOf(locale),
+  });
+}
 
 export default async function Home() {
-  const [session, reqHeaders] = await Promise.all([getSession(), headers()]);
+  const [session, reqHeaders, { locale, t }] = await Promise.all([
+    getSession(),
+    headers(),
+    getT(),
+  ]);
   const baseUrl = resolveSiteUrl({ headers: reqHeaders });
-  const jsonLd = serializeJsonLd(buildStructuredData(baseUrl));
+
+  const faqItems = [
+    { question: t.faq.q1, answer: t.faq.a1 },
+    { question: t.faq.q2, answer: t.faq.a2 },
+    { question: t.faq.q3, answer: t.faq.a3 },
+    { question: t.faq.q4, answer: t.faq.a4 },
+    { question: t.faq.q5, answer: t.faq.a5 },
+  ];
+
+  const jsonLd = serializeJsonLd(
+    buildStructuredData(baseUrl, {
+      locale,
+      title: t.meta.title,
+      description: t.meta.description,
+      faq: faqItems,
+    }),
+  );
   const ctaHref = session ? "/import" : "/login";
-  const ctaLabel = session ? "Importer une archive" : "Commencer avec GitHub";
+  const ctaLabel = session ? t.home.ctaImport : t.home.ctaStart;
 
   return (
     <main className="flex-1">
@@ -138,58 +94,52 @@ export default async function Home() {
           <div className="animate-fade-up">
             <Badge variant="sky" className="mb-6">
               <FolderArchive className="h-3.5 w-3.5" />
-              Nouveau : .tar et .tar.gz
+              {t.home.heroBadge}
             </Badge>
             <h1 className="text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
-              Vos archives de code,
+              {t.home.heroTitleLine1}
               <br />
-              <span className="text-gradient">sur GitHub en un glisser-déposer.</span>
+              <span className="text-gradient">{t.home.heroTitleLine2}</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-mist">
-              Recevez un <strong className="text-chalk">.rar</strong>, un{" "}
-              <strong className="text-chalk">.zip</strong> ou un{" "}
-              <strong className="text-chalk">.tar</strong> de projet&nbsp;? Connectez
-              GitHub, déposez l'archive, choisissez le dépôt — c'est poussé. Sans
-              terminal, sans clone, sans configuration.
+              {t.home.heroBody}
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
                 {ctaLabel}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Link>
               <a
                 href="#comment"
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
               >
-                Comment ça marche
+                {t.home.ctaHow}
               </a>
             </div>
 
             <ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-mist">
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-go" /> Extraction sandboxée
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-go" /> Jeton GitHub jamais stocké
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-go" /> Interface 100 % française
-              </li>
+              <CheckItem>{t.home.checkSandboxed}</CheckItem>
+              <CheckItem>{t.home.checkToken}</CheckItem>
+              <CheckItem>{t.home.checkFrench}</CheckItem>
             </ul>
           </div>
 
-          <HeroMock />
+          <HeroMock t={t} locale={locale} />
         </div>
       </section>
 
       {/* ---------------------------------------------------------- bandeau */}
       <section className="border-y border-edge/60 bg-ink2/50">
         <div className="mx-auto grid max-w-6xl gap-px overflow-hidden px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
-          <Stat value="3" label="formats d'archives" sub=".rar · .zip · .tar[.gz]" />
-          <Stat value="0" label="ligne de commande" sub="tout se fait au clic" />
-          <Stat value="2 min" label="du dépôt au push" sub="aperçu inclus" />
-          <Stat value="100 %" label="français" sub="interface et messages" />
+          <Stat value="3" label={t.home.statFormats} sub={t.home.statFormatsSub} />
+          <Stat value="0" label={t.home.statCommands} sub={t.home.statCommandsSub} />
+          <Stat value="2 min" label={t.home.statDuration} sub={t.home.statDurationSub} />
+          <Stat
+            value={String(LOCALES.length)}
+            label={t.home.statLanguages}
+            sub={t.home.statLanguagesSub}
+          />
         </div>
       </section>
 
@@ -197,21 +147,25 @@ export default async function Home() {
       <section id="comment" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6">
         <div className="mb-12 text-center">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Comment ça marche&nbsp;?
+            {t.home.stepsTitle}
           </h2>
-          <p className="mt-3 text-mist">Trois étapes, deux minutes, aucune commande.</p>
+          <p className="mt-3 text-mist">{t.home.stepsLead}</p>
         </div>
         <div className="relative grid gap-5 md:grid-cols-3">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-8 right-8 top-9 hidden h-px bg-gradient-to-r from-go/0 via-go/40 to-go/0 md:block"
           />
-          {STEPS.map((s) => (
+          {[
+            { n: "1", title: t.home.step1Title, body: t.home.step1Body, icon: Lock },
+            { n: "2", title: t.home.step2Title, body: t.home.step2Body, icon: MousePointerClick },
+            { n: "3", title: t.home.step3Title, body: t.home.step3Body, icon: GitBranch },
+          ].map((s) => (
             <div
               key={s.n}
               className="panel group relative p-6 transition-all duration-300 hover:-translate-y-1 hover:border-go/30"
             >
-              <span className="absolute -top-3.5 left-6 grid h-7 w-7 place-items-center rounded-full bg-go text-xs font-bold text-ink shadow-[0_0_20px_-4px_rgba(52,211,153,0.8)]">
+              <span className="absolute -top-3.5 left-6 grid h-7 w-7 place-items-center rounded-full bg-go text-xs font-bold text-ink shadow-[0_0_20px_-4px_rgba(52,211,153,0.8)] rtl:left-auto rtl:right-6">
                 {s.n}
               </span>
               <s.icon className="mb-4 h-6 w-6 text-go transition-transform duration-300 group-hover:scale-110" />
@@ -227,15 +181,20 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <div className="mb-12 max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Conçu pour être simple <span className="text-gradient">et sûr</span>
+              {t.home.featuresTitle}{" "}
+              <span className="text-gradient">{t.home.featuresTitleAccent}</span>
             </h2>
-            <p className="mt-3 text-mist">
-              Importer du code doit être un jeu d'enfant — sans transformer le
-              serveur en passoire.
-            </p>
+            <p className="mt-3 text-mist">{t.home.featuresLead}</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
+            {[
+              { icon: Archive, title: t.home.feature1Title, body: t.home.feature1Body },
+              { icon: ShieldCheck, title: t.home.feature2Title, body: t.home.feature2Body },
+              { icon: Eye, title: t.home.feature3Title, body: t.home.feature3Body },
+              { icon: Terminal, title: t.home.feature4Title, body: t.home.feature4Body },
+              { icon: GitBranch, title: t.home.feature5Title, body: t.home.feature5Body },
+              { icon: Sparkles, title: t.home.feature6Title, body: t.home.feature6Body },
+            ].map((f) => (
               <div
                 key={f.title}
                 className="panel group p-6 transition-all duration-300 hover:-translate-y-1 hover:border-sky/30"
@@ -261,15 +220,10 @@ export default async function Home() {
           <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">
-                Une archive, quel que soit son âge
+                {t.home.formatsTitle}
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
-                Les vieux <code className="text-chalk">.rar</code> de Windows, les{" "}
-                <code className="text-chalk">.zip</code> d'un export, les{" "}
-                <code className="text-chalk">.tar.gz</code> d'un serveur Linux :
-                tout est lu côté serveur, en streaming, avec les mêmes garde-fous.
-                Le dossier racine unique est retiré automatiquement, et{" "}
-                <code className="text-chalk">node_modules</code> est exclu par défaut.
+                {t.home.formatsBody}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -295,15 +249,17 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <div className="mb-12 max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Ce qu'on refuse, et pourquoi
+              {t.home.securityTitle}
             </h2>
-            <p className="mt-3 text-mist">
-              Décompresser l'archive d'un inconnu est un sport à risque. Voilà les
-              filets tendus sous chaque import.
-            </p>
+            <p className="mt-3 text-mist">{t.home.securityLead}</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
-            {GUARANTEES.map((g) => (
+            {[
+              { icon: ShieldCheck, title: t.home.guard1Title, body: t.home.guard1Body },
+              { icon: FileWarning, title: t.home.guard2Title, body: t.home.guard2Body },
+              { icon: Lock, title: t.home.guard3Title, body: t.home.guard3Body },
+              { icon: Gauge, title: t.home.guard4Title, body: t.home.guard4Body },
+            ].map((g) => (
               <div key={g.title} className="panel flex gap-4 p-5">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-go/10 text-go ring-1 ring-go/20">
                   <g.icon className="h-5 w-5" />
@@ -315,10 +271,7 @@ export default async function Home() {
               </div>
             ))}
           </div>
-          <p className="mt-6 text-xs text-mist">
-            Limites par défaut : 200 Mo uploadés, 500 Mo décompressés, 20 000
-            fichiers par import.
-          </p>
+          <p className="mt-6 text-xs text-mist">{t.home.limitsNote}</p>
         </div>
       </section>
 
@@ -329,15 +282,12 @@ export default async function Home() {
       >
         <div className="mb-10 max-w-2xl">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Questions fréquentes
+            {t.home.faqTitle}
           </h2>
-          <p className="mt-3 text-mist">
-            Tout savoir sur l'import d'archives vers GitHub, les formats acceptés
-            et la confidentialité de votre compte.
-          </p>
+          <p className="mt-3 text-mist">{t.home.faqLead}</p>
         </div>
         <div className="grid gap-3">
-          {FAQ_ITEMS.map((item) => (
+          {faqItems.map((item) => (
             <details
               key={item.question}
               className="panel group overflow-hidden transition-colors open:border-go/30"
@@ -369,15 +319,15 @@ export default async function Home() {
             className="pointer-events-none absolute -bottom-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-sky/10 blur-[100px]"
           />
           <h2 className="relative text-2xl font-semibold tracking-tight sm:text-3xl">
-            Prêt à vider votre prochaine archive sur GitHub&nbsp;?
+            {t.home.ctaTitle}
           </h2>
           <p className="relative mx-auto mt-3 max-w-xl text-mist">
-            Connectez-vous, déposez, pushez. On s'occupe du reste.
+            {t.home.ctaLead}
           </p>
           <div className="relative mt-7">
             <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
               {ctaLabel}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
           </div>
         </div>
@@ -387,6 +337,14 @@ export default async function Home() {
 }
 
 /* ------------------------------------------------------------------ briques */
+
+function CheckItem({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="inline-flex items-center gap-1.5">
+      <Check className="h-3.5 w-3.5 text-go" /> {children}
+    </li>
+  );
+}
 
 function Stat({
   value,
@@ -410,7 +368,7 @@ function Stat({
  * Maquette animée du produit (décorative) : dépôt de l'archive, extraction,
  * push réussi. Aucun JavaScript — uniquement des animations CSS.
  */
-function HeroMock() {
+function HeroMock({ t, locale }: { t: Dict; locale: string }) {
   return (
     <div
       aria-hidden="true"
@@ -436,8 +394,10 @@ function HeroMock() {
           <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-go/15 text-go ring-1 ring-go/30 animate-pulse-ring">
             <FolderArchive className="h-6 w-6" />
           </span>
-          <p className="text-sm font-medium text-chalk">mon-projet.tar</p>
-          <p className="mt-1 font-mono text-[11px] text-mist">18,4 Mo · 1 284 fichiers</p>
+          <p className="text-sm font-medium text-chalk">{t.home.mockFile}</p>
+          <p className="mt-1 font-mono text-[11px] text-mist">
+            {fill(t.home.mockFileMeta, { size: "18,4 Mo", count: 1284 })}
+          </p>
           <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-panel2">
             <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-go to-sky animate-indeterminate" />
           </div>
@@ -449,17 +409,22 @@ function HeroMock() {
           <TreeLine depth={1} name="index.ts" size="4,2 Ko" />
           <TreeLine depth={1} name="server.ts" size="12,8 Ko" />
           <TreeLine depth={0} name="package.json" size="1,1 Ko" />
-          <TreeLine depth={0} name="node_modules/" dir muted note="exclu" />
+          <TreeLine
+            depth={0}
+            name="node_modules/"
+            dir
+            muted
+            note={t.home.mockExcluded}
+          />
         </div>
 
         {/* résultat */}
         <div className="mt-3 flex items-center gap-2 rounded-xl bg-go/10 px-3 py-2.5 ring-1 ring-go/25">
           <Check className="h-4 w-4 shrink-0 text-go" />
-          <span className="truncate text-xs text-go">
-            Poussé sur github.com/vous/mon-projet · branche main
-          </span>
+          <span className="truncate text-xs text-go">{t.home.mockPushed}</span>
         </div>
       </div>
+      <span className="sr-only">{locale}</span>
     </div>
   );
 }
@@ -482,14 +447,12 @@ function TreeLine({
   return (
     <div
       className="flex items-center justify-between gap-2 py-0.5"
-      style={{ paddingLeft: depth * 12 }}
+      style={{ paddingInlineStart: depth * 12 }}
     >
       <span className={cn("truncate", dir ? "text-sky/80" : "text-mist", muted && "line-through opacity-60")}>
         {name}
       </span>
-      <span className="shrink-0 text-mist/60">
-        {note ?? size ?? ""}
-      </span>
+      <span className="shrink-0 text-mist/60">{note ?? size ?? ""}</span>
     </div>
   );
 }

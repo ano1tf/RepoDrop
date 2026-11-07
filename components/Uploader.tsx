@@ -8,15 +8,19 @@ import { useCallback, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Archive, AlertTriangle, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fill } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
 
 interface Props {
   maxLabel: string;
   extractLabel: string;
+  /** Chaînes de la section `uploader` du dictionnaire courant. */
+  t: Dict["uploader"];
 }
 
 const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
-export function Uploader({ maxLabel, extractLabel }: Props) {
+export function Uploader({ maxLabel, extractLabel, t }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
@@ -27,13 +31,11 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
     (file: File) => {
       setError(null);
       if (!OK_EXT.test(file.name)) {
-        setError(
-          "Format non supporté : seuls les fichiers .rar, .zip, .tar et .tar.gz sont acceptés.",
-        );
+        setError(t.errorFormat);
         return;
       }
       if (file.size === 0) {
-        setError("Ce fichier est vide.");
+        setError(t.errorEmpty);
         return;
       }
 
@@ -55,17 +57,17 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
         setError(
           xhr.response?.error ??
             (xhr.status === 413
-              ? `Archive trop volumineuse (max ${maxLabel}).`
-              : `Échec de l'envoi (HTTP ${xhr.status}). Réessayez.`),
+              ? fill(t.errorTooLarge, { max: maxLabel })
+              : fill(t.errorHttp, { status: xhr.status })),
         );
       };
       xhr.onerror = () => {
         setProgress(null);
-        setError("Connexion perdue pendant l'envoi. Réessayez.");
+        setError(t.errorNetwork);
       };
       xhr.send(form);
     },
-    [maxLabel, router],
+    [maxLabel, router, t],
   );
 
   const onDrop = (e: DragEvent) => {
@@ -83,7 +85,7 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Déposer une archive .rar, .zip ou .tar"
+        aria-label={t.dropLabel}
         onClick={() => !uploading && inputRef.current?.click()}
         onKeyDown={(e) => {
           if ((e.key === "Enter" || e.key === " ") && !uploading) inputRef.current?.click();
@@ -117,7 +119,7 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
           <div className="w-full max-w-sm">
             <div className="mb-3 flex items-center justify-center gap-2 text-sm text-chalk">
               <UploadCloud className="h-5 w-5 text-go" />
-              Envoi de l'archive… {progress}%
+              {fill(t.uploading, { progress: progress ?? 0 })}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
               <div
@@ -125,7 +127,7 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-3 text-xs text-mist">Ne fermez pas cet onglet.</p>
+            <p className="mt-3 text-xs text-mist">{t.keepOpen}</p>
           </div>
         ) : (
           <>
@@ -138,11 +140,9 @@ export function Uploader({ maxLabel, extractLabel }: Props) {
               <Archive className={cn("h-8 w-8", drag && "text-go")} />
             </div>
             <div>
-              <p className="text-base font-medium text-chalk">
-                Glissez votre archive ici, ou cliquez pour parcourir
-              </p>
+              <p className="text-base font-medium text-chalk">{t.dropHint}</p>
               <p className="mt-1 text-sm text-mist">
-                .rar, .zip, .tar &amp; .tar.gz — {maxLabel} max ({extractLabel} décompressés)
+                {fill(t.formatsHint, { max: maxLabel, extract: extractLabel })}
               </p>
             </div>
           </>

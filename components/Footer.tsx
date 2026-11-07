@@ -2,12 +2,15 @@ import Link from "next/link";
 import { Archive, FileArchive, FolderArchive, ShieldCheck } from "lucide-react";
 import { LogoMark } from "@/components/Brand";
 import { SecretDoor } from "@/components/SecretDoor";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Pied de page global. Il héberge aussi la porte dérobée du panel staff
  * (`SecretDoor`) : le point quasi invisible, tout à droite.
  */
-export function Footer() {
+export async function Footer() {
+  const { t } = await getT();
+
   return (
     <footer className="relative mt-auto border-t border-edge/60 bg-ink2/60">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid-bg mask-fade opacity-40" />
@@ -24,7 +27,7 @@ export function Footer() {
               <Link
                 href="/staff"
                 rel="nofollow"
-                aria-label="Espace réservé"
+                aria-label={t.footer.reserved}
                 title=""
                 className="grid h-8 w-8 place-items-center rounded-lg bg-go/15 text-go ring-1 ring-go/30 transition-colors hover:bg-go/25 hover:ring-go/50"
               >
@@ -35,20 +38,19 @@ export function Footer() {
               </Link>
             </span>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-mist">
-              Vos archives de code, sur GitHub, en un glisser-déposer. Sans
-              terminal, sans clone, sans configuration git.
+              {t.footer.tagline}
             </p>
           </div>
 
-          <FooterCol title="Produit">
-            <FooterLink href="/">Accueil</FooterLink>
-            <FooterLink href="/import">Importer une archive</FooterLink>
-            <FooterLink href="/#comment">Comment ça marche</FooterLink>
-            <FooterLink href="/#securite">Sécurité</FooterLink>
-            <FooterLink href="/#faq">Questions fréquentes</FooterLink>
+          <FooterCol title={t.footer.productTitle}>
+            <FooterLink href="/">{t.footer.home}</FooterLink>
+            <FooterLink href="/import">{t.footer.importArchive}</FooterLink>
+            <FooterLink href="/#comment">{t.footer.howItWorks}</FooterLink>
+            <FooterLink href="/#securite">{t.footer.security}</FooterLink>
+            <FooterLink href="/#faq">{t.footer.faq}</FooterLink>
           </FooterCol>
 
-          <FooterCol title="Formats pris en charge">
+          <FooterCol title={t.footer.formatsTitle}>
             <span className="flex items-center gap-2 text-sm text-mist">
               <FileArchive className="h-3.5 w-3.5 text-sky/80" /> .rar (RAR4 &amp; RAR5)
             </span>
@@ -60,24 +62,26 @@ export function Footer() {
             </span>
           </FooterCol>
 
-          <FooterCol title="Garanties">
+          <FooterCol title={t.footer.guaranteesTitle}>
             <span className="flex items-start gap-2 text-sm text-mist">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-go" />
-              Jeton GitHub chiffré, jamais stocké en base
+              {t.footer.guarantee1}
             </span>
             <span className="flex items-start gap-2 text-sm text-mist">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-go" />
-              Extraction sandboxée, chemins vérifiés
+              {t.footer.guarantee2}
             </span>
             <span className="flex items-start gap-2 text-sm text-mist">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-go" />
-              Aperçu complet avant tout envoi
+              {t.footer.guarantee3}
             </span>
           </FooterCol>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-edge/60 pt-6 text-xs text-mist sm:flex-row">
-          <span>© {new Date().getFullYear()} RepoDrop — vos archives, votre GitHub.</span>
+          <span>
+            {t.footer.copyright.replace("{year}", String(new Date().getFullYear()))}
+          </span>
           {/* Le point à droite ouvre /staff (5 clics). Invisible, volontairement. */}
           <SecretDoor />
         </div>

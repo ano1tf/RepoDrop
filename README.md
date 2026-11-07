@@ -313,7 +313,7 @@ Limite de taille par défaut : **200 Mo** uploadés, **500 Mo** décompressés, 
 npm test
 ```
 
-339 tests couvrent :
+359 tests couvrent :
 
 - sanitisation (traversal Unix/Windows, absolus, NUL, profondeur) ;
 - extraction `.zip` réelle (fixtures `yazl` : nominal, bombes, symlinks, `.git`, limites) ;
@@ -347,7 +347,11 @@ npm test
   privées, absence de `twitter:site` par défaut, `@graph` sans `@id` orphelin et
   `lastmod` de sitemap déterministe (`SOURCE_DATE_EPOCH` / date éditoriale) ;
 - **vérification Search Console** : jeton au format base64url exposé par
-  `buildVerification()` (bloc `verification` des métadonnées Next.js).
+  `buildVerification()` (bloc `verification` des métadonnées Next.js) ;
+- **i18n** : les 16 dictionnaires couvrent exactement les mêmes clés que le
+  français, sans valeur vide, avec des placeholders `{…}` identiques, des
+  traductions réellement effectuées, et un `normalizeLocale` qui refuse toute
+  valeur non supportée plutôt que de l'injecter dans le cookie.
 
 CI : GitHub Actions (lint + typecheck + tests + build) sur chaque push/PR.
 
@@ -436,6 +440,48 @@ curl -s localhost:3000/sitemap.xml
 curl -s localhost:3000/ | grep -o '<script type="application/ld+json">'
 ```
 
+### Langues (16)
+
+L'interface est traduite en **16 langues** : français, anglais, espagnol,
+allemand, italien, portugais, néerlandais, polonais, russe, ukrainien, turc,
+**arabe (RTL)**, hindi, chinois, japonais et coréen. Un sélecteur à recherche
+vit dans l'en-tête ; le choix survit à la navigation et au redémarrage.
+
+```
+lib/i18n/
+  locales.ts            # catalogue (code, nom natif, drapeau, dir, og:locale)
+  types.ts              # Dict = DeepStringify<typeof fr> → complétude garantie
+  dictionaries/*.ts     # 16 dictionnaires, fr = source de vérité des clés
+  dictionary.ts         # Record<Locale, Dict> + accès (getDictionary, section)
+  server.ts             # getLocale() / getT() : cookie → Accept-Language → fr
+  format.ts             # fill("{upload} Mo") , placeholdersOf, formatNumber
+app/api/lang/route.ts   # POST validation stricte + cookie rd_lang (1 an)
+components/LanguageSwitcher.tsx
+```
+
+Trois décisions et ce qu'elles évitent :
+
+- **Typage plutôt que convention.** `Dict = DeepStringify<typeof fr>` rend
+  impossible la compilation d'un dictionnaire incomplet : ajouter une clé en
+  français casse les quinze autres fichiers jusqu'à traduction. Le test
+  `tests/i18n.test.ts` complète ce que TypeScript ne voit pas (chaînes vides,
+  placeholders divergents, phrases restées en français).
+- **Cookie, pas préfixe d'URL.** La langue vit dans `rd_lang`, pas dans `/fr/`,
+  `/en/`… RepoDrop n'a qu'une poignée de pages publiques : multiplier les URL
+  canoniques et le sitemap pour du contenu non éditorialisé par langue
+  n'apporterait rien, et casserait les liens déjà partagés. Conséquence
+  assumée : l'indexation reste sur le français (voir plus haut).
+- **RTL pris au sérieux.** `<html lang dir>` suivent la langue (`dir="rtl"` en
+  arabe) ; la maquette et les puces utilisent `padding-inline-start` et
+  `rtl:rotate-180` au lieu de `left`/`right`.
+
+Ajouter une langue :
+
+1. entrée dans `LOCALES` (`lib/i18n/locales.ts`, avec `ogLocale`) ;
+2. nouveau fichier `dictionaries/<code>.ts` typé `Dict` ;
+3. une ligne dans `DICTIONARIES` — la compilation échoue tant que les trois
+   ne sont pas faits.
+
 ---
 
 ## Architecture
@@ -454,6 +500,7 @@ components/
   staff/              # onglets Activité / Discord / Système
   SecretDoor.tsx      # porte cachée vers /staff (5 clics ou Konami)
 lib/
+  i18n/               # 16 langues : catalogue, dictionnaires, résolution serveur
   sanitize.mjs        # sanitisation partagée serveur + worker (ESM pur)
   extract/            # zip (yauzl v3) + rar (worker enfant) + tar (lecteur maison) + aperçu
   git.ts              # init/fetch/overlay/commit/push (token via GIT_ASKPASS)
