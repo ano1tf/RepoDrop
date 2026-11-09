@@ -15,13 +15,11 @@ import {
   ChevronDown,
   Clipboard,
   Download,
-  ExternalLink,
   File,
   FileText,
   Folder,
   GitBranch,
   GitFork,
-  Link2,
   Lock,
   RefreshCw,
   Rocket,
@@ -29,11 +27,12 @@ import {
   Trash2,
   Unlock,
 } from "lucide-react";
+import type { Dict } from "@/lib/i18n/types";
 import type { JobRecord, PreviewEntry } from "@/lib/types";
-import type { RepoLinks } from "@/lib/links";
 import { buildRepoLinks } from "@/lib/links";
 import type { PushableRepo } from "@/lib/github";
 import { formatBytes, formatCount } from "@/lib/utils";
+import { fill, formatNumber } from "@/lib/i18n/format";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,21 +42,48 @@ import { cn } from "@/lib/utils";
 
 const POLLING = new Set(["queued", "extracting", "pushing"]);
 
-const STATUS_META: Record<
-  JobRecord["status"],
-  { label: string; variant: "default" | "sky" | "muted" | "danger" | "amber" }
-> = {
-  queued: { label: "En file d'attente", variant: "muted" },
-  extracting: { label: "Extraction", variant: "sky" },
-  ready: { label: "Prêt à pousser", variant: "default" },
-  pushing: { label: "Poussage…", variant: "sky" },
-  done: { label: "Terminé", variant: "default" },
-  failed: { label: "Échec", variant: "danger" },
-};
+/** Textes de la page de suivi d'un import (section `job` du dictionnaire). */
+type JobCopy = Dict["job"];
+
+/**
+ * Statut du job : libellé traduit + couleur du badge.
+ *
+ * Le libellé vient du dictionnaire (donc de la langue choisie) ; seule la
+ * couleur reste une décision de mise en forme.
+ */
+function statusMeta(
+  status: JobRecord["status"],
+  copy: JobCopy,
+): { label: string; variant: "default" | "sky" | "muted" | "danger" | "amber" } {
+  switch (status) {
+    case "queued":
+      return { label: copy.statusQueued, variant: "muted" };
+    case "extracting":
+      return { label: copy.statusExtracting, variant: "sky" };
+    case "ready":
+      return { label: copy.statusReady, variant: "default" };
+    case "pushing":
+      return { label: copy.statusPushing, variant: "sky" };
+    case "done":
+      return { label: copy.statusDone, variant: "default" };
+    case "failed":
+      return { label: copy.statusFailed, variant: "danger" };
+  }
+}
 
 const REPO_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 
-export function JobView({ initialJob }: { initialJob: JobRecord }) {
+export function JobView({
+  initialJob,
+  copy,
+  locale,
+}: {
+  initialJob: JobRecord;
+  /** Textes de la page (dictionnaire, section `job`). */
+  copy: JobCopy;
+  /** Langue courante : sert au formatage de la date. */
+  locale: string;
+}) {
   const [job, setJob] = useState(initialJob);
   const id = job.id;
 
@@ -91,7 +117,7 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
     };
   }, [id, job.status]);
 
-  const meta = STATUS_META[job.status];
+  const meta = statusMeta(job.status, copy);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -106,7 +132,7 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
               {job.filename}
             </h1>
             <p className="text-xs text-mist">
-              {new Date(job.createdAt).toLocaleString("fr-FR")} ·{" "}
+              {new Date(job.createdAt).toLocaleString(locale)} ·{" "}
               {formatBytes(job.archiveSize)} · {job.login}
             </p>
           </div>
@@ -115,12 +141,16 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
       </div>
 
       {/* ------------------------------------------------------ états */}
-      {(job.status === "queued" || job.status === "extracting") && <ExtractingState />}
-      {job.status === "pushing" && <PushingState />}
+      {(job.status === "queued" || job.status === "extracting") && (
+        <ExtractingState copy={copy} />
+      )}
+      {job.status === "pushing" && <PushingState copy={copy} />}
       {job.status === "ready" && job.preview && (
         <ReadyState job={job} onPushing={(j) => setJob(j)} />
       )}
-      {job.status === "done" && job.push && <DoneState job={job} />}
+      {job.status === "done" && job.push && (
+        <DoneState job={job} copy={copy} locale={locale} />
+      )}
       {job.status === "failed" && (
         <FailedState job={job} onPushing={(j) => setJob(j)} />
       )}
@@ -130,7 +160,7 @@ export function JobView({ initialJob }: { initialJob: JobRecord }) {
 
 /* ------------------------------------------------------------------ états */
 
-function ExtractingState() {
+function ExtractingState({ copy }: { copy: JobCopy }) {
   return (
     <Card className="animate-fade-in">
       <CardContent className="flex flex-col items-center gap-5 py-14 text-center">
@@ -138,11 +168,8 @@ function ExtractingState() {
           <Spinner className="h-7 w-7" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">Extraction en cours…</h2>
-          <p className="mt-1.5 max-w-md text-sm text-mist">
-            Vérification des chemins, limite de taille, détection du dossier racine. Tout se
-            passe côté serveur, dans un espace isolé.
-          </p>
+          <h2 className="text-lg font-semibold">{copy.extractingTitle}</h2>
+          <p className="mt-1.5 max-w-md text-sm text-mist">{copy.extractingBody}</p>
         </div>
         <IndeterminateBar className="max-w-xs" />
       </CardContent>
@@ -150,7 +177,7 @@ function ExtractingState() {
   );
 }
 
-function PushingState() {
+function PushingState({ copy }: { copy: JobCopy }) {
   return (
     <Card className="animate-fade-in">
       <CardContent className="flex flex-col items-center gap-5 py-14 text-center">
@@ -158,11 +185,8 @@ function PushingState() {
           <Spinner className="h-7 w-7" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">Poussage vers GitHub…</h2>
-          <p className="mt-1.5 max-w-md text-sm text-mist">
-            Création du commit et envoi des fichiers. L'onglet peut rester ouvert, on vous tient
-            au courant.
-          </p>
+          <h2 className="text-lg font-semibold">{copy.pushingTitle}</h2>
+          <p className="mt-1.5 max-w-md text-sm text-mist">{copy.pushingBody}</p>
         </div>
         <IndeterminateBar className="max-w-xs" />
       </CardContent>
@@ -293,66 +317,15 @@ function FailedState({
   );
 }
 
-function LinkChip({ icon, label, href, sub }: { icon: React.ReactNode; label: string; href: string; sub?: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex items-start gap-2.5 rounded-lg border border-edge bg-panel px-3 py-2.5 text-sm hover:border-sky/50 hover:bg-panel2"
-    >
-      <span className="mt-0.5 shrink-0 text-mist group-hover:text-sky">{icon}</span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium text-chalk">{label}</span>
-        {sub && <span className="block text-xs text-mist">{sub}</span>}
-      </span>
-      <ExternalLink className="h-3.5 w-3.5 shrink-0 text-mist/50 group-hover:text-sky" />
-    </a>
-  );
-}
-
-function LinkGrid({ links }: { links: RepoLinks }) {
-  return (
-    <div className="grid gap-2">
-      <LinkChip icon={<Link2 className="h-4 w-4" />} label="Dépôt GitHub" href={links.repoUrl} sub={links.fullName} />
-      <LinkChip
-        icon={<GitBranch className="h-4 w-4" />}
-        label={`Branche « ${links.branchUrl.split("/tree/")[1]?.split("?")[0] ?? links.branchUrl} »`}
-        href={links.branchUrl}
-        sub="Poussez sur cette branche"
-      />
-      {links.commitUrl && (
-        <LinkChip icon={<FileText className="h-4 w-4" />} label="Commit précis" href={links.commitUrl} sub={`SHA : ${links.commitUrl?.split("/commit/")[1]?.slice(0, 7) ?? "?"}`} />
-      )}
-      <LinkChip
-        icon={<Rocket className="h-4 w-4" />}
-        label="Codespaces (agent IA GitHub)"
-        href={links.codespacesUrl}
-        sub="vscode.dev clé-en-main, Copilot connecté"
-      />
-      <LinkChip
-        icon={<ExternalLink className="h-4 w-4" />}
-        label="vscode.dev (éditeur web officiel)"
-        href={links.vscodeUrl}
-        sub="Copilot + édition + exécution (Codespaces)"
-      />
-      <LinkChip
-        icon={<GitFork className="h-4 w-4" />}
-        label="URL de clone (agent externe)"
-        href={links.cloneUrl}
-        sub="L'agent s'authentifie lui-même via sa session GitHub"
-      />
-      <LinkChip
-        icon={<Clipboard className="h-4 w-4" />}
-        label="Commande CLI `gh`"
-        href={`https://github.com/${links.fullName}`}
-        sub={links.cloneCommand}
-      />
-    </div>
-  );
-}
-
-function DoneState({ job }: { job: JobRecord }) {
+function DoneState({
+  job,
+  copy,
+  locale,
+}: {
+  job: JobRecord;
+  copy: JobCopy;
+  locale: string;
+}) {
   const push = job.push!;
   const links = buildRepoLinks({
     url: push.url,
@@ -361,6 +334,16 @@ function DoneState({ job }: { job: JobRecord }) {
     commitSha: push.commitSha,
   });
   const shortSha = push.commitSha?.slice(0, 7);
+  const branch = links.branchUrl.replace(/^.*\/tree\//, "");
+  // Le compteur de fichiers suit la langue de l'interface (1 234 / 1,234).
+  const fileCount = formatNumber(job.preview?.fileCount ?? 0, locale);
+  /*
+   * Les gabarits sont découpés **avant** remplissage : la branche et le SHA
+   * s'affichent dans une puce monospace, au milieu de la phrase. La position
+   * du décorateur est donc celle du gabarit traduit, pas celle du français.
+   */
+  const [beforeBranch, afterBranch = ""] = copy.doneFiles.split("{branch}");
+  const [beforeSha, afterSha = ""] = copy.doneCommit.split("{sha}");
   return (
     <Card className="animate-fade-in border-go/40 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_-20%,rgba(52,211,153,0.14),transparent)]" />
@@ -370,42 +353,39 @@ function DoneState({ job }: { job: JobRecord }) {
             <CheckCircle2 className="h-8 w-8" />
           </span>
           <div>
-            <h2 className="text-lg font-semibold">C'est poussé&nbsp;!</h2>
+            <h2 className="text-lg font-semibold">{copy.doneTitle}</h2>
             <p className="mx-auto mt-2 max-w-lg text-sm text-mist">
-              {formatCount(job.preview?.fileCount ?? 0)} importés sur la branche{" "}
+              {fill(beforeBranch, { count: fileCount })}
               <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">
-                {links.branchUrl.replace(/^.*\/tree\//, "")}
+                {branch}
               </code>
+              {fill(afterBranch, { count: fileCount })}
               {shortSha && (
                 <>
-                  {" "}
-                  · commit <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">{shortSha}</code>
+                  {" · "}
+                  {beforeSha}
+                  <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">{shortSha}</code>
+                  {afterSha}
                 </>
               )}
-              {push.created && " · dépôt créé"}.
+              {push.created && ` · ${copy.doneCreated}`}.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <a href={links.repoUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "lg" })}>
               <GitFork className="h-4 w-4" />
-              Ouvrir sur GitHub
+              {copy.doneOpenGithub}
               <ArrowRight className="h-4 w-4" />
             </a>
             <Button type="button" variant="outline" size="lg" onClick={() => void navigator.clipboard.writeText(links.repoUrl)}>
               <Clipboard className="h-4 w-4" />
-              Copier le lien
+              {copy.doneCopyLink}
             </Button>
             <Button type="button" variant="outline" size="lg" onClick={() => (window.location.href = `/api/jobs/${job.id}/download`)}>
               <Download className="h-4 w-4" />
-              Télécharger en .zip
+              {copy.doneDownload}
             </Button>
           </div>
-        </div>
-        <div className="border-t border-edge pt-5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-mist">
-            Liens prêts à donner à une IA :
-          </p>
-          <LinkGrid links={links} />
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-edge pt-4">
           <a
@@ -417,7 +397,7 @@ function DoneState({ job }: { job: JobRecord }) {
             {links.repoUrl.replace("https://", "")}
           </a>
           <Link href="/import" className="text-xs text-mist underline decoration-edge underline-offset-4 hover:text-chalk">
-            Importer une autre archive
+            {copy.doneImportAnother}
           </Link>
         </div>
       </CardContent>

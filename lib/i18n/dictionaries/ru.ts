@@ -11,6 +11,7 @@ export const ru: Dict = {
     importTitle: "Импорт архива",
     importDescription:
       "Загрузите архив .rar, .zip, .tar или .tar.gz, чтобы просмотреть файлы и отправить их в репозиторий GitHub.",
+    jobTitle: "Отслеживание импорта",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const ru: Dict = {
     feature5Title: "Новый или существующий репозиторий",
     feature5Body:
       "Создайте приватный или публичный репозиторий либо добавьте архив в существующий — при желании в отдельную ветку.",
-    feature6Title: "Ссылки для ИИ",
-    feature6Body:
-      "После push: Codespaces, vscode.dev, URL клонирования, команда gh и архив .zip. Достаточно скопировать.",
 
     formatsTitle: "Любой архив, какого бы возраста он ни был",
     formatsBody:
@@ -127,12 +125,25 @@ export const ru: Dict = {
     demoStep2: "Распаковка проверена",
     demoStep3: "Репозиторий готов",
     demoFileMeta: "18,4 МБ · 1 284 файла",
-    demoPreview: "Превью",
     demoScan: "Пути проверены",
     demoPushed: "Запушено · только что",
     demoBranches: "main",
     demoNoAccount: "Без аккаунта и терминала.",
-    demoPreviewNote: "Это превью. Подключите GitHub, чтобы отправлять.",
+    demoLocalBadge: "Локально",
+    demoDropHint: "Перетащите сюда .zip",
+    demoDropBrowse: "или выберите файл",
+    demoDropError: "Принимаются только файлы .zip.",
+    demoReading: "Читаем архив…",
+    demoExtracting: "Распаковка…",
+    demoReady: "Готово к отправке",
+    demoReadyMeta: "Найдено файлов: {count} · ничего не покинуло браузер",
+    demoPushCta: "Отправить на GitHub",
+    demoLocalNote: "Ваши файлы остаются в браузере — ничего не отправляется.",
+    demoConnectTitle: "Файл готов!",
+    demoConnectBody: "Подключите аккаунт GitHub, чтобы завершить отправку.",
+    demoConnectNote: "Архив не покинул браузер: отправка пройдёт из вашей сессии GitHub.",
+    demoConnectCta: "Войти через GitHub",
+    demoConnectLater: "Позже",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const ru: Dict = {
     guarantee3: "Полный предпросмотр перед любой отправкой",
     copyright: "© {year} RepoDrop — ваши архивы, ваш GitHub.",
     reserved: "Закрытая зона",
+  },
+
+  job: {
+    statusQueued: "В очереди",
+    statusExtracting: "Распаковка",
+    statusReady: "Готово к отправке",
+    statusPushing: "Отправка…",
+    statusDone: "Готово",
+    statusFailed: "Ошибка",
+    extractingTitle: "Идёт распаковка…",
+    extractingBody: "Проверяются пути, применяется лимит размера и определяется корневая папка. Всё происходит на сервере, в изолированной среде.",
+    pushingTitle: "Отправка на GitHub…",
+    pushingBody: "Создаётся коммит и отправляются файлы. Вкладку можно закрыть — мы сообщим о результате.",
+    doneTitle: "Готово!",
+    doneFiles: "Импортировано файлов: {count} в ветку {branch}",
+    doneCommit: "коммит {sha}",
+    doneCreated: "репозиторий создан",
+    doneOpenGithub: "Открыть на GitHub",
+    doneCopyLink: "Скопировать ссылку",
+    doneDownload: "Скачать как .zip",
+    doneImportAnother: "Импортировать другой архив",
   },
 
   notFound: {

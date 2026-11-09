@@ -15,7 +15,6 @@ import {
   Lock,
   MousePointerClick,
   ShieldCheck,
-  Sparkles,
   Terminal,
 } from "lucide-react";
 import { getSession } from "@/lib/session";
@@ -26,6 +25,7 @@ import {
   serializeJsonLd,
 } from "@/lib/seo";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
+import { demoCopyFrom } from "@/components/workflow-demo/copy";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -107,7 +107,7 @@ export default async function Home() {
 
             {/* La démo arrive AVANT le bouton GitHub : on montre le résultat
                 avant de demander un compte. */}
-            <WorkflowDemo t={t} />
+            <WorkflowDemo copy={demoCopyFrom(t.home)} locale={locale} />
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
@@ -197,7 +197,6 @@ export default async function Home() {
               { icon: Eye, title: t.home.feature3Title, body: t.home.feature3Body },
               { icon: Terminal, title: t.home.feature4Title, body: t.home.feature4Body },
               { icon: GitBranch, title: t.home.feature5Title, body: t.home.feature5Body },
-              { icon: Sparkles, title: t.home.feature6Title, body: t.home.feature6Body },
             ].map((f) => (
               <div
                 key={f.title}

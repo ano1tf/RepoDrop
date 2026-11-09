@@ -17,6 +17,7 @@ export const ar: Dict = {
     importTitle: "استيراد أرشيف",
     importDescription:
       "ارفع أرشيف .rar أو .zip أو .tar أو .tar.gz لمعاينة ملفاته ودفعه إلى مستودع GitHub.",
+    jobTitle: "تتبع الاستيراد",
   },
 
   nav: {
@@ -87,9 +88,6 @@ export const ar: Dict = {
     feature5Title: "مستودع جديد أو قائم",
     feature5Body:
       "أنشئ مستودعًا خاصًا أو عامًا، أو أضف الأرشيف إلى مستودع قائم — على فرع مخصَّص إن أحببت.",
-    feature6Title: "روابط جاهزة للذكاء الاصطناعي",
-    feature6Body:
-      "بعد الدفع: Codespaces وvscode.dev ورابط الاستنساخ وأمر gh وأرشيف .zip. يكفي نسخ ولصق.",
 
     formatsTitle: "أي أرشيف، أيًّا كان عمره",
     formatsBody:
@@ -133,12 +131,25 @@ export const ar: Dict = {
     demoStep2: "الاستخراج موثّق",
     demoStep3: "المستودع جاهز",
     demoFileMeta: "18,4 م.ب · 1 284 ملفًا",
-    demoPreview: "معاينة",
     demoScan: "المسارات موثّقة",
     demoPushed: "دُفع · الآن",
     demoBranches: "main",
     demoNoAccount: "بلا حساب وبلا طرفية.",
-    demoPreviewNote: "هذه معاينة فقط. اربط GitHub لبدء الرفع.",
+    demoLocalBadge: "محلي",
+    demoDropHint: "أفلت ملف .zip هنا",
+    demoDropBrowse: "أو اختر ملفًا",
+    demoDropError: "يُقبلت ملفات .zip فقط.",
+    demoReading: "جارٍ قراءة الأرشيف…",
+    demoExtracting: "جارٍ الاستخراج…",
+    demoReady: "جاهز للرفع",
+    demoReadyMeta: "تم العثور على {count} ملف · لم يغادر شيء متصفحك",
+    demoPushCta: "الرفع إلى GitHub",
+    demoLocalNote: "تبقى ملفاتك في متصفحك — لا يتم إرسال أي شيء.",
+    demoConnectTitle: "الملف جاهز!",
+    demoConnectBody: "اربط حساب GitHub لإتمام الرفع.",
+    demoConnectNote: "لم يغادر الأرشيف متصفحك: سيتم رفعه من جلستك على GitHub.",
+    demoConnectCta: "الربط مع GitHub",
+    demoConnectLater: "لاحقًا",
   },
 
   faq: {
@@ -218,6 +229,27 @@ export const ar: Dict = {
     guarantee3: "معاينة كاملة قبل أي إرسال",
     copyright: "© {year} RepoDrop — أرشيفاتك، GitHub الخاص بك.",
     reserved: "منطقة محجوزة",
+  },
+
+  job: {
+    statusQueued: "في الانتظار",
+    statusExtracting: "جارٍ الاستخراج",
+    statusReady: "جاهز للرفع",
+    statusPushing: "جارٍ الرفع…",
+    statusDone: "اكتمل",
+    statusFailed: "فشل",
+    extractingTitle: "جارٍ الاستخراج…",
+    extractingBody: "يتم التحقق من المسارات وتطبيق حد الحجم واكتشاف المجلد الجذر. كل شيء يحدث على الخادم، في مساحة معزولة.",
+    pushingTitle: "جارٍ الرفع إلى GitHub…",
+    pushingBody: "يتم إنشاء الالتزام وإرسال الملفات. يمكنك إبقاء هذه الصفحة مفتوحة — سنوافيك بالتحديثات.",
+    doneTitle: "تم الرفع!",
+    doneFiles: "تم استيراد {count} ملف في الفرع {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "تم إنشاء المستودع",
+    doneOpenGithub: "افتح على GitHub",
+    doneCopyLink: "نسخ الرابط",
+    doneDownload: "تنزيل بصيغة .zip",
+    doneImportAnother: "استيراد أرشيف آخر",
   },
 
   notFound: {

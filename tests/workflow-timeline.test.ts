@@ -13,11 +13,15 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
+import { demoCopyFrom } from "@/components/workflow-demo/copy";
 
 /** Monte le balisage du composant dans le document de test. */
 function mountMarkup() {
   const html = renderToStaticMarkup(
-    createElement(WorkflowDemo, { t: DICTIONARIES.fr }),
+    createElement(WorkflowDemo, {
+      copy: demoCopyFrom(DICTIONARIES.fr.home),
+      locale: "fr",
+    }),
   );
   document.body.innerHTML = html;
   const root = document.getElementById("workflow-demo");

@@ -46,3 +46,44 @@ export function formatNumber(value: number, locale: string): string {
     return String(value);
   }
 }
+
+/**
+ * Tailles localisées : `1536` → `"1,5 Mo"` (fr), `"1.5 MB"` (en).
+ *
+ * `Intl.NumberFormat` en style « unit » fournit à la fois le séparateur
+ * décimal et l'unité dans la langue demandée — c'est exactement ce qu'il
+ * faut pour une taille de fichier affichée à côté du reste de l'interface.
+ */
+export function formatBytes(bytes: number, locale: string): string {
+  const abs = Math.abs(bytes);
+  let value = bytes;
+  let unit = "byte";
+
+  if (abs >= 1024) {
+    value = bytes / 1024;
+    unit = "kilobyte";
+    if (abs >= 1024 ** 2) {
+      value = bytes / 1024 ** 2;
+      unit = "megabyte";
+    }
+    if (abs >= 1024 ** 3) {
+      value = bytes / 1024 ** 3;
+      unit = "gigabyte";
+    }
+    if (abs >= 1024 ** 4) {
+      value = bytes / 1024 ** 4;
+      unit = "terabyte";
+    }
+  }
+
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "unit",
+      unit,
+      unitDisplay: "short",
+      maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
+    }).format(value);
+  } catch {
+    return `${value.toFixed(1)} ${unit}`;
+  }
+}

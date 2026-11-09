@@ -22,6 +22,7 @@ export const fr = {
     importTitle: "Importer une archive",
     importDescription:
       "Téléversez une archive .rar, .zip, .tar ou .tar.gz pour prévisualiser ses fichiers et la pousser vers un dépôt GitHub.",
+    jobTitle: "Suivi de l'import",
   },
 
   nav: {
@@ -92,9 +93,6 @@ export const fr = {
     feature5Title: "Dépôt existant ou neuf",
     feature5Body:
       "Créez un dépôt privé ou public, ou ajoutez l'archive à un dépôt existant — en branche dédiée si vous préférez.",
-    feature6Title: "Liens prêts pour une IA",
-    feature6Body:
-      "Après le push : Codespaces, vscode.dev, URL de clone, commande gh et archive .zip. Un copier-coller suffit.",
 
     formatsTitle: "Une archive, quel que soit son âge",
     formatsBody:
@@ -138,12 +136,25 @@ export const fr = {
     demoStep2: "Extraction vérifiée",
     demoStep3: "Repo prêt",
     demoFileMeta: "18,4 Mo · 1 284 fichiers",
-    demoPreview: "Aperçu",
     demoScan: "Chemins vérifiés",
     demoPushed: "Pushé · à l'instant",
     demoBranches: "main",
     demoNoAccount: "Zéro compte, zéro terminal.",
-    demoPreviewNote: "Ceci est un aperçu. Connectez GitHub pour lancer un envoi.",
+    demoLocalBadge: "Local",
+    demoDropHint: "Glissez un .zip ici",
+    demoDropBrowse: "ou choisissez un fichier",
+    demoDropError: "Seuls les fichiers .zip sont acceptés.",
+    demoReading: "Lecture de l'archive…",
+    demoExtracting: "Extraction…",
+    demoReady: "Prêt à pousser",
+    demoReadyMeta: "{count} fichiers détectés · rien n'a quitté votre navigateur",
+    demoPushCta: "Pousser sur GitHub",
+    demoLocalNote: "Vos fichiers restent dans votre navigateur : rien n'est envoyé.",
+    demoConnectTitle: "Fichier prêt !",
+    demoConnectBody: "Connectez votre compte GitHub pour terminer le push.",
+    demoConnectNote: "L'archive n'a pas quitté votre navigateur : elle sera poussée depuis votre session GitHub.",
+    demoConnectCta: "Se connecter avec GitHub",
+    demoConnectLater: "Plus tard",
   },
 
   faq: {
@@ -224,6 +235,27 @@ export const fr = {
     guarantee3: "Aperçu complet avant tout envoi",
     copyright: "© {year} RepoDrop — vos archives, votre GitHub.",
     reserved: "Espace réservé",
+  },
+
+  job: {
+    statusQueued: "En file d'attente",
+    statusExtracting: "Extraction",
+    statusReady: "Prêt à pousser",
+    statusPushing: "Poussage…",
+    statusDone: "Terminé",
+    statusFailed: "Échec",
+    extractingTitle: "Extraction en cours…",
+    extractingBody: "Vérification des chemins, limite de taille, détection du dossier racine. Tout se passe côté serveur, dans un espace isolé.",
+    pushingTitle: "Poussage vers GitHub…",
+    pushingBody: "Création du commit et envoi des fichiers. L'onglet peut rester ouvert, on vous tient au courant.",
+    doneTitle: "C'est poussé !",
+    doneFiles: "{count} fichiers importés sur la branche {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "dépôt créé",
+    doneOpenGithub: "Ouvrir sur GitHub",
+    doneCopyLink: "Copier le lien",
+    doneDownload: "Télécharger en .zip",
+    doneImportAnother: "Importer une autre archive",
   },
 
   notFound: {

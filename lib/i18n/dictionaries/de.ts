@@ -11,6 +11,7 @@ export const de: Dict = {
     importTitle: "Archiv importieren",
     importDescription:
       "Lade ein .rar-, .zip-, .tar- oder .tar.gz-Archiv hoch, sieh dir die Dateien in der Vorschau an und pushe sie zu einem GitHub-Repository.",
+    jobTitle: "Import-Verfolgung",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const de: Dict = {
     feature5Title: "Neues oder bestehendes Repo",
     feature5Body:
       "Erstelle ein privates oder öffentliches Repo oder füge das Archiv einem bestehenden hinzu — auf Wunsch auf einem eigenen Branch.",
-    feature6Title: "KI-fertige Links",
-    feature6Body:
-      "Nach dem Push: Codespaces, vscode.dev, Clone-URL, gh-Befehl und .zip-Archiv. Ein Copy-and-paste genügt.",
 
     formatsTitle: "Jedes Archiv, egal wie alt",
     formatsBody:
@@ -127,12 +125,25 @@ export const de: Dict = {
     demoStep2: "Extraktion geprüft",
     demoStep3: "Repo bereit",
     demoFileMeta: "18,4 MB · 1.284 Dateien",
-    demoPreview: "Vorschau",
     demoScan: "Pfade geprüft",
     demoPushed: "Gepusht · gerade eben",
     demoBranches: "main",
     demoNoAccount: "Kein Account, kein Terminal.",
-    demoPreviewNote: "Nur eine Vorschau. Verbinde GitHub, um hochzuladen.",
+    demoLocalBadge: "Lokal",
+    demoDropHint: "Ziehe eine .zip hierher",
+    demoDropBrowse: "oder wähle eine Datei",
+    demoDropError: "Es werden nur .zip-Dateien akzeptiert.",
+    demoReading: "Archiv wird gelesen…",
+    demoExtracting: "Entpacken…",
+    demoReady: "Bereit zum Pushen",
+    demoReadyMeta: "{count} Dateien erkannt · nichts hat deinen Browser verlassen",
+    demoPushCta: "Nach GitHub pushen",
+    demoLocalNote: "Deine Dateien bleiben im Browser — es wird nichts hochgeladen.",
+    demoConnectTitle: "Datei bereit!",
+    demoConnectBody: "Verbinde dein GitHub-Konto, um den Push abzuschließen.",
+    demoConnectNote: "Das Archiv hat deinen Browser nicht verlassen: gepusht wird aus deiner GitHub-Sitzung.",
+    demoConnectCta: "Mit GitHub anmelden",
+    demoConnectLater: "Später",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const de: Dict = {
     guarantee3: "Vollständige Vorschau vor jedem Senden",
     copyright: "© {year} RepoDrop — deine Archive, dein GitHub.",
     reserved: "Reservierter Bereich",
+  },
+
+  job: {
+    statusQueued: "In der Warteschlange",
+    statusExtracting: "Entpacken",
+    statusReady: "Bereit zum Pushen",
+    statusPushing: "Push läuft…",
+    statusDone: "Fertig",
+    statusFailed: "Fehlgeschlagen",
+    extractingTitle: "Entpacken läuft…",
+    extractingBody: "Pfade werden geprüft, das Größenlimit angewendet und der Wurzelordner erkannt. Alles passiert serverseitig, in einem isolierten Bereich.",
+    pushingTitle: "Push zu GitHub…",
+    pushingBody: "Der Commit wird erstellt und die Dateien werden gesendet. Du kannst den Tab geöffnet lassen — wir melden uns.",
+    doneTitle: "Es ist gepusht!",
+    doneFiles: "{count} Dateien in Branch {branch} importiert",
+    doneCommit: "Commit {sha}",
+    doneCreated: "Repository erstellt",
+    doneOpenGithub: "Auf GitHub öffnen",
+    doneCopyLink: "Link kopieren",
+    doneDownload: "Als .zip herunterladen",
+    doneImportAnother: "Weiteres Archiv importieren",
   },
 
   notFound: {

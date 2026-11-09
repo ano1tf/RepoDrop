@@ -9,9 +9,13 @@
  * indexent la version par défaut (français) — voir README.
  *
  * Le cookie n'est *pas* `httpOnly` pour une raison précise : il est écrit par
- * une route serveur (`POST /api/lang`) afin que la valeur soit validée contre
- * `LOCALES` avant d'être posée. Une valeur inconnue retombe toujours sur le
- * français au lieu de casser le rendu.
+ * une **Server Action** (`app/actions/lang.ts`) afin que la valeur soit
+ * validée contre `LOCALES` avant d'être posée. Une valeur inconnue retombe
+ * toujours sur le français au lieu de casser le rendu.
+ *
+ * Le cookie est **la** source de vérité (le serveur la lit à chaque rendu) ;
+ * `localStorage` n'en est qu'un miroir, utile pour recouvrir un cookie
+ * bloqué ou effacé.
  */
 
 export interface LocaleDefinition {
@@ -52,8 +56,27 @@ export type Locale = (typeof LOCALES)[number]["code"];
 
 export const DEFAULT_LOCALE: Locale = "fr";
 
-/** Nom du cookie de préférence linguistique (posé par `POST /api/lang`). */
+/** Nom du cookie de préférence linguistique (posé par la Server Action). */
 export const LOCALE_COOKIE = "rd_lang";
+
+/**
+ * Clé du miroir `localStorage` (côté client).
+ *
+ * Le cookie reste la source de vérité : `localStorage` ne sert qu'à
+ * retrouver le choix de l'utilisateur si le cookie a été effacé ou bloqué
+ * (navigation privée stricte, nettoyage du navigateur…).
+ */
+export const LOCALE_STORAGE_KEY = "rd_lang";
+
+/**
+ * En-tête de requête posé par le middleware.
+ *
+ * Le middleware résout la langue **une fois pour toutes** (cookie, sinon
+ * `Accept-Language`) et la transmet au rendu via cet en-tête. Les Server
+ * Components la lisent ensuite de la même façon sur **chaque** requête —
+ * navigation latérale comprise.
+ */
+export const LOCALE_HEADER = "x-rd-lang";
 
 /** Un an : une préférence de langue n'a pas besoin d'expirer plus vite. */
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -95,9 +118,9 @@ export function ogLocaleOf(locale: Locale): string {
 
 /**
  * Variante **stricte** de `normalizeLocale` : renvoie `null` au lieu de replier
- * sur le français. Réservée aux entrées utilisateur (`POST /api/lang`), où
- * accepter silencieusement « klingon » comme du français masquerait un bug
- * d'appel au lieu de le signaler.
+ * sur le français. Réservée aux entrées utilisateur (Server Action, `POST
+ * /api/lang`), où accepter silencieusement « klingon » comme du français
+ * masquerait un bug d'appel au lieu de le signaler.
  *
  * Les variantes légitimes restent ramenées à leur langue de base
  * (`pt-BR` → `pt`, `de-AT` → `de`), exactement comme l'en-tête
@@ -114,6 +137,52 @@ export function parseLocale(raw: string | null | undefined): Locale | null {
     .toLowerCase()
     .replace(/_/g, "-");
   return base === DEFAULT_LOCALE ? DEFAULT_LOCALE : null;
+}
+
+/**
+ * Résolution de la langue d'une requête : **choix explicite d'abord**.
+ *
+ *   1. le cookie `rd_lang` — la langue choisie par l'utilisateur ;
+ *   2. l'en-tête `Accept-Language` — la langue du navigateur, à la première
+ *      visite ;
+ *   3. le français.
+ *
+ * C'est la fonction utilisée par le middleware **et** par le rendu serveur :
+ * les deux voient donc toujours la même langue, pour la même requête.
+ */
+export function resolveLocale(
+  cookieValue: string | null | undefined,
+  acceptLanguage: string | null | undefined,
+): Locale {
+  if (isLocale(cookieValue)) return cookieValue;
+  return normalizeLocale(acceptLanguage);
+}
+
+/* --------------------------------------------------- miroir localStorage */
+
+/**
+ * Langue mémorisée dans le navigateur (miroir du cookie).
+ *
+ * À n'appeler que **côté client** : `localStorage` n'existe pas sur le
+ * serveur. Toute erreur (mode privé, quota, `window` absent) est absorbée :
+ * le miroir est un confort, jamais une source de vérité.
+ */
+export function readStoredLocale(): Locale | null {
+  try {
+    const raw = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    return isLocale(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Mémorise la langue choisie dans le navigateur (miroir du cookie). */
+export function writeStoredLocale(locale: Locale): void {
+  try {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {
+    /* stockage indisponible : le cookie suffit */
+  }
 }
 
 /** Sens d'écriture d'une langue (alimente `<html dir>`). */

@@ -1,6 +1,12 @@
 /**
  * Préférence linguistique : `POST /api/lang` avec `{ locale }`.
  *
+ * API publique (appelable sans JavaScript, depuis un script externe). Dans
+ * l'interface, le sélecteur de langue utilise la Server Action
+ * `app/actions/lang.ts`, qui pose le même cookie **et** invalide le cache de
+ * navigation côté client — c'est elle qui empêche l'apparition de segments
+ * préchargés dans l'ancienne langue.
+ *
  * Pourquoi une route et pas une écriture directe depuis le client ?
  * `document.cookie` accepterait n'importe quelle valeur ; ici la langue est
  * **validée contre le catalogue** avant d'être posée. Une valeur inconnue est

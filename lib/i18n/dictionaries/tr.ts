@@ -11,6 +11,7 @@ export const tr: Dict = {
     importTitle: "Arşiv aktar",
     importDescription:
       "Dosyalarını önizlemek ve bir GitHub deposuna göndermek için .rar, .zip, .tar veya .tar.gz arşivi yükleyin.",
+    jobTitle: "İçe aktarma takibi",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const tr: Dict = {
     feature5Title: "Yeni veya var olan depo",
     feature5Body:
       "Özel ya da herkese açık bir depo oluşturun veya arşivi var olan bir depoya ekleyin — isterseniz ayrı bir dalda.",
-    feature6Title: "Yapay zekâya hazır bağlantılar",
-    feature6Body:
-      "Gönderimden sonra: Codespaces, vscode.dev, klonlama URL'si, gh komutu ve .zip arşivi. Bir kopyala-yapıştır yeter.",
 
     formatsTitle: "Hangi yaşta olursa olsun, her arşiv",
     formatsBody:
@@ -127,12 +125,25 @@ export const tr: Dict = {
     demoStep2: "Çıkarma doğrulandı",
     demoStep3: "Repo hazır",
     demoFileMeta: "18,4 MB · 1.284 dosya",
-    demoPreview: "Önizleme",
     demoScan: "Yollar doğrulandı",
     demoPushed: "Push'landı · az önce",
     demoBranches: "main",
     demoNoAccount: "Hesap yok, terminal yok.",
-    demoPreviewNote: "Bu bir önizleme. Yüklemek için GitHub'ı bağla.",
+    demoLocalBadge: "Yerel",
+    demoDropHint: "Buraya bir .zip bırakın",
+    demoDropBrowse: "veya bir dosya seçin",
+    demoDropError: "Yalnızca .zip dosyaları kabul edilir.",
+    demoReading: "Arşiv okunuyor…",
+    demoExtracting: "Çıkarılıyor…",
+    demoReady: "Gönderime hazır",
+    demoReadyMeta: "{count} dosya bulundu · tarayıcınızdan hiçbir şey çıkmadı",
+    demoPushCta: "GitHub'a gönder",
+    demoLocalNote: "Dosyalarınız tarayıcınızda kalır — hiçbir şey gönderilmez.",
+    demoConnectTitle: "Dosya hazır!",
+    demoConnectBody: "Gönderimi tamamlamak için GitHub hesabınızı bağlayın.",
+    demoConnectNote: "Arşiv tarayıcınızdan çıkmadı: GitHub oturumunuzdan gönderilecek.",
+    demoConnectCta: "GitHub ile bağlan",
+    demoConnectLater: "Sonra",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const tr: Dict = {
     guarantee3: "Her gönderimden önce tam önizleme",
     copyright: "© {year} RepoDrop — arşivleriniz, GitHub'ınız.",
     reserved: "Ayrılmış alan",
+  },
+
+  job: {
+    statusQueued: "Sırada",
+    statusExtracting: "Çıkarılıyor",
+    statusReady: "Gönderime hazır",
+    statusPushing: "Gönderiliyor…",
+    statusDone: "Tamamlandı",
+    statusFailed: "Başarısız",
+    extractingTitle: "Çıkarılıyor…",
+    extractingBody: "Yollar denetleniyor, boyut sınırı uygulanıyor ve kök klasör algılanıyor. Her şey sunucuda, izole bir alanda gerçekleşiyor.",
+    pushingTitle: "GitHub'a gönderiliyor…",
+    pushingBody: "Commit oluşturuluyor ve dosyalar gönderiliyor. Bu sekmeyi açık bırakabilirsin — seni bilgilendireceğiz.",
+    doneTitle: "Gönderildi!",
+    doneFiles: "{branch} dalına {count} dosya içe aktarıldı",
+    doneCommit: "commit {sha}",
+    doneCreated: "depo oluşturuldu",
+    doneOpenGithub: "GitHub'da aç",
+    doneCopyLink: "Bağlantıyı kopyala",
+    doneDownload: ".zip olarak indir",
+    doneImportAnother: "Başka bir arşiv içe aktar",
   },
 
   notFound: {
