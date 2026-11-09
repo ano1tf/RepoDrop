@@ -123,14 +123,16 @@ export const tr: Dict = {
     demoTitle: "Arşivden GitHub reposuna saniyeler içinde.",
     demoTitleAccent: "Terminal yok.",
     demoLead: "Sürükle, önizlemeye bak, push'la. Komut yok; onaylamadan hiçbir şey gitmez.",
-    demoStep1: "ZIP'i sürükle",
+    demoStep1: "Yerel arşiv",
     demoStep2: "Çıkarma doğrulandı",
     demoStep3: "Repo hazır",
-    demoDropZone: "Sürükle bırak",
+    demoFileMeta: "18,4 MB · 1.284 dosya",
+    demoPreview: "Önizleme",
     demoScan: "Yollar doğrulandı",
     demoPushed: "Push'landı · az önce",
     demoBranches: "main",
     demoNoAccount: "Hesap yok, terminal yok.",
+    demoPreviewNote: "Bu bir önizleme. Yüklemek için GitHub'ı bağla.",
   },
 
   faq: {

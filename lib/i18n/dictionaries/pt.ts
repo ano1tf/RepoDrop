@@ -123,14 +123,16 @@ export const pt: Dict = {
     demoTitle: "Do arquivo ao repo no GitHub em segundos.",
     demoTitleAccent: "Sem terminal.",
     demoLead: "Arraste, confira o preview, dê push. Sem comandos, e nada sai antes do seu ok.",
-    demoStep1: "Arraste o ZIP",
+    demoStep1: "Arquivo local",
     demoStep2: "Extração verificada",
     demoStep3: "Repo pronto",
-    demoDropZone: "Arraste e solte",
+    demoFileMeta: "18,4 MB · 1.284 ficheiros",
+    demoPreview: "Prévia",
     demoScan: "Caminhos verificados",
     demoPushed: "Pushado · agora",
     demoBranches: "main",
     demoNoAccount: "Zero conta, zero terminal.",
+    demoPreviewNote: "Isto é uma prévia. Conecte o GitHub para enviar.",
   },
 
   faq: {

@@ -81,7 +81,26 @@ describe("WorkflowDemo", () => {
     }
     expect((frHtml.match(/data-wd="bar"/g) ?? []).length).toBe(12);
     expect((frHtml.match(/data-wd="halo"/g) ?? []).length).toBe(3);
-    expect((frHtml.match(/data-wd-intro/g) ?? []).length).toBe(3);
+    expect((frHtml.match(/data-wd-intro/g) ?? []).length).toBe(4);
+  });
+
+  it("présente la carte 1 comme un fichier statique, pas une dropzone", () => {
+    // Aucune bordure pointillée : c'est le code visuel d'une zone de dépôt.
+    expect(frHtml).not.toContain("border-dashed");
+    // La carte porte un badge « Aperçu » et une métadonnée de fichier.
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoPreview));
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoFileMeta));
+    // Plus aucune invite au glisser-déposer dans le rendu.
+    expect(frHtml.toLowerCase()).not.toContain("glissez-déposez");
+    expect(frHtml.toLowerCase()).not.toContain("drag and drop");
+  });
+
+  it("affiche la mise en garde « aperçu » sous les cartes", () => {
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoPreviewNote));
+    // Elle apparaît une fois de façon visible, et une fois dans la légende
+    // réservée aux lecteurs d'écran.
+    const occurrences = frHtml.split(escapeHtml(DICTIONARIES.fr.home.demoPreviewNote)).length - 1;
+    expect(occurrences).toBe(2);
   });
 
   it("ne laisse jamais un gabarit {placeholder} visible", () => {
@@ -128,11 +147,13 @@ describe("copie de la démo (WorkflowDemo)", () => {
     demoStep1: 26,
     demoStep2: 26,
     demoStep3: 22,
-    demoDropZone: 22,
+    demoFileMeta: 28,
+    demoPreview: 14,
     demoScan: 26,
     demoPushed: 30,
     demoBranches: 12,
     demoNoAccount: 38,
+    demoPreviewNote: 70,
   };
 
   it("tient dans la mise en page pour les 16 langues", () => {

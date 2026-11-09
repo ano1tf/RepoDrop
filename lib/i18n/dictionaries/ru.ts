@@ -123,14 +123,16 @@ export const ru: Dict = {
     demoTitle: "Из архива в репозиторий GitHub за секунды.",
     demoTitleAccent: "Без терминала.",
     demoLead: "Перетащите, проверьте превью, запушьте. Никаких команд — и ничего не уйдёт без вашего согласия.",
-    demoStep1: "Перетащите ZIP",
+    demoStep1: "Локальный архив",
     demoStep2: "Распаковка проверена",
     demoStep3: "Репозиторий готов",
-    demoDropZone: "Перетащите сюда",
+    demoFileMeta: "18,4 МБ · 1 284 файла",
+    demoPreview: "Превью",
     demoScan: "Пути проверены",
     demoPushed: "Запушено · только что",
     demoBranches: "main",
     demoNoAccount: "Без аккаунта и терминала.",
+    demoPreviewNote: "Это превью. Подключите GitHub, чтобы отправлять.",
   },
 
   faq: {

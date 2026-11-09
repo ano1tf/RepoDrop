@@ -123,14 +123,16 @@ export const nl: Dict = {
     demoTitle: "Van archief naar GitHub-repo in seconden.",
     demoTitleAccent: "Zonder terminal.",
     demoLead: "Sleep, check de preview, push. Geen commando's, niets gaat weg zonder jouw akkoord.",
-    demoStep1: "Sleep de ZIP",
+    demoStep1: "Lokaal archief",
     demoStep2: "Extractie gecheckt",
     demoStep3: "Repo klaar",
-    demoDropZone: "Drag & drop",
+    demoFileMeta: "18,4 MB · 1.284 bestanden",
+    demoPreview: "Voorbeeld",
     demoScan: "Paden gecheckt",
     demoPushed: "Gepusht · net nu",
     demoBranches: "main",
     demoNoAccount: "Geen account, geen terminal.",
+    demoPreviewNote: "Dit is een voorbeeld. Koppel GitHub om te uploaden.",
   },
 
   faq: {

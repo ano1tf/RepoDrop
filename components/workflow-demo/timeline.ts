@@ -140,9 +140,11 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
       .set(lines, { autoAlpha: 0.18, y: 5 })
       .set(lineChecks, { scale: 0 })
       .set(result, { boxShadow: "0 0 0 0 rgba(52,211,153,0)" })
+      // La carte est un fichier statique : sa bordure reste neutre, puis
+      // s'illumine en vert quand le fichier est pris en charge.
       .set(archiveCard, {
-        borderColor: "rgba(52,211,153,0.35)",
-        boxShadow: "0 0 0 0 rgba(251,191,36,0)",
+        borderColor: "rgba(35,42,59,0.7)",
+        boxShadow: "0 0 0 0 rgba(52,211,153,0)",
       })
 
       /* ---- 1. le ZIP s'allume et lévite ------------------------------- */
@@ -155,8 +157,8 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
       .to(
         archiveCard,
         {
-          borderColor: "rgba(251,191,36,0.55)",
-          boxShadow: "0 0 26px -6px rgba(251,191,36,0.45)",
+          borderColor: "rgba(52,211,153,0.45)",
+          boxShadow: "0 0 24px -8px rgba(52,211,153,0.55)",
           duration: 0.6,
         },
         0,
@@ -169,8 +171,8 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
       .to(
         archiveCard,
         {
-          borderColor: "rgba(52,211,153,0.35)",
-          boxShadow: "0 0 0 0 rgba(251,191,36,0)",
+          borderColor: "rgba(35,42,59,0.7)",
+          boxShadow: "0 0 0 0 rgba(52,211,153,0)",
           duration: 0.5,
         },
         1.35,

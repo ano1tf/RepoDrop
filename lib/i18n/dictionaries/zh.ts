@@ -115,14 +115,16 @@ export const zh: Dict = {
     demoTitle: "从压缩包到 GitHub 仓库，只要几秒。",
     demoTitleAccent: "无需终端。",
     demoLead: "拖入、看预览、点推送。不用敲任何命令，你确认前什么都不会发出。",
-    demoStep1: "拖入 ZIP",
+    demoStep1: "本地压缩包",
     demoStep2: "解压已校验",
     demoStep3: "仓库就绪",
-    demoDropZone: "拖放到此处",
+    demoFileMeta: "18.4 MB · 1,284 个文件",
+    demoPreview: "预览",
     demoScan: "路径已校验",
     demoPushed: "已推送 · 刚刚",
     demoBranches: "main",
     demoNoAccount: "不用账号，不用终端。",
+    demoPreviewNote: "这只是预览。连接 GitHub 即可开始上传。",
   },
 
   faq: {
