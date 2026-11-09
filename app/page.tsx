@@ -25,12 +25,12 @@ import {
   resolveSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
+import { WorkflowDemo } from "@/components/WorkflowDemo";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
-import { fill } from "@/lib/i18n/format";
 import type { Dict } from "@/lib/i18n/types";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -105,7 +105,11 @@ export default async function Home() {
               {t.home.heroBody}
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-3">
+            {/* La démo arrive AVANT le bouton GitHub : on montre le résultat
+                avant de demander un compte. */}
+            <WorkflowDemo t={t} />
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
                 {ctaLabel}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
@@ -125,7 +129,7 @@ export default async function Home() {
             </ul>
           </div>
 
-          <HeroMock t={t} locale={locale} />
+          <GitHubRepoMock t={t} />
         </div>
       </section>
 
@@ -365,94 +369,107 @@ function Stat({
 }
 
 /**
- * Maquette animée du produit (décorative) : dépôt de l'archive, extraction,
- * push réussi. Aucun JavaScript — uniquement des animations CSS.
+ * Colonne de droite du hero : à quoi ressemble le dépôt **après** l'import.
+ *
+ * La démonstration du parcours (les 3 étapes) vit dans
+ * `components/WorkflowDemo.tsx`, juste au-dessus du bouton GitHub. Ici on montre
+ * le résultat, pas le chemin : une page de dépôt GitHub avec ses fichiers et son
+ * commit d'import. Le duo « la démo » + « le résultat » couvre les deux
+ * questions du visiteur — comment ça marche, et qu'est-ce que j'obtiens.
+ *
+ * 100 % décoratif : aucun appel réseau, aucun état.
  */
-function HeroMock({ t, locale }: { t: Dict; locale: string }) {
+function GitHubRepoMock({ t }: { t: Dict }) {
+  const fileName = t.home.mockFile;
+  const repoName = fileName.replace(/\.[^.]+$/, "");
+
   return (
-    <div
-      aria-hidden="true"
-      className="relative mx-auto w-full max-w-md animate-fade-up lg:max-w-none"
-    >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-go/10 via-transparent to-sky/10 blur-2xl"
-      />
-      <div className="panel overflow-hidden p-4 animate-float">
+    <div aria-hidden="true" className="relative mx-auto w-full max-w-md lg:max-w-none">
+      <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-go/10 via-transparent to-sky/10 blur-2xl" />
+
+      <div className="panel overflow-hidden animate-float">
         {/* barre de fenêtre */}
-        <div className="mb-4 flex items-center gap-2">
+        <div className="flex items-center gap-2 border-b border-edge/70 px-4 py-2.5">
           <span className="h-2.5 w-2.5 rounded-full bg-danger/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-go/60" />
-          <span className="ml-2 truncate font-mono text-[11px] text-mist">
-            repodrop · import
+          <span className="ml-2 flex min-w-0 items-center gap-1.5 rounded-md bg-ink/70 px-2 py-1 font-mono text-[11px] text-mist ring-1 ring-edge">
+            <Lock className="h-2.5 w-2.5 shrink-0 text-go" />
+            <span className="truncate">
+              github.com/you/<span className="text-chalk">{repoName}</span>
+            </span>
           </span>
         </div>
 
-        {/* zone de dépôt */}
-        <div className="rounded-xl border-2 border-dashed border-go/40 bg-go/[0.06] p-5 text-center">
-          <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-go/15 text-go ring-1 ring-go/30 animate-pulse-ring">
-            <FolderArchive className="h-6 w-6" />
+        {/* en-tête de dépôt */}
+        <div className="flex flex-wrap items-center gap-2 px-4 pt-3.5">
+          <FolderArchive className="h-4 w-4 shrink-0 text-mist" />
+          <span className="font-mono text-sm text-chalk">
+            you/<span className="font-semibold">{repoName}</span>
           </span>
-          <p className="text-sm font-medium text-chalk">{t.home.mockFile}</p>
-          <p className="mt-1 font-mono text-[11px] text-mist">
-            {fill(t.home.mockFileMeta, { size: "18,4 Mo", count: 1284 })}
-          </p>
-          <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-panel2">
-            <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-go to-sky animate-indeterminate" />
+          <Badge variant="muted" className="ms-auto font-mono text-[10px]">
+            Public
+          </Badge>
+        </div>
+
+        {/* bandeau succès */}
+        <div className="mx-4 mt-3 flex items-center gap-2 rounded-lg bg-go/10 px-3 py-2 ring-1 ring-go/25">
+          <Check className="h-4 w-4 shrink-0 text-go" strokeWidth={3} />
+          <span className="truncate text-xs font-medium text-go">
+            {t.home.mockPushed}
+          </span>
+        </div>
+
+        {/* fichiers + dernier commit */}
+        <div className="mt-3 border-t border-edge/70">
+          <div className="flex items-center justify-between gap-2 px-4 py-2 font-mono text-[11px] text-mist">
+            <span className="inline-flex items-center gap-1.5">
+              <GitBranch className="h-3 w-3 text-sky" />
+              main
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Archive className="h-3 w-3" />
+              {fileName}
+            </span>
           </div>
+          <ul className="font-mono text-[11px]">
+            {[
+              { name: "src", dir: true, meta: "6 files" },
+              { name: "package.json", meta: "1.1 KB" },
+              { name: "README.md", meta: "2.4 KB" },
+              { name: ".gitignore", meta: "312 B" },
+            ].map((row) => (
+              <li
+                key={row.name}
+                className="flex items-center gap-2 border-t border-edge/40 px-4 py-1.5"
+              >
+                {row.dir ? (
+                  <FolderArchive className="h-3 w-3 shrink-0 text-sky/80" />
+                ) : (
+                  <FileArchive className="h-3 w-3 shrink-0 text-mist/70" />
+                )}
+                <span className={row.dir ? "text-sky/85" : "text-mist"}>
+                  {row.name}
+                </span>
+                <span className="ms-auto shrink-0 text-mist/50">{row.meta}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* aperçu */}
-        <div className="mt-3 rounded-xl bg-ink/70 p-3 font-mono text-[11px] ring-1 ring-edge">
-          <TreeLine depth={0} name="src/" dir />
-          <TreeLine depth={1} name="index.ts" size="4,2 Ko" />
-          <TreeLine depth={1} name="server.ts" size="12,8 Ko" />
-          <TreeLine depth={0} name="package.json" size="1,1 Ko" />
-          <TreeLine
-            depth={0}
-            name="node_modules/"
-            dir
-            muted
-            note={t.home.mockExcluded}
-          />
-        </div>
-
-        {/* résultat */}
-        <div className="mt-3 flex items-center gap-2 rounded-xl bg-go/10 px-3 py-2.5 ring-1 ring-go/25">
-          <Check className="h-4 w-4 shrink-0 text-go" />
-          <span className="truncate text-xs text-go">{t.home.mockPushed}</span>
+        {/* pied : le commit créé */}
+        <div className="flex items-center gap-2 border-t border-edge/70 bg-ink2/40 px-4 py-2">
+          <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-go/15 text-go ring-1 ring-go/30">
+            <GitBranch className="h-3 w-3" />
+          </span>
+          <span className="truncate font-mono text-[11px] text-mist">
+            chore: import {fileName}
+          </span>
+          <span className="ms-auto shrink-0 rounded bg-panel2 px-1.5 py-0.5 font-mono text-[10px] text-mist ring-1 ring-edge">
+            main
+          </span>
         </div>
       </div>
-      <span className="sr-only">{locale}</span>
-    </div>
-  );
-}
-
-function TreeLine({
-  depth,
-  name,
-  size,
-  dir,
-  muted,
-  note,
-}: {
-  depth: number;
-  name: string;
-  size?: string;
-  dir?: boolean;
-  muted?: boolean;
-  note?: string;
-}) {
-  return (
-    <div
-      className="flex items-center justify-between gap-2 py-0.5"
-      style={{ paddingInlineStart: depth * 12 }}
-    >
-      <span className={cn("truncate", dir ? "text-sky/80" : "text-mist", muted && "line-through opacity-60")}>
-        {name}
-      </span>
-      <span className="shrink-0 text-mist/60">{note ?? size ?? ""}</span>
     </div>
   );
 }

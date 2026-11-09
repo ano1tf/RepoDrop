@@ -114,10 +114,23 @@ export const nl: Dict = {
     ctaTitle: "Klaar om je volgende archief op GitHub te legen?",
     ctaLead: "Log in, sleep, push. Wij doen de rest.",
 
-    mockFile: "mijn-project.tar",
+    mockFile: "mijn-project.zip",
     mockFileMeta: "{size} · {count} bestanden",
     mockExcluded: "uitgesloten",
     mockPushed: "Gepusht naar github.com/jij/mijn-project · branch main",
+
+    demoEyebrow: "De magie, vóór het inloggen",
+    demoTitle: "Van archief naar GitHub-repo in seconden.",
+    demoTitleAccent: "Zonder terminal.",
+    demoLead: "Sleep, check de preview, push. Geen commando's, niets gaat weg zonder jouw akkoord.",
+    demoStep1: "Sleep de ZIP",
+    demoStep2: "Extractie gecheckt",
+    demoStep3: "Repo klaar",
+    demoDropZone: "Drag & drop",
+    demoScan: "Paden gecheckt",
+    demoPushed: "Gepusht · net nu",
+    demoBranches: "main",
+    demoNoAccount: "Geen account, geen terminal.",
   },
 
   faq: {

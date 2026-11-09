@@ -125,10 +125,23 @@ export const fr = {
     ctaTitle: "Prêt à vider votre prochaine archive sur GitHub ?",
     ctaLead: "Connectez-vous, déposez, pushez. On s'occupe du reste.",
 
-    mockFile: "mon-projet.tar",
+    mockFile: "mon-projet.zip",
     mockFileMeta: "{size} · {count} fichiers",
     mockExcluded: "exclu",
     mockPushed: "Poussé sur github.com/vous/mon-projet · branche main",
+
+    demoEyebrow: "La magie, avant le login",
+    demoTitle: "De l'archive au repo GitHub en quelques secondes.",
+    demoTitleAccent: "Sans terminal.",
+    demoLead: "Glissez-déposez, vérifiez l'aperçu, pushez. Aucune commande, rien n'est envoyé sans votre accord.",
+    demoStep1: "Glissez le ZIP",
+    demoStep2: "Extraction vérifiée",
+    demoStep3: "Repo prêt",
+    demoDropZone: "Glissez-déposez",
+    demoScan: "Chemins vérifiés",
+    demoPushed: "Pushé · à l'instant",
+    demoBranches: "main",
+    demoNoAccount: "Zéro compte, zéro terminal.",
   },
 
   faq: {

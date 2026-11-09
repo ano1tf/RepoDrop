@@ -119,10 +119,23 @@ export const en: Dict = {
     ctaTitle: "Ready to empty your next archive into GitHub?",
     ctaLead: "Sign in, drop, push. We handle the rest.",
 
-    mockFile: "my-project.tar",
+    mockFile: "my-project.zip",
     mockFileMeta: "{size} · {count} files",
     mockExcluded: "excluded",
     mockPushed: "Pushed to github.com/you/my-project · main branch",
+
+    demoEyebrow: "The magic, before sign-in",
+    demoTitle: "From archive to GitHub repo in seconds.",
+    demoTitleAccent: "No terminal.",
+    demoLead: "Drop it, review the preview, push. No commands to type, and nothing leaves until you say so.",
+    demoStep1: "Drop the ZIP",
+    demoStep2: "Extraction verified",
+    demoStep3: "Repo ready",
+    demoDropZone: "Drag and drop",
+    demoScan: "Paths verified",
+    demoPushed: "Pushed · just now",
+    demoBranches: "main",
+    demoNoAccount: "Zero account, zero terminal.",
   },
 
   faq: {

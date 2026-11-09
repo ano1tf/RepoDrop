@@ -106,10 +106,23 @@ export const zh: Dict = {
     ctaTitle: "准备好把下一个压缩包倒进 GitHub 了吗？",
     ctaLead: "登录、拖入、推送。其余交给我们。",
 
-    mockFile: "my-project.tar",
+    mockFile: "my-project.zip",
     mockFileMeta: "{size} · {count} 个文件",
     mockExcluded: "已排除",
     mockPushed: "已推送到 github.com/you/my-project · main 分支",
+
+    demoEyebrow: "登录之前，先看魔法",
+    demoTitle: "从压缩包到 GitHub 仓库，只要几秒。",
+    demoTitleAccent: "无需终端。",
+    demoLead: "拖入、看预览、点推送。不用敲任何命令，你确认前什么都不会发出。",
+    demoStep1: "拖入 ZIP",
+    demoStep2: "解压已校验",
+    demoStep3: "仓库就绪",
+    demoDropZone: "拖放到此处",
+    demoScan: "路径已校验",
+    demoPushed: "已推送 · 刚刚",
+    demoBranches: "main",
+    demoNoAccount: "不用账号，不用终端。",
   },
 
   faq: {

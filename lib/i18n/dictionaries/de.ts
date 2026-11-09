@@ -114,10 +114,23 @@ export const de: Dict = {
     ctaTitle: "Bereit, dein nächstes Archiv auf GitHub zu entleeren?",
     ctaLead: "Anmelden, ablegen, pushen. Wir kümmern uns um den Rest.",
 
-    mockFile: "mein-projekt.tar",
+    mockFile: "mein-projekt.zip",
     mockFileMeta: "{size} · {count} Dateien",
     mockExcluded: "ausgeschlossen",
     mockPushed: "Gepusht zu github.com/du/mein-projekt · Branch main",
+
+    demoEyebrow: "Die Magie vor dem Login",
+    demoTitle: "Vom Archiv zum GitHub-Repo – in Sekunden.",
+    demoTitleAccent: "Ohne Terminal.",
+    demoLead: "Reinziehen, Vorschau prüfen, pushen. Keine Befehle, und nichts geht raus ohne dein Okay.",
+    demoStep1: "ZIP reinziehen",
+    demoStep2: "Extraktion geprüft",
+    demoStep3: "Repo bereit",
+    demoDropZone: "Drag & Drop",
+    demoScan: "Pfade geprüft",
+    demoPushed: "Gepusht · gerade eben",
+    demoBranches: "main",
+    demoNoAccount: "Kein Account, kein Terminal.",
   },
 
   faq: {

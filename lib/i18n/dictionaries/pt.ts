@@ -114,10 +114,23 @@ export const pt: Dict = {
     ctaTitle: "Pronto para vazar o seu próximo arquivo no GitHub?",
     ctaLead: "Entre, largue, envie. Nós tratamos do resto.",
 
-    mockFile: "meu-projeto.tar",
+    mockFile: "meu-projeto.zip",
     mockFileMeta: "{size} · {count} ficheiros",
     mockExcluded: "excluído",
     mockPushed: "Enviado para github.com/voce/meu-projeto · branch main",
+
+    demoEyebrow: "A mágica, antes do login",
+    demoTitle: "Do arquivo ao repo no GitHub em segundos.",
+    demoTitleAccent: "Sem terminal.",
+    demoLead: "Arraste, confira o preview, dê push. Sem comandos, e nada sai antes do seu ok.",
+    demoStep1: "Arraste o ZIP",
+    demoStep2: "Extração verificada",
+    demoStep3: "Repo pronto",
+    demoDropZone: "Arraste e solte",
+    demoScan: "Caminhos verificados",
+    demoPushed: "Pushado · agora",
+    demoBranches: "main",
+    demoNoAccount: "Zero conta, zero terminal.",
   },
 
   faq: {
