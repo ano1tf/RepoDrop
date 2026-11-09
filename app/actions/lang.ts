@@ -61,7 +61,7 @@ export async function setLocale(code: string): Promise<SetLocaleResult> {
 
   /*
    * Invalidation globale :
-   * - côté serveur, le cache de rendu de toutes les routes estmarks comme
+   * - côté serveur, le cache de rendu de toutes les routes est marqué comme
    *   périmé (elles seront rendues dans la nouvelle langue) ;
    * - côté client, l'action renvoie le nouvel arbre RSC, ce qui vide le
    *   cache de navigation : plus aucun segment préchargé dans l'ancienne
