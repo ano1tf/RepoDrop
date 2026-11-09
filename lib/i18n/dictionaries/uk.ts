@@ -123,14 +123,16 @@ export const uk: Dict = {
     demoTitle: "З архіву в репозиторій GitHub за секунди.",
     demoTitleAccent: "Без термінала.",
     demoLead: "Перетягніть, перегляньте превʼю, запуште. Жодних команд — і нічого не піде без вашого дозволу.",
-    demoStep1: "Перетягніть ZIP",
+    demoStep1: "Локальний архів",
     demoStep2: "Розпакування перевірено",
     demoStep3: "Репозиторій готовий",
-    demoDropZone: "Перетягніть сюди",
+    demoFileMeta: "18,4 МБ · 1 284 файли",
+    demoPreview: "Превʼю",
     demoScan: "Шляхи перевірено",
     demoPushed: "Запушено · щойно",
     demoBranches: "main",
     demoNoAccount: "Без акаунта й термінала.",
+    demoPreviewNote: "Це превʼю. Підключіть GitHub, щоб надсилати.",
   },
 
   faq: {

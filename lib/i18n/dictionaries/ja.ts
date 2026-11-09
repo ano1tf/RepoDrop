@@ -123,14 +123,16 @@ export const ja: Dict = {
     demoTitle: "アーカイブから GitHub リポジトリまで数秒。",
     demoTitleAccent: "ターミナル不要。",
     demoLead: "ドロップして、プレビューを確認して、プッシュ。コマンド不要、承認するまで何も送信されません。",
-    demoStep1: "ZIP をドロップ",
+    demoStep1: "ローカルの ZIP",
     demoStep2: "展開を検証済み",
     demoStep3: "リポジトリ完成",
-    demoDropZone: "ドラッグ＆ドロップ",
+    demoFileMeta: "18.4 MB · 1,284 ファイル",
+    demoPreview: "プレビュー",
     demoScan: "パス検証済み",
     demoPushed: "プッシュ済み · たった今",
     demoBranches: "main",
     demoNoAccount: "アカウントもターミナルも不要。",
+    demoPreviewNote: "これはプレビューです。アップロードするには GitHub を連携。",
   },
 
   faq: {

@@ -123,14 +123,16 @@ export const ko: Dict = {
     demoTitle: "압축 파일에서 GitHub 리포지토리까지 몇 초.",
     demoTitleAccent: "터미널 없이.",
     demoLead: "끌어다 놓고, 미리 보고, 푸시하세요. 명령어 없이, 승인 전에는 아무것도 전송되지 않습니다.",
-    demoStep1: "ZIP 끌어다 놓기",
+    demoStep1: "로컬 ZIP",
     demoStep2: "압축 해제 검증됨",
     demoStep3: "리포 준비 완료",
-    demoDropZone: "끌어다 놓기",
+    demoFileMeta: "18.4MB · 파일 1,284개",
+    demoPreview: "미리보기",
     demoScan: "경로 검증됨",
     demoPushed: "푸시됨 · 방금",
     demoBranches: "main",
     demoNoAccount: "계정도 터미널도 필요 없음.",
+    demoPreviewNote: "미리보기입니다. 업로드하려면 GitHub를 연결하세요.",
   },
 
   faq: {

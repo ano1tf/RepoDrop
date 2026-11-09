@@ -129,14 +129,16 @@ export const ar: Dict = {
     demoTitle: "من الأرشيف إلى مستودع GitHub في ثوانٍ.",
     demoTitleAccent: "بلا طرفية.",
     demoLead: "أفلِت الملف، راجع المعاينة، ثم ادفع. لا أوامر، ولا شيء يُرسل دون موافقتك.",
-    demoStep1: "أفلِت ملف ZIP",
+    demoStep1: "أرشيف محلي",
     demoStep2: "الاستخراج موثّق",
     demoStep3: "المستودع جاهز",
-    demoDropZone: "اسحب وأفلت",
+    demoFileMeta: "18,4 م.ب · 1 284 ملفًا",
+    demoPreview: "معاينة",
     demoScan: "المسارات موثّقة",
     demoPushed: "دُفع · الآن",
     demoBranches: "main",
     demoNoAccount: "بلا حساب وبلا طرفية.",
+    demoPreviewNote: "هذه معاينة فقط. اربط GitHub لبدء الرفع.",
   },
 
   faq: {

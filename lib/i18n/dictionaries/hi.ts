@@ -123,14 +123,16 @@ export const hi: Dict = {
     demoTitle: "आर्काइव से GitHub रेपो तक, कुछ सेकंड में।",
     demoTitleAccent: "टर्मिनल की ज़रूरत नहीं।",
     demoLead: "डालें, प्रीव्यू देखें, पुश करें। कोई कमांड नहीं, और आपकी मंज़ूरी से पहले कुछ नहीं जाता।",
-    demoStep1: "ZIP डालें",
+    demoStep1: "लोकल आर्काइव",
     demoStep2: "एक्सट्रैक्शन सत्यापित",
     demoStep3: "रेपो तैयार",
-    demoDropZone: "यहाँ खींचकर छोड़ें",
+    demoFileMeta: "18.4 MB · 1,284 फ़ाइलें",
+    demoPreview: "प्रीव्यू",
     demoScan: "पाथ सत्यापित",
     demoPushed: "पुश हुआ · अभी",
     demoBranches: "main",
     demoNoAccount: "न खाता, न टर्मिनल।",
+    demoPreviewNote: "यह सिर्फ़ प्रीव्यू है। अपलोड करने के लिए GitHub जोड़ें।",
   },
 
   faq: {

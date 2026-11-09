@@ -2,13 +2,13 @@ import type { Dict } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 import { WorkflowDemoMotion } from "@/components/WorkflowDemoMotion";
 import {
-  Archive,
   Check,
   FileArchive,
   FileCode2,
   FileJson2,
   FolderArchive,
   GitBranch,
+  Info,
   Lock,
   Sparkles,
 } from "lucide-react";
@@ -92,9 +92,15 @@ export function WorkflowDemo({ t }: { t: Dict }) {
           {/* --------------------------------------------------- étapes 1→3 */}
           <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
             <DemoCard step={1} label={home.demoStep1}>
+              {/*
+                Carte de fichier *statique*, volontairement pas une zone de
+                dépôt : aucune bordure pointillée, aucune invite à interagir.
+                Avant connexion, la démo ne doit pas laisser croire qu'on peut
+                glisser un fichier ici — c'est une illustration du parcours.
+              */}
               <div
                 data-wd="archive-card"
-                className="rounded-lg border border-dashed border-go/35 bg-go/[0.05] p-2.5"
+                className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5"
               >
                 <div className="flex items-center gap-2">
                   <span
@@ -103,21 +109,23 @@ export function WorkflowDemo({ t }: { t: Dict }) {
                   >
                     <FileArchive data-wd="archive-icon" className="h-4 w-4" aria-hidden="true" />
                   </span>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-mono text-[11px] text-chalk">
                       {fileName}
                     </p>
-                    <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-mist">
-                      <Archive className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
-                      {home.demoDropZone}
+                    <p className="mt-0.5 truncate text-[10px] text-mist">
+                      {home.demoFileMeta}
                     </p>
                   </div>
+                  <span className="shrink-0 rounded bg-sky/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-sky ring-1 ring-sky/25">
+                    {home.demoPreview}
+                  </span>
                 </div>
               </div>
             </DemoCard>
 
             <DemoCard step={2} label={home.demoStep2}>
-              <div className="rounded-lg border border-dashed border-go/20 bg-panel2/40 p-2.5">
+              <div className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5">
                 <div className="flex h-8 items-end gap-[3px]" aria-hidden="true">
                   {[38, 62, 46, 78, 55, 88, 70, 95, 60, 84, 48, 72].map((h, i) => (
                     <span
@@ -140,13 +148,22 @@ export function WorkflowDemo({ t }: { t: Dict }) {
             </DemoCard>
 
             <DemoCard step={3} label={home.demoStep3}>
-              <div className="rounded-lg border border-dashed border-go/20 bg-panel2/40 p-2.5 font-mono text-[10px] leading-4">
+              <div className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5 font-mono text-[10px] leading-4">
                 <RepoLine name="src/" depth={0} dir />
                 <RepoLine name="index.ts" depth={1} />
                 <RepoLine name="package.json" depth={0} />
               </div>
             </DemoCard>
           </div>
+
+          {/* Clarification : la démo est une illustration, pas une zone de dépôt. */}
+          <p
+            data-wd-intro
+            className="mt-3 flex items-center gap-1.5 text-[11px] leading-snug text-mist"
+          >
+            <Info className="h-3 w-3 shrink-0 text-sky/80" aria-hidden="true" />
+            <span>{home.demoPreviewNote}</span>
+          </p>
 
           {/* Rail : se remplit au passage de la comète (trait + traînée + point). */}
           <div aria-hidden="true" className="relative mt-3 h-2">
@@ -197,7 +214,7 @@ export function WorkflowDemo({ t }: { t: Dict }) {
 
           <p className="sr-only">
             {home.demoStep1} → {home.demoStep2} → {home.demoStep3}.{" "}
-            {home.demoPushed}
+            {home.demoPushed} {home.demoPreviewNote}
           </p>
         </div>
       </div>
