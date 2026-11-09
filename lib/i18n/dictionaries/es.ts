@@ -114,10 +114,24 @@ export const es: Dict = {
     ctaTitle: "¿Listo para soltar tu próximo archivo en GitHub?",
     ctaLead: "Conéctate, suelta, haz push. Nosotros nos ocupamos del resto.",
 
-    mockFile: "mi-proyecto.tar",
+    mockFile: "mi-proyecto.zip",
     mockFileMeta: "{size} · {count} ficheros",
     mockExcluded: "excluido",
     mockPushed: "Subido a github.com/tu/mi-proyecto · rama main",
+
+    demoEyebrow: "La magia, antes de conectarte",
+    demoTitle: "De un archivo local a un repo de GitHub en segundos.",
+    demoTitleAccent: "Sin terminal.",
+    demoLead: "Suelta, revisa, publica. Sin comandos que escribir ni repos que clonar, y nada se envía hasta que lo apruebes.",
+    demoStep1: "Suelta el archivo",
+    demoStep2: "Extracción verificada",
+    demoStep3: "Repo listo",
+    demoDropZone: "Arrastra y suelta",
+    demoScan: "Verificando rutas",
+    demoCommit: "Commit en",
+    demoPushed: "Publicado · hace unos segundos",
+    demoBranches: "rama main",
+    demoCaptionBefore: "Esta demo no necesita cuenta.",
   },
 
   faq: {

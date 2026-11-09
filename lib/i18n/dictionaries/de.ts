@@ -114,10 +114,24 @@ export const de: Dict = {
     ctaTitle: "Bereit, dein nächstes Archiv auf GitHub zu entleeren?",
     ctaLead: "Anmelden, ablegen, pushen. Wir kümmern uns um den Rest.",
 
-    mockFile: "mein-projekt.tar",
+    mockFile: "mein-projekt.zip",
     mockFileMeta: "{size} · {count} Dateien",
     mockExcluded: "ausgeschlossen",
     mockPushed: "Gepusht zu github.com/du/mein-projekt · Branch main",
+
+    demoEyebrow: "Die Magie – noch vor dem Login",
+    demoTitle: "Von der lokalen Archivdatei zum GitHub-Repo – in Sekunden.",
+    demoTitleAccent: "Ohne Terminal.",
+    demoLead: "Ablegen, prüfen, pushen. Kein Befehl zu tippen, kein Repo zu klonen – und nichts wird ohne deine Bestätigung gesendet.",
+    demoStep1: "Archiv ablegen",
+    demoStep2: "Geprüfte Extraktion",
+    demoStep3: "Repo bereit",
+    demoDropZone: "Ziehen & ablegen",
+    demoScan: "Pfade werden geprüft",
+    demoCommit: "Commit auf",
+    demoPushed: "Gepusht · vor wenigen Sekunden",
+    demoBranches: "Branch main",
+    demoCaptionBefore: "Für diese Demo ist kein Konto nötig.",
   },
 
   faq: {

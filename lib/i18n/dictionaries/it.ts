@@ -114,10 +114,24 @@ export const it: Dict = {
     ctaTitle: "Pronto a svuotare il tuo prossimo archivio su GitHub?",
     ctaLead: "Accedi, trascina, pubblica. Al resto pensiamo noi.",
 
-    mockFile: "mio-progetto.tar",
+    mockFile: "mio-progetto.zip",
     mockFileMeta: "{size} · {count} file",
     mockExcluded: "escluso",
     mockPushed: "Pubblicato su github.com/tu/mio-progetto · branch main",
+
+    demoEyebrow: "La magia, prima di accedere",
+    demoTitle: "Da un archivio locale a un repo GitHub in pochi secondi.",
+    demoTitleAccent: "Senza terminale.",
+    demoLead: "Trascina, controlla, pubblica. Nessun comando da digitare, nessun repo da clonare: niente viene inviato prima della tua conferma.",
+    demoStep1: "Trascina l'archivio",
+    demoStep2: "Estrazione verificata",
+    demoStep3: "Repo pronto",
+    demoDropZone: "Trascina e rilascia",
+    demoScan: "Verifica dei percorsi",
+    demoCommit: "Commit su",
+    demoPushed: "Pubblicato · pochi secondi fa",
+    demoBranches: "ramo main",
+    demoCaptionBefore: "Nessun account richiesto per questa demo.",
   },
 
   faq: {

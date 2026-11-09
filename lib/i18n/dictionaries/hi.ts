@@ -114,10 +114,24 @@ export const hi: Dict = {
     ctaTitle: "अपना अगला आर्काइव GitHub पर खाली करने के लिए तैयार?",
     ctaLead: "साइन इन करें, छोड़ें, पुश करें। बाकी हम संभाल लेंगे।",
 
-    mockFile: "mera-project.tar",
+    mockFile: "mera-project.zip",
     mockFileMeta: "{size} · {count} फ़ाइलें",
     mockExcluded: "बाहर",
     mockPushed: "github.com/aap/mera-project पर पुश · ब्रांच main",
+
+    demoEyebrow: "साइन-इन से पहले जादू",
+    demoTitle: "स्थानीय आर्काइव से GitHub रेपो तक कुछ सेकंड में।",
+    demoTitleAccent: "टर्मिनल की ज़रूरत नहीं।",
+    demoLead: "डालें, जाँचें, पुश करें। कोई कमांड लिखने या रेपो क्लोन करने की ज़रूरत नहीं, और आपकी मंज़ूरी से पहले कुछ नहीं भेजा जाता।",
+    demoStep1: "आर्काइव डालें",
+    demoStep2: "सत्यापित एक्सट्रैक्शन",
+    demoStep3: "रेपो तैयार",
+    demoDropZone: "यहाँ खींचकर छोड़ें",
+    demoScan: "पाथ की जाँच हो रही है",
+    demoCommit: "कमिट यहाँ",
+    demoPushed: "पुश हुआ · कुछ सेकंड पहले",
+    demoBranches: "ब्रांच main",
+    demoCaptionBefore: "इस डेमो के लिए खाते की ज़रूरत नहीं।",
   },
 
   faq: {

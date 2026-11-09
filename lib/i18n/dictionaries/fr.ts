@@ -125,10 +125,25 @@ export const fr = {
     ctaTitle: "Prêt à vider votre prochaine archive sur GitHub ?",
     ctaLead: "Connectez-vous, déposez, pushez. On s'occupe du reste.",
 
-    mockFile: "mon-projet.tar",
+    mockFile: "mon-projet.zip",
     mockFileMeta: "{size} · {count} fichiers",
     mockExcluded: "exclu",
     mockPushed: "Poussé sur github.com/vous/mon-projet · branche main",
+
+    demoEyebrow: "La magie, avant la connexion",
+    demoTitle: "D'une archive locale à un dépôt GitHub en quelques secondes.",
+    demoTitleAccent: "Sans terminal.",
+    demoLead:
+      "Déposez, vérifiez, poussez. Aucune commande à taper, aucun dépôt à cloner — et rien n'est envoyé avant votre validation.",
+    demoStep1: "Déposez l'archive",
+    demoStep2: "Extraction vérifiée",
+    demoStep3: "Dépôt prêt",
+    demoDropZone: "Glissez-déposez",
+    demoScan: "Vérification des chemins",
+    demoCommit: "Commit sur",
+    demoPushed: "Poussé · il y a quelques secondes",
+    demoBranches: "branche main",
+    demoCaptionBefore: "Aucun compte requis pour cette démo.",
   },
 
   faq: {

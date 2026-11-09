@@ -120,10 +120,24 @@ export const ar: Dict = {
     ctaTitle: "مستعد لتفريغ أرشيفك التالي على GitHub؟",
     ctaLead: "سجّل الدخول، أفلِت، ادفع. نحن نتولى الباقي.",
 
-    mockFile: "مشروعي.tar",
+    mockFile: "مشروعي.zip",
     mockFileMeta: "{size} · {count} ملفًا",
     mockExcluded: "مستبعد",
     mockPushed: "دُفع إلى github.com/أنت/مشروعي · الفرع main",
+
+    demoEyebrow: "السحر قبل تسجيل الدخول",
+    demoTitle: "من أرشيف محلي إلى مستودع GitHub في ثوانٍ.",
+    demoTitleAccent: "دون طرفية.",
+    demoLead: "أفلِت، راجِع، ثم ادفع. لا أوامر تكتبها ولا مستودع تنسخه، ولا يُرسل شيء قبل موافقتك.",
+    demoStep1: "أفلِت الأرشيف",
+    demoStep2: "استخراج موثّق",
+    demoStep3: "المستودع جاهز",
+    demoDropZone: "اسحب وأفلت",
+    demoScan: "جارٍ فحص المسارات",
+    demoCommit: "Commit على",
+    demoPushed: "تم الدفع · قبل ثوانٍ",
+    demoBranches: "الفرع main",
+    demoCaptionBefore: "لا حاجة إلى حساب لهذا العرض.",
   },
 
   faq: {

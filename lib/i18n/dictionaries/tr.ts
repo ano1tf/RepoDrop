@@ -114,10 +114,24 @@ export const tr: Dict = {
     ctaTitle: "Sıradaki arşivinizi GitHub'a boşaltmaya hazır mısınız?",
     ctaLead: "Giriş yapın, bırakın, gönderin. Gerisini biz hallederiz.",
 
-    mockFile: "projem.tar",
+    mockFile: "projem.zip",
     mockFileMeta: "{size} · {count} dosya",
     mockExcluded: "hariç",
     mockPushed: "github.com/sen/projem adresine gönderildi · main dalı",
+
+    demoEyebrow: "Sihir, giriş yapmadan önce",
+    demoTitle: "Yerel bir arşivden GitHub deposuna saniyeler içinde.",
+    demoTitleAccent: "Terminal yok.",
+    demoLead: "Bırak, gözden geçir, gönder. Yazılacak komut ya da klonlanacak depo yok — sen onaylamadan hiçbir şey gönderilmez.",
+    demoStep1: "Arşivi bırak",
+    demoStep2: "Doğrulanmış çıkarma",
+    demoStep3: "Depo hazır",
+    demoDropZone: "Sürükle ve bırak",
+    demoScan: "Yollar denetleniyor",
+    demoCommit: "Commit hedefi",
+    demoPushed: "Gönderildi · saniyeler önce",
+    demoBranches: "main dalı",
+    demoCaptionBefore: "Bu demo için hesap gerekmez.",
   },
 
   faq: {

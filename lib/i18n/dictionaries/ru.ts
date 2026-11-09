@@ -114,10 +114,24 @@ export const ru: Dict = {
     ctaTitle: "Готовы выгрузить следующий архив на GitHub?",
     ctaLead: "Войдите, перетащите, отправьте. Об остальном позаботимся мы.",
 
-    mockFile: "moy-proekt.tar",
+    mockFile: "moy-proekt.zip",
     mockFileMeta: "{size} · {count} файлов",
     mockExcluded: "исключено",
     mockPushed: "Отправлено на github.com/vy/moy-proekt · ветка main",
+
+    demoEyebrow: "Магия — ещё до входа",
+    demoTitle: "От локального архива до репозитория GitHub за секунды.",
+    demoTitleAccent: "Без терминала.",
+    demoLead: "Перетащите, проверьте, отправьте. Не нужно вводить команды и клонировать репозиторий — ничего не уйдёт без вашего подтверждения.",
+    demoStep1: "Перетащите архив",
+    demoStep2: "Проверенная распаковка",
+    demoStep3: "Репозиторий готов",
+    demoDropZone: "Перетащите сюда",
+    demoScan: "Проверка путей",
+    demoCommit: "Коммит в",
+    demoPushed: "Отправлено · несколько секунд назад",
+    demoBranches: "ветка main",
+    demoCaptionBefore: "Для этой демонстрации аккаунт не нужен.",
   },
 
   faq: {

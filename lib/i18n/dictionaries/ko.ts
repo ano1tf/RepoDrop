@@ -114,10 +114,24 @@ export const ko: Dict = {
     ctaTitle: "다음 압축 파일을 GitHub에 풀어 놓을 준비가 되셨나요?",
     ctaLead: "로그인하고, 올리고, 푸시하세요. 나머지는 저희가.",
 
-    mockFile: "nae-peurojekteu.tar",
+    mockFile: "nae-peurojekteu.zip",
     mockFileMeta: "{size} · {count}개 파일",
     mockExcluded: "제외됨",
     mockPushed: "github.com/you/nae-peurojekteu에 푸시됨 · main 브랜치",
+
+    demoEyebrow: "로그인 전에 미리 보는 마법",
+    demoTitle: "로컬 압축 파일에서 GitHub 저장소까지 몇 초 만에.",
+    demoTitleAccent: "터미널 없이.",
+    demoLead: "끌어다 놓고, 확인하고, 푸시하세요. 입력할 명령도 복제할 저장소도 없으며, 승인 전에는 아무것도 전송되지 않습니다.",
+    demoStep1: "압축 파일 놓기",
+    demoStep2: "검증된 압축 해제",
+    demoStep3: "저장소 준비 완료",
+    demoDropZone: "끌어다 놓기",
+    demoScan: "경로 검사 중",
+    demoCommit: "커밋 대상",
+    demoPushed: "푸시됨 · 몇 초 전",
+    demoBranches: "브랜치 main",
+    demoCaptionBefore: "이 데모에는 계정이 필요하지 않습니다.",
   },
 
   faq: {

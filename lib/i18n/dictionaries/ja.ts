@@ -114,10 +114,24 @@ export const ja: Dict = {
     ctaTitle: "次のアーカイブを GitHub に流し込みますか？",
     ctaLead: "ログインして、ドロップして、プッシュ。あとはこちらで。",
 
-    mockFile: "my-project.tar",
+    mockFile: "my-project.zip",
     mockFileMeta: "{size} · {count} ファイル",
     mockExcluded: "除外",
     mockPushed: "github.com/you/my-project にプッシュ · main ブランチ",
+
+    demoEyebrow: "ログイン前に、その手触りを。",
+    demoTitle: "ローカルのアーカイブから GitHub リポジトリまで、数秒で。",
+    demoTitleAccent: "ターミナルは不要です。",
+    demoLead: "ドロップして、確認して、プッシュ。コマンド入力もクローンも不要で、承認するまで何も送信されません。",
+    demoStep1: "アーカイブをドロップ",
+    demoStep2: "検証済みの展開",
+    demoStep3: "リポジトリ完成",
+    demoDropZone: "ドラッグ＆ドロップ",
+    demoScan: "パスを検証中",
+    demoCommit: "コミット先",
+    demoPushed: "プッシュ済み · ほんの数秒前",
+    demoBranches: "ブランチ main",
+    demoCaptionBefore: "このデモにアカウントは不要です。",
   },
 
   faq: {
