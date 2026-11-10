@@ -11,6 +11,7 @@ export const pl: Dict = {
     importTitle: "Importuj archiwum",
     importDescription:
       "Wgraj archiwum .rar, .zip, .tar lub .tar.gz, aby podejrzeć pliki i wypchnąć je do repozytorium GitHub.",
+    jobTitle: "Śledzenie importu",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const pl: Dict = {
     feature5Title: "Nowe lub istniejące repo",
     feature5Body:
       "Utwórz prywatne lub publiczne repozytorium albo dodaj archiwum do istniejącego — w razie potrzeby na osobnym branchu.",
-    feature6Title: "Linki gotowe dla AI",
-    feature6Body:
-      "Po pushu: Codespaces, vscode.dev, URL do klonowania, polecenie gh i archiwum .zip. Wystarczy kopiuj-wklej.",
 
     formatsTitle: "Każde archiwum, nieważne jak stare",
     formatsBody:
@@ -127,12 +125,25 @@ export const pl: Dict = {
     demoStep2: "Rozpakowanie OK",
     demoStep3: "Repo gotowe",
     demoFileMeta: "18,4 MB · 1 284 pliki",
-    demoPreview: "Podgląd",
     demoScan: "Ścieżki sprawdzone",
     demoPushed: "Pushnięte · teraz",
     demoBranches: "main",
     demoNoAccount: "Zero konta, zero terminala.",
-    demoPreviewNote: "To tylko podgląd. Połącz GitHuba, aby wysyłać.",
+    demoLocalBadge: "Lokalnie",
+    demoDropHint: "Przeciągnij tutaj plik .zip",
+    demoDropBrowse: "lub wybierz plik",
+    demoDropError: "Akceptowane są tylko pliki .zip.",
+    demoReading: "Odczyt archiwum…",
+    demoExtracting: "Rozpakowywanie…",
+    demoReady: "Gotowe do wypchnięcia",
+    demoReadyMeta: "Wykryto {count} plików · nic nie opuściło przeglądarki",
+    demoPushCta: "Wypchnij na GitHub",
+    demoLocalNote: "Twoje pliki zostają w przeglądarce — nic nie jest wysyłane.",
+    demoConnectTitle: "Plik gotowy!",
+    demoConnectBody: "Połącz konto GitHub, aby dokończyć wypchnięcie.",
+    demoConnectNote: "Archiwum nie opuściło przeglądarki: zostanie wypchnięte z Twojej sesji GitHub.",
+    demoConnectCta: "Połącz z GitHub",
+    demoConnectLater: "Później",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const pl: Dict = {
     guarantee3: "Pełny podgląd przed każdym wysłaniem",
     copyright: "© {year} RepoDrop — Twoje archiwa, Twój GitHub.",
     reserved: "Obszar zastrzeżony",
+  },
+
+  job: {
+    statusQueued: "W kolejce",
+    statusExtracting: "Rozpakowywanie",
+    statusReady: "Gotowe do wypchnięcia",
+    statusPushing: "Wypychanie…",
+    statusDone: "Gotowe",
+    statusFailed: "Błąd",
+    extractingTitle: "Rozpakowywanie…",
+    extractingBody: "Sprawdzanie ścieżek, limit rozmiaru i wykrywanie katalogu głównego. Wszystko dzieje się na serwerze, w izolowanym środowisku.",
+    pushingTitle: "Wypychanie na GitHub…",
+    pushingBody: "Tworzenie commita i wysyłanie plików. Możesz zostawić tę kartę otwartą — będziemy informować.",
+    doneTitle: "Wypchnięte!",
+    doneFiles: "Zaimportowano {count} plików na gałąź {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "repozytorium utworzone",
+    doneOpenGithub: "Otwórz na GitHubie",
+    doneCopyLink: "Kopiuj link",
+    doneDownload: "Pobierz jako .zip",
+    doneImportAnother: "Zaimportuj inną archiwum",
   },
 
   notFound: {

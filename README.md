@@ -102,12 +102,8 @@ npx next dev -H 0.0.0.0 -p 10000
    - option **branche dédiée** pour ne jamais toucher à la branche par défaut ;
    - option **« Remplacer tout le code »** (dépôt existant, confirmation explicite) : le dépôt contiendra exactement les fichiers de l'archive — ceux absents de l'archive sont supprimés — et le push est forcé, donc il réussit même si le dépôt a avancé entre-temps (fini le rejet `[rejected] … (fetch first)`). L'historique est conservé : le remplacement est un nouveau commit par-dessus. Si un push classique échoue pour cette raison, l'écran d'échec propose directement de **réessayer en remplaçant tout le code**, sans ré-uploader l'archive.
 5. **Pousser** → commit créé sous `votre-login <votre-login@users.noreply.github.com>`, suivi en direct, lien vers le dépôt.
-6. **Liens IA** : après le push, RepoDrop affiche une série de liens prêts à donner à un agent IA / humain :
-   - URL GitHub classique, branche, commit et **Codespaces** (`vscode.dev` + Copilot intégrés) ;
-   - URL **`vscode.dev`** (éditeur web officiel) ;
-   - URL de clone HTTPS (l'agent s'authentifie lui-même via sa session GitHub) ;
-   - commande **`gh repo clone`** prête à copier ;
-   - téléchargement du code en **`.zip`** (`GET /api/jobs/[id]/download`, node_modules exclus).
+6. **Résultat** : l'écran de succès confirme le push et propose le dépôt (URL, branche, commit), la copie du lien et le téléchargement du code en **`.zip`** (`GET /api/jobs/[id]/download`, node_modules exclus).
+   > La section « liens prêts à donner à une IA » (Codespaces, `vscode.dev`, URL de clone, commande `gh`) a été retirée : c'était un prototype, l'écran de succès ne montre plus que le message et le lien du dépôt.
 
 ### Formats d'archives
 
@@ -448,13 +444,15 @@ allemand, italien, portugais, néerlandais, polonais, russe, ukrainien, turc,
 vit dans l'en-tête ; le choix survit à la navigation et au redémarrage.
 
 ```
+middleware.ts           # résout la langue à chaque requête (cookie → Accept-Language)
 lib/i18n/
   locales.ts            # catalogue (code, nom natif, drapeau, dir, og:locale)
   types.ts              # Dict = DeepStringify<typeof fr> → complétude garantie
   dictionaries/*.ts     # 16 dictionnaires, fr = source de vérité des clés
   dictionary.ts         # Record<Locale, Dict> + accès (getDictionary, section)
-  server.ts             # getLocale() / getT() : cookie → Accept-Language → fr
+  server.ts             # getLocale() / getT() : cookie → x-rd-lang → Accept-Language
   format.ts             # fill("{upload} Mo") , placeholdersOf, formatNumber
+app/actions/lang.ts     # Server Action : pose le cookie + révoque les caches
 app/api/lang/route.ts   # POST validation stricte + cookie rd_lang (1 an)
 app/api/lang/switch/     # GET ?to=xx&next=/chemin : bascule par lien, 307
 app/langues/page.tsx     # /langues : galerie de démo, 16 cartes cliquables
@@ -477,8 +475,27 @@ Trois décisions et ce qu'elles évitent :
   arabe) ; la maquette et les puces utilisent `padding-inline-start` et
   `rtl:rotate-180` au lieu de `left`/`right`.
 
-Deux façons de changer de langue : le sélecteur de l'en-tête (sans JS requis
-pour le rendu, `POST /api/lang` + `router.refresh()`) et des liens partageables
+#### La langue ne lâche pas (le bug « ça revient en français »)
+
+Next.js **réutilise pendant 5 minutes** les segments RSC préchargés par les
+`<Link>` (`prefetchCache`). Ces segments ayant été rendus dans l'ancienne
+langue, un simple `router.refresh()` ne suffisait pas : revenir sur une page
+préchargée réaffichait l'ancienne langue. La correction tient en trois
+pièces :
+
+1. **`middleware.ts`** résout la langue à **chaque requête** — cookie
+   `rd_lang`, sinon `Accept-Language` —, la transmet au rendu via l'en-tête
+   `x-rd-lang`, et la pose dans le cookie dès la première visite (la langue
+   détectée devient explicite et stable).
+2. **`app/actions/lang.ts`** (Server Action) pose le cookie **et** appelle
+   `revalidatePath("/", "layout")`. L'action renvoie le nouvel arbre RSC, ce
+   qui **vide le cache de navigation côté client** : plus aucun segment
+   préchargé dans l'ancienne langue ne peut resservir.
+3. **`localStorage`** (`rd_lang`) n'est qu'un **miroir** du cookie : si le
+   cookie a été effacé ou bloqué, le sélecteur le rétablit au chargement.
+
+Deux façons de changer de langue : le sélecteur de l'en-tête (Server Action
+`setLocale`, sans rechargement) et des liens partageables
 `/api/lang/switch?to=ja&next=/repos`. Cette route GET pose le cookie puis
 redirige en 307 ; `next` est filtré par `safeNextPath` (chemins internes
 uniquement, sinon `/`) pour ne pas devenir une redirection ouverte.

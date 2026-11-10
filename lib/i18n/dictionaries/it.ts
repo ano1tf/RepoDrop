@@ -11,6 +11,7 @@ export const it: Dict = {
     importTitle: "Importa un archivio",
     importDescription:
       "Carica un archivio .rar, .zip, .tar o .tar.gz per visualizzarne i file e pubblicarlo su un repository GitHub.",
+    jobTitle: "Monitoraggio importazione",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const it: Dict = {
     feature5Title: "Repository nuovo o esistente",
     feature5Body:
       "Crea un repository privato o pubblico, oppure aggiungi l'archivio a uno esistente — su un branch dedicato se preferisci.",
-    feature6Title: "Link pronti per l'IA",
-    feature6Body:
-      "Dopo il push: Codespaces, vscode.dev, URL di clone, comando gh e archivio .zip. Basta un copia-incolla.",
 
     formatsTitle: "Qualsiasi archivio, di qualsiasi età",
     formatsBody:
@@ -127,12 +125,25 @@ export const it: Dict = {
     demoStep2: "Estrazione verificata",
     demoStep3: "Repo pronto",
     demoFileMeta: "18,4 MB · 1.284 file",
-    demoPreview: "Anteprima",
     demoScan: "Percorsi verificati",
     demoPushed: "Pushato · ora",
     demoBranches: "main",
     demoNoAccount: "Zero account, zero terminale.",
-    demoPreviewNote: "Questa è un'anteprima. Collega GitHub per caricare.",
+    demoLocalBadge: "Locale",
+    demoDropHint: "Trascina qui un .zip",
+    demoDropBrowse: "oppure scegli un file",
+    demoDropError: "Sono accettati solo i file .zip.",
+    demoReading: "Lettura dell'archivio…",
+    demoExtracting: "Estrazione…",
+    demoReady: "Pronto per il push",
+    demoReadyMeta: "{count} file rilevati · nulla è uscito dal browser",
+    demoPushCta: "Push su GitHub",
+    demoLocalNote: "I tuoi file restano nel browser: non viene inviato nulla.",
+    demoConnectTitle: "File pronto!",
+    demoConnectBody: "Collega il tuo account GitHub per completare il push.",
+    demoConnectNote: "L'archivio non è uscito dal browser: verrà pushato dalla tua sessione GitHub.",
+    demoConnectCta: "Accedi con GitHub",
+    demoConnectLater: "Più tardi",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const it: Dict = {
     guarantee3: "Anteprima completa prima di ogni invio",
     copyright: "© {year} RepoDrop — i tuoi archivi, il tuo GitHub.",
     reserved: "Area riservata",
+  },
+
+  job: {
+    statusQueued: "In coda",
+    statusExtracting: "Estrazione",
+    statusReady: "Pronto per il push",
+    statusPushing: "Push in corso…",
+    statusDone: "Completato",
+    statusFailed: "Errore",
+    extractingTitle: "Estrazione in corso…",
+    extractingBody: "Verifica dei percorsi, limite di dimensione e rilevamento della cartella radice. Tutto avviene sul server, in uno spazio isolato.",
+    pushingTitle: "Push su GitHub…",
+    pushingBody: "Creazione del commit e invio dei file. Puoi lasciare aperta questa scheda: ti aggiorneremo.",
+    doneTitle: "È stato pushato!",
+    doneFiles: "{count} file importati sul branch {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "repository creato",
+    doneOpenGithub: "Apri su GitHub",
+    doneCopyLink: "Copia il link",
+    doneDownload: "Scarica come .zip",
+    doneImportAnother: "Importa un altro archivio",
   },
 
   notFound: {

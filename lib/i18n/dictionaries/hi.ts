@@ -11,6 +11,7 @@ export const hi: Dict = {
     importTitle: "आर्काइव इम्पोर्ट करें",
     importDescription:
       "फ़ाइलों का पूर्वावलोकन करने और उसे GitHub रिपॉज़िटरी पर पुश करने के लिए .rar, .zip, .tar या .tar.gz आर्काइव अपलोड करें।",
+    jobTitle: "आयात की निगरानी",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const hi: Dict = {
     feature5Title: "नई या मौजूदा रिपॉज़िटरी",
     feature5Body:
       "निजी या सार्वजनिक रिपॉज़िटरी बनाएँ, या आर्काइव को मौजूदा में जोड़ें — चाहें तो अलग ब्रांच पर।",
-    feature6Title: "AI के लिए तैयार लिंक",
-    feature6Body:
-      "पुश के बाद: Codespaces, vscode.dev, क्लोन URL, gh कमांड और .zip आर्काइव। एक कॉपी-पेस्ट काफ़ी है।",
 
     formatsTitle: "कोई भी आर्काइव, चाहे कितना भी पुराना हो",
     formatsBody:
@@ -127,12 +125,25 @@ export const hi: Dict = {
     demoStep2: "एक्सट्रैक्शन सत्यापित",
     demoStep3: "रेपो तैयार",
     demoFileMeta: "18.4 MB · 1,284 फ़ाइलें",
-    demoPreview: "प्रीव्यू",
     demoScan: "पाथ सत्यापित",
     demoPushed: "पुश हुआ · अभी",
     demoBranches: "main",
     demoNoAccount: "न खाता, न टर्मिनल।",
-    demoPreviewNote: "यह सिर्फ़ प्रीव्यू है। अपलोड करने के लिए GitHub जोड़ें।",
+    demoLocalBadge: "स्थानीय",
+    demoDropHint: "यहाँ .zip फ़ाइल छोड़ें",
+    demoDropBrowse: "या फ़ाइल चुनें",
+    demoDropError: "केवल .zip फ़ाइलें स्वीकार्य हैं।",
+    demoReading: "आर्काइव पढ़ा जा रहा है…",
+    demoExtracting: "निकाला जा रहा है…",
+    demoReady: "पुश करने के लिए तैयार",
+    demoReadyMeta: "{count} फ़ाइलें मिलीं · कुछ भी आपके ब्राउज़र से बाहर नहीं गया",
+    demoPushCta: "GitHub पर पुश करें",
+    demoLocalNote: "आपकी फ़ाइलें आपके ब्राउज़र में ही रहती हैं — कुछ भी अपलोड नहीं होता।",
+    demoConnectTitle: "फ़ाइल तैयार है!",
+    demoConnectBody: "पुश पूरा करने के लिए अपना GitHub खाता जोड़ें।",
+    demoConnectNote: "आर्काइव आपके ब्राउज़र से बाहर नहीं गया — यह आपके GitHub सत्र से पुश होगा।",
+    demoConnectCta: "GitHub से जोड़ें",
+    demoConnectLater: "बाद में",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const hi: Dict = {
     guarantee3: "किसी भी भेजने से पहले पूरा पूर्वावलोकन",
     copyright: "© {year} RepoDrop — आपके आर्काइव, आपका GitHub।",
     reserved: "आरक्षित क्षेत्र",
+  },
+
+  job: {
+    statusQueued: "कतार में",
+    statusExtracting: "निकाला जा रहा है",
+    statusReady: "पुश करने के लिए तैयार",
+    statusPushing: "पुश किया जा रहा है…",
+    statusDone: "पूर्ण",
+    statusFailed: "विफल",
+    extractingTitle: "निकाला जा रहा है…",
+    extractingBody: "पथ जाँचे जा रहे हैं, आकार की सीमा लागू हो रही है और रूट फ़ोल्डर पहचाना जा रहा है। सब कुछ सर्वर पर, अलग स्थान में होता है।",
+    pushingTitle: "GitHub पर पुश किया जा रहा है…",
+    pushingBody: "कमिट बनाया जा रहा है और फ़ाइलें भेजी जा रही हैं। आप यह टैब खुला रहने दे सकते हैं — हम आपको बताते रहेंगे।",
+    doneTitle: "पुश हो गया!",
+    doneFiles: "{branch} शाखा पर {count} फ़ाइलें आयात की गईं",
+    doneCommit: "कमिट {sha}",
+    doneCreated: "रिपॉज़िटरी बनाई गई",
+    doneOpenGithub: "GitHub पर खोलें",
+    doneCopyLink: "लिंक कॉपी करें",
+    doneDownload: ".zip के रूप में डाउनलोड करें",
+    doneImportAnother: "दूसरा आर्काइव आयात करें",
   },
 
   notFound: {

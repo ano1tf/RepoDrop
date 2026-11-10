@@ -11,6 +11,7 @@ export const es: Dict = {
     importTitle: "Importar un archivo",
     importDescription:
       "Sube un archivo .rar, .zip, .tar o .tar.gz para previsualizar sus ficheros y subirlo a un repositorio de GitHub.",
+    jobTitle: "Seguimiento de la importación",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const es: Dict = {
     feature5Title: "Repositorio nuevo o existente",
     feature5Body:
       "Crea un repositorio privado o público, o añade el archivo a uno existente — en una rama dedicada si lo prefieres.",
-    feature6Title: "Enlaces listos para IA",
-    feature6Body:
-      "Después del push: Codespaces, vscode.dev, URL de clonado, comando gh y archivo .zip. Basta un copiar y pegar.",
 
     formatsTitle: "Cualquier archivo, sin importar su edad",
     formatsBody:
@@ -127,12 +125,25 @@ export const es: Dict = {
     demoStep2: "Extracción verificada",
     demoStep3: "Repo listo",
     demoFileMeta: "18,4 MB · 1.284 archivos",
-    demoPreview: "Vista previa",
     demoScan: "Rutas verificadas",
     demoPushed: "Pusheado · ahora mismo",
     demoBranches: "main",
     demoNoAccount: "Cero cuenta, cero terminal.",
-    demoPreviewNote: "Esto es una vista previa. Conecta GitHub para subir.",
+    demoLocalBadge: "Local",
+    demoDropHint: "Arrastra un .zip aquí",
+    demoDropBrowse: "o elige un archivo",
+    demoDropError: "Solo se aceptan archivos .zip.",
+    demoReading: "Leyendo el archivo…",
+    demoExtracting: "Extrayendo…",
+    demoReady: "Listo para subir",
+    demoReadyMeta: "{count} archivos detectados · nada salió de tu navegador",
+    demoPushCta: "Subir a GitHub",
+    demoLocalNote: "Tus archivos se quedan en tu navegador: no se envía nada.",
+    demoConnectTitle: "¡Archivo listo!",
+    demoConnectBody: "Conecta tu cuenta de GitHub para terminar el push.",
+    demoConnectNote: "El archivo no salió de tu navegador: se enviará desde tu sesión de GitHub.",
+    demoConnectCta: "Conectar con GitHub",
+    demoConnectLater: "Más tarde",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const es: Dict = {
     guarantee3: "Vista previa completa antes de cualquier envío",
     copyright: "© {year} RepoDrop — tus archivos, tu GitHub.",
     reserved: "Área reservada",
+  },
+
+  job: {
+    statusQueued: "En cola",
+    statusExtracting: "Extrayendo",
+    statusReady: "Listo para subir",
+    statusPushing: "Subiendo…",
+    statusDone: "Terminado",
+    statusFailed: "Error",
+    extractingTitle: "Extrayendo…",
+    extractingBody: "Se verifican las rutas, se aplica el límite de tamaño y se detecta la carpeta raíz. Todo ocurre en el servidor, en un espacio aislado.",
+    pushingTitle: "Subiendo a GitHub…",
+    pushingBody: "Creando el commit y enviando los archivos. Puedes dejar esta pestaña abierta: te avisaremos.",
+    doneTitle: "¡Está subido!",
+    doneFiles: "{count} archivos importados en la rama {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "repositorio creado",
+    doneOpenGithub: "Abrir en GitHub",
+    doneCopyLink: "Copiar el enlace",
+    doneDownload: "Descargar en .zip",
+    doneImportAnother: "Importar otro archivo",
   },
 
   notFound: {

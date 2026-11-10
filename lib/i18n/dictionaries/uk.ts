@@ -11,6 +11,7 @@ export const uk: Dict = {
     importTitle: "Імпорт архіву",
     importDescription:
       "Завантажте архів .rar, .zip, .tar або .tar.gz, щоб переглянути файли й надіслати їх до репозиторію GitHub.",
+    jobTitle: "Відстеження імпорту",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const uk: Dict = {
     feature5Title: "Новий або наявний репозиторій",
     feature5Body:
       "Створіть приватний чи публічний репозиторій або додайте архів до наявного — за бажанням в окрему гілку.",
-    feature6Title: "Посилання для ШІ",
-    feature6Body:
-      "Після push: Codespaces, vscode.dev, URL клонування, команда gh і архів .zip. Достатньо скопіювати.",
 
     formatsTitle: "Будь-який архів, хоч би який він старий",
     formatsBody:
@@ -127,12 +125,25 @@ export const uk: Dict = {
     demoStep2: "Розпакування перевірено",
     demoStep3: "Репозиторій готовий",
     demoFileMeta: "18,4 МБ · 1 284 файли",
-    demoPreview: "Превʼю",
     demoScan: "Шляхи перевірено",
     demoPushed: "Запушено · щойно",
     demoBranches: "main",
     demoNoAccount: "Без акаунта й термінала.",
-    demoPreviewNote: "Це превʼю. Підключіть GitHub, щоб надсилати.",
+    demoLocalBadge: "Локально",
+    demoDropHint: "Перетягніть сюди .zip",
+    demoDropBrowse: "або виберіть файл",
+    demoDropError: "Приймаються лише файли .zip.",
+    demoReading: "Читаємо архів…",
+    demoExtracting: "Розпакування…",
+    demoReady: "Готово до надсилання",
+    demoReadyMeta: "Знайдено файлів: {count} · нічого не залишило браузер",
+    demoPushCta: "Надіслати на GitHub",
+    demoLocalNote: "Ваші файли залишаються в браузері — нічого не надсилається.",
+    demoConnectTitle: "Файл готовий!",
+    demoConnectBody: "Підключіть обліковий запис GitHub, щоб завершити надсилання.",
+    demoConnectNote: "Архів не залишив браузер: надсилання відбудеться з вашої сесії GitHub.",
+    demoConnectCta: "Увійти через GitHub",
+    demoConnectLater: "Пізніше",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const uk: Dict = {
     guarantee3: "Повний попередній перегляд перед кожним надсиланням",
     copyright: "© {year} RepoDrop — ваші архіви, ваш GitHub.",
     reserved: "Закрита зона",
+  },
+
+  job: {
+    statusQueued: "У черзі",
+    statusExtracting: "Розпакування",
+    statusReady: "Готово до надсилання",
+    statusPushing: "Надсилання…",
+    statusDone: "Готово",
+    statusFailed: "Помилка",
+    extractingTitle: "Триває розпакування…",
+    extractingBody: "Перевіряються шляхи, застосовується ліміт розміру і визначається коренева тека. Усе відбувається на сервері, в ізольованому середовищі.",
+    pushingTitle: "Надсилання на GitHub…",
+    pushingBody: "Створюється коміт і надсилаються файли. Вкладку можна закрити — ми повідомимо про результат.",
+    doneTitle: "Готово!",
+    doneFiles: "Імпортовано файлів: {count} у гілку {branch}",
+    doneCommit: "коміт {sha}",
+    doneCreated: "репозиторій створено",
+    doneOpenGithub: "Відкрити на GitHub",
+    doneCopyLink: "Копіювати посилання",
+    doneDownload: "Завантажити як .zip",
+    doneImportAnother: "Імпортувати інший архів",
   },
 
   notFound: {

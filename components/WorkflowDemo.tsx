@@ -1,6 +1,42 @@
-import type { Dict } from "@/lib/i18n/types";
-import { cn } from "@/lib/utils";
-import { WorkflowDemoMotion } from "@/components/WorkflowDemoMotion";
+"use client";
+
+/**
+ * Démonstration « archive → dépôt », **interactive**.
+ *
+ * Ce que la démo fait
+ * -------------------
+ * - Elle **reçoit** un `.zip` : glissé-déposé ou choisi via le bouton.
+ * - Elle lit **uniquement l'index de l'archive** (le répertoire central du
+ *   ZIP), dans le navigateur : la liste des fichiers s'affiche, le contenu
+ *   n'est jamais décompressé et **rien n'est envoyé au serveur**.
+ * - Elle rejoue une extraction **simulée** (barre de progression) puis
+ *   bascule dans un état « prêt à pousser ».
+ * - Cliquer sur « Pousser sur GitHub » ouvre une modale qui renvoie vers la
+ *   connexion GitHub : c'est là, et seulement là, que l'utilisateur décide
+ *   de s'authentifier. Le message est explicite sur ce qui s'est passé
+ *   (« votre fichier est prêt, connectez-vous pour terminer le push »).
+ *
+ * Architecture
+ * ------------
+ * - **Client Component** : l'interactivité est ici, pas dans le reste de la
+ *   landing. Les Server Components environnants (hero, FAQ…) ne sont pas
+ *   affectés.
+ * - **Props minimales** : le composant ne reçoit que les ~28 chaînes
+ *   réellement affichées (`components/workflow-demo/copy.ts`), pas le
+ *   dictionnaire complet — un Client Component sérialise ses props dans le
+ *   payload RSC.
+ * - **GSAP vit ailleurs** : `WorkflowDemoMotion` (client) charge
+ *   `components/workflow-demo/timeline.ts` en import dynamique ; la
+ *   chorégraphie n'est pas dans le bundle initial.
+ * - **Rendu SSR complet** : sans JavaScript (ou avec `prefers-reduced-motion`)
+ *   la démo reste l'illustration statique d'origine, jamais un squelette
+ *   vide. Le balisage est déjà dans son état final.
+ * - **Accessibilité** : la zone de dépôt a une alternative clavier (champ
+ *   `<input type="file">` réel), la modale est un `dialog` modal, et la
+ *   légende `sr-only` décrit la séquence aux lecteurs d'écran.
+ */
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Check,
   FileArchive,
@@ -9,43 +45,153 @@ import {
   FolderArchive,
   GitBranch,
   Info,
+  Loader2,
   Lock,
+  Rocket,
   Sparkles,
+  UploadCloud,
 } from "lucide-react";
-
-/**
- * Démonstration visuelle « archive → dépôt », posée **juste au-dessus** du
- * bouton GitHub : le visiteur voit ce qu'il obtient avant d'avoir à faire
- * confiance (retour de test utilisateur : « connecter un compte avant d'avoir
- * vu le résultat, c'est trop de friction »).
- *
- * Architecture
- * ------------
- * - **Ce fichier reste un Server Component.** Aucun `"use client"` : le HTML
- *   complet est rendu côté serveur et la landing ne bascule pas entièrement
- *   côté client.
- * - **Le balisage est déjà dans son état final.** Barres pleines, coches
- *   visibles, dépôt rempli. Sans JavaScript — ou avec `prefers-reduced-motion`
- *   — la démo est une illustration statique complète, jamais un squelette vide.
- * - **GSAP vit ailleurs.** `WorkflowDemoMotion` (client) charge
- *   `components/workflow-demo/timeline.ts` en import dynamique : la librairie
- *   part dans un chunk séparé, après l'hydratation. Le premier rendu ne paie
- *   rien, le reste du site non plus.
- * - **Accessibilité.** Le visuel est décoratif (`aria-hidden`) sauf le titre ;
- *   une légende `sr-only` décrit la séquence pour les lecteurs d'écran, et les
- *   halos/coches animés n'exposent aucune information indispensable.
- *
- * Tous les textes viennent du dictionnaire i18n : la page d'accueil est
- * traduite en 16 langues, ce composant ne fait pas exception.
- */
+import { WorkflowDemoMotion } from "@/components/WorkflowDemoMotion";
+import { ConnectModal } from "@/components/workflow-demo/ConnectModal";
+import type { DemoCopy } from "@/components/workflow-demo/copy";
+import { DEMO_INTERACT_EVENT } from "@/components/workflow-demo/events";
+import { readZipIndex, type ZipEntry } from "@/lib/zip-index";
+import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
+import { cn } from "@/lib/utils";
 
 /** Id du panneau animé : le wrapper client le retrouve sans ref partagée. */
 const DEMO_ID = "workflow-demo";
 
-export function WorkflowDemo({ t }: { t: Dict }) {
-  const { home } = t;
-  const fileName = home.mockFile; // « my-project.zip »
-  const repoName = fileName.replace(/\.[^.]+$/, "");
+/** Étapes de l'aperçu interactif. */
+type Phase = "idle" | "reading" | "extracting" | "ready" | "error";
+
+export function WorkflowDemo({
+  copy,
+  locale,
+}: {
+  copy: DemoCopy;
+  locale: string;
+}) {
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [dragging, setDragging] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
+  const [entries, setEntries] = useState<ZipEntry[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  /** Profondeur d'imbrication des `dragenter` : évite le clignotement. */
+  const dragDepth = useRef(0);
+
+  /* ------------------------------------------------------------- fichier */
+
+  const loadFile = useCallback(
+    async (file: File) => {
+      setError(null);
+      setEntries([]);
+      setProgress(0);
+      setFileName(file.name);
+      setFileSize(file.size);
+
+      // L'illustration laisse la place à l'archive réelle.
+      document
+        .getElementById(DEMO_ID)
+        ?.dispatchEvent(new CustomEvent(DEMO_INTERACT_EVENT));
+
+      if (!file.name.toLowerCase().endsWith(".zip")) {
+        setPhase("error");
+        setError(copy.dropError);
+        return;
+      }
+
+      setPhase("reading");
+      try {
+        // Lecture **locale** : seul l'index de l'archive est lu.
+        const list = await readZipIndex(file);
+        setEntries(list);
+        setPhase("extracting");
+      } catch {
+        setPhase("error");
+        setError(copy.dropError);
+      }
+    },
+    [copy.dropError],
+  );
+
+  /* ------------------------------------------- extraction simulée ------- */
+  /* La lecture de l'index est instantanée : sans animation, le visiteur ne
+     comprendrait pas ce qui se passe. On rejoue donc une extraction
+     « propre » (~1 s), comme le ferait la vraie décompression serveur. */
+  useEffect(() => {
+    if (phase !== "extracting") return;
+    const timer = setInterval(() => {
+      setProgress((p) => Math.min(100, p + 4 + Math.round(Math.random() * 9)));
+    }, 70);
+    return () => clearInterval(timer);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "extracting" && progress >= 100) setPhase("ready");
+  }, [phase, progress]);
+
+  /* ------------------------------------------------------ glisser-déposer */
+
+  const onDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current += 1;
+    setDragging(true);
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    // Sans `preventDefault`, le navigateur refuse le dépôt.
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  };
+
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) void loadFile(file);
+  };
+
+  /** Ouvre le sélecteur de fichiers (bouton « ou choisissez un fichier »). */
+  const openPicker = useCallback(() => {
+    inputRef.current?.click();
+  }, []);
+
+  const reset = useCallback(() => {
+    setPhase("idle");
+    setEntries([]);
+    setProgress(0);
+    setError(null);
+    setFileName(null);
+    setFileSize(null);
+    if (inputRef.current) inputRef.current.value = "";
+  }, []);
+
+  /* ------------------------------------------------------- rendu ---------- */
+
+  const repoName = copy.mockFile.replace(/\.[^.]+$/, "");
+  const ready = phase === "ready";
+  const fileCount = entries.filter((e) => !e.isDirectory).length;
+  const readyMeta = fill(copy.readyMeta, {
+    count: formatNumber(fileCount, locale),
+  });
+
+  const displayName = fileName ?? copy.mockFile;
+  const displayMeta = fileSize
+    ? `${formatBytes(fileSize, locale)} · ${formatNumber(fileCount, locale)}`
+    : copy.mockFileMeta;
 
   return (
     <section aria-labelledby="workflow-demo-title" className="relative mt-9 w-full">
@@ -69,11 +215,11 @@ export function WorkflowDemo({ t }: { t: Dict }) {
           <div data-wd-intro className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-go/10 px-2.5 py-1 text-[11px] font-medium text-go ring-1 ring-go/25">
               <Sparkles className="h-3 w-3" aria-hidden="true" />
-              {home.demoEyebrow}
+              {copy.eyebrow}
             </span>
             <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-mist">
               <Lock className="h-3 w-3 shrink-0 text-go" aria-hidden="true" />
-              {home.demoNoAccount}
+              {copy.noAccount}
             </span>
           </div>
 
@@ -82,26 +228,37 @@ export function WorkflowDemo({ t }: { t: Dict }) {
             data-wd-intro
             className="max-w-xl text-base font-semibold leading-snug tracking-tight sm:text-lg"
           >
-            {home.demoTitle}{" "}
-            <span className="text-gradient">{home.demoTitleAccent}</span>
+            {copy.title}{" "}
+            <span className="text-gradient">{copy.titleAccent}</span>
           </h3>
           <p data-wd-intro className="mt-2 max-w-xl text-sm leading-relaxed text-mist">
-            {home.demoLead}
+            {copy.lead}
           </p>
 
           {/* --------------------------------------------------- étapes 1→3 */}
           <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
-            <DemoCard step={1} label={home.demoStep1}>
-              {/*
-                Carte de fichier *statique*, volontairement pas une zone de
-                dépôt : aucune bordure pointillée, aucune invite à interagir.
-                Avant connexion, la démo ne doit pas laisser croire qu'on peut
-                glisser un fichier ici — c'est une illustration du parcours.
-              */}
+            <DemoCard step={1} label={copy.step1}>
+              {/* Carte 1 : la zone de dépôt. */}
               <div
                 data-wd="archive-card"
-                className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5"
+                onDragEnter={onDragEnter}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={cn(
+                  "relative rounded-lg border border-edge/70 bg-panel2/70 p-2.5 transition-colors",
+                  dragging && "border-go/70 bg-go/[0.06]",
+                )}
               >
+                {/* Halo de dépôt : superposition, jamais un changement de
+                    structure (GSAP anime la bordure de cette carte). */}
+                {dragging && (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-lg border-2 border-dashed border-go/70"
+                  />
+                )}
+
                 <div className="flex items-center gap-2">
                   <span
                     data-wd="archive"
@@ -110,21 +267,105 @@ export function WorkflowDemo({ t }: { t: Dict }) {
                     <FileArchive data-wd="archive-icon" className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-mono text-[11px] text-chalk">
-                      {fileName}
+                    <p
+                      data-wd="archive-name"
+                      className="truncate font-mono text-[11px] text-chalk"
+                      title={displayName}
+                    >
+                      {displayName}
                     </p>
-                    <p className="mt-0.5 truncate text-[10px] text-mist">
-                      {home.demoFileMeta}
+                    <p data-wd="archive-meta" className="mt-0.5 truncate text-[10px] text-mist">
+                      {displayMeta}
                     </p>
                   </div>
                   <span className="shrink-0 rounded bg-sky/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-sky ring-1 ring-sky/25">
-                    {home.demoPreview}
+                    {copy.localBadge}
                   </span>
                 </div>
+
+                {/* ------------------------------------------- état de l'aperçu */}
+                <div className="mt-2">
+                  {phase === "idle" && (
+                    <DropHint copy={copy} onBrowse={openPicker} />
+                  )}
+
+                  {phase === "reading" && (
+                    <p className="flex items-center gap-1.5 text-[11px] text-mist">
+                      <Loader2 className="h-3 w-3 animate-spin text-sky" aria-hidden="true" />
+                      {copy.reading}
+                    </p>
+                  )}
+
+                  {phase === "extracting" && (
+                    <div>
+                      <div className="flex items-center justify-between gap-2 text-[10px] text-mist">
+                        <span>{copy.extracting}</span>
+                        <span className="font-mono tabular-nums">{progress}%</span>
+                      </div>
+                      <div
+                        role="progressbar"
+                        aria-valuenow={progress}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-panel2"
+                      >
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-go to-sky transition-[width] duration-100 ease-linear"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {phase === "ready" && (
+                    <p className="flex items-center gap-1.5 text-[11px] text-go">
+                      <Check className="h-3 w-3 shrink-0" strokeWidth={3} aria-hidden="true" />
+                      <span className="truncate">{copy.ready}</span>
+                    </p>
+                  )}
+
+                  {phase === "error" && (
+                    <p role="alert" className="text-[11px] leading-snug text-danger">
+                      {error ?? copy.dropError}
+                    </p>
+                  )}
+
+                  {/* Les premiers fichiers de l'archive : la preuve que
+                      l'index a bien été lu, localement. */}
+                  {entries.length > 0 && (
+                    <ul className="mt-1.5 max-h-16 space-y-0.5 overflow-y-auto font-mono text-[10px] text-mist">
+                      {entries.slice(0, 8).map((e) => (
+                        <li key={e.name} className="truncate">
+                          {e.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/*
+                  Champ réel : masqué (il ne doit pas apparaître dans la
+                  mise en page), mais activable par le bouton ci-dessus —
+                  c'est lui qui donne l'accès clavier et les lecteurs d'écran.
+                */}
+                <input
+                  ref={inputRef}
+                  id={DROP_INPUT_ID}
+                  type="file"
+                  accept=".zip,application/zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    // On repart d'un état propre ; le champ est vidé pour
+                    // que le même fichier puisse être re-sélectionné.
+                    reset();
+                    if (file) void loadFile(file);
+                  }}
+                />
               </div>
             </DemoCard>
 
-            <DemoCard step={2} label={home.demoStep2}>
+            <DemoCard step={2} label={copy.step2}>
               <div className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5">
                 <div className="flex h-8 items-end gap-[3px]" aria-hidden="true">
                   {[38, 62, 46, 78, 55, 88, 70, 95, 60, 84, 48, 72].map((h, i) => (
@@ -142,12 +383,12 @@ export function WorkflowDemo({ t }: { t: Dict }) {
                     className="h-2.5 w-2.5 shrink-0"
                     aria-hidden="true"
                   />
-                  <span data-wd="scan-label" className="truncate">{home.demoScan}</span>
+                  <span data-wd="scan-label" className="truncate">{copy.scan}</span>
                 </p>
               </div>
             </DemoCard>
 
-            <DemoCard step={3} label={home.demoStep3}>
+            <DemoCard step={3} label={copy.step3}>
               <div className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5 font-mono text-[10px] leading-4">
                 <RepoLine name="src/" depth={0} dir />
                 <RepoLine name="index.ts" depth={1} />
@@ -156,13 +397,13 @@ export function WorkflowDemo({ t }: { t: Dict }) {
             </DemoCard>
           </div>
 
-          {/* Clarification : la démo est une illustration, pas une zone de dépôt. */}
+          {/* Réassurance : l'archive ne quitte pas le navigateur. */}
           <p
             data-wd-intro
             className="mt-3 flex items-center gap-1.5 text-[11px] leading-snug text-mist"
           >
             <Info className="h-3 w-3 shrink-0 text-sky/80" aria-hidden="true" />
-            <span>{home.demoPreviewNote}</span>
+            <span>{copy.localNote}</span>
           </p>
 
           {/* Rail : se remplit au passage de la comète (trait + traînée + point). */}
@@ -196,14 +437,37 @@ export function WorkflowDemo({ t }: { t: Dict }) {
             >
               <Check className="h-3 w-3" strokeWidth={3} />
             </span>
-            <span className="inline-flex min-w-0 items-center gap-1 font-mono text-[11px]">
-              <span className="shrink-0 text-mist">github.com/you/</span>
-              <span className="truncate font-semibold text-go">{repoName}</span>
-            </span>
-            <span className="flex items-center gap-1 font-mono text-[11px] text-mist">
-              <GitBranch className="h-3 w-3 shrink-0" aria-hidden="true" />
-              <span className="truncate">{home.demoPushed}</span>
-            </span>
+
+            {ready ? (
+              <>
+                <span className="truncate text-[11px] font-semibold text-go">
+                  {copy.ready}
+                </span>
+                <span className="min-w-0 truncate font-mono text-[11px] text-mist">
+                  {readyMeta}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(true)}
+                  className="ms-auto inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-go px-2.5 py-1.5 text-[11px] font-semibold text-ink transition-colors hover:bg-[#4ee2ac]"
+                >
+                  <Rocket className="h-3 w-3" aria-hidden="true" />
+                  {copy.pushCta}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="inline-flex min-w-0 items-center gap-1 font-mono text-[11px]">
+                  <span className="shrink-0 text-mist">github.com/you/</span>
+                  <span className="truncate font-semibold text-go">{repoName}</span>
+                </span>
+                <span className="flex items-center gap-1 font-mono text-[11px] text-mist">
+                  <GitBranch className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{copy.pushed}</span>
+                </span>
+              </>
+            )}
+
             {/* Reflet qui balaie le bandeau au moment du verdict. */}
             <span
               data-wd="result-shine"
@@ -213,18 +477,61 @@ export function WorkflowDemo({ t }: { t: Dict }) {
           </div>
 
           <p className="sr-only">
-            {home.demoStep1} → {home.demoStep2} → {home.demoStep3}.{" "}
-            {home.demoPushed} {home.demoPreviewNote}
+            {copy.step1} → {copy.step2} → {copy.step3}. {copy.pushed}{" "}
+            {copy.localNote}
           </p>
         </div>
       </div>
 
       <WorkflowDemoMotion targetId={DEMO_ID} />
+
+      {modalOpen && (
+        <ConnectModal
+          title={copy.connectTitle}
+          body={copy.connectBody}
+          note={copy.connectNote}
+          cta={copy.connectCta}
+          later={copy.connectLater}
+          href="/login"
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </section>
   );
 }
 
 /* ------------------------------------------------------------------ briques */
+
+/** Id du champ de sélection de fichier (libellé + `<label for>`). */
+const DROP_INPUT_ID = "demo-zip-input";
+
+/**
+ * Invite au dépôt + alternative clavier.
+ *
+ * Le bouton déclenche le vrai `<input type="file">` : clic, clavier et
+ * lecteurs d'écran passent par le même chemin, et le champ reste invisible.
+ */
+function DropHint({
+  copy,
+  onBrowse,
+}: {
+  copy: DemoCopy;
+  onBrowse: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-mist">
+      <UploadCloud className="h-3 w-3 shrink-0 text-go/80" aria-hidden="true" />
+      <span className="min-w-0">{copy.dropHint}</span>
+      <button
+        type="button"
+        onClick={onBrowse}
+        className="cursor-pointer rounded-md bg-panel2 px-1.5 py-0.5 text-[10px] font-medium text-chalk ring-1 ring-edge transition-colors hover:bg-edge/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-go/60"
+      >
+        {copy.dropBrowse}
+      </button>
+    </div>
+  );
+}
 
 /**
  * Carte d'étape : numéro, libellé, visuel.

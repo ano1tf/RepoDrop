@@ -11,6 +11,7 @@ export const ja: Dict = {
     importTitle: "アーカイブをインポート",
     importDescription:
       ".rar、.zip、.tar、.tar.gz アーカイブをアップロードしてファイルをプレビューし、GitHub リポジトリにプッシュします。",
+    jobTitle: "インポートの進行状況",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const ja: Dict = {
     feature5Title: "新規でも既存でも",
     feature5Body:
       "非公開または公開リポジトリを作成するか、既存リポジトリへアーカイブを追加。必要なら専用ブランチに。",
-    feature6Title: "AI 向けのリンク",
-    feature6Body:
-      "プッシュ後：Codespaces、vscode.dev、クローン URL、gh コマンド、.zip アーカイブ。コピー＆ペーストで完結。",
 
     formatsTitle: "どんなに古いアーカイブでも",
     formatsBody:
@@ -127,12 +125,25 @@ export const ja: Dict = {
     demoStep2: "展開を検証済み",
     demoStep3: "リポジトリ完成",
     demoFileMeta: "18.4 MB · 1,284 ファイル",
-    demoPreview: "プレビュー",
     demoScan: "パス検証済み",
     demoPushed: "プッシュ済み · たった今",
     demoBranches: "main",
     demoNoAccount: "アカウントもターミナルも不要。",
-    demoPreviewNote: "これはプレビューです。アップロードするには GitHub を連携。",
+    demoLocalBadge: "ローカル",
+    demoDropHint: "ここに .zip をドロップ",
+    demoDropBrowse: "またはファイルを選択",
+    demoDropError: "対応しているのは .zip ファイルのみです。",
+    demoReading: "アーカイブを読み込み中…",
+    demoExtracting: "展開中…",
+    demoReady: "プッシュの準備ができました",
+    demoReadyMeta: "{count} 個のファイルを検出 · ブラウザーの外には出ていません",
+    demoPushCta: "GitHub にプッシュ",
+    demoLocalNote: "ファイルはブラウザー内に留まります — 何もアップロードされません。",
+    demoConnectTitle: "ファイルの準備ができました！",
+    demoConnectBody: "GitHub アカウントを連携してプッシュを完了しましょう。",
+    demoConnectNote: "アーカイブはブラウザーの外に出ていません — GitHub セッションからプッシュされます。",
+    demoConnectCta: "GitHub でログイン",
+    demoConnectLater: "あとで",
   },
 
   faq: {
@@ -212,6 +223,27 @@ export const ja: Dict = {
     guarantee3: "送信前の完全なプレビュー",
     copyright: "© {year} RepoDrop — あなたのアーカイブ、あなたの GitHub。",
     reserved: "関係者専用",
+  },
+
+  job: {
+    statusQueued: "待機中",
+    statusExtracting: "展開中",
+    statusReady: "プッシュの準備ができました",
+    statusPushing: "プッシュ中…",
+    statusDone: "完了",
+    statusFailed: "失敗",
+    extractingTitle: "展開しています…",
+    extractingBody: "パスの検証・サイズ上限の適用・ルートフォルダーの検出を行っています。すべてサーバー側の隔離された領域で処理されます。",
+    pushingTitle: "GitHub にプッシュしています…",
+    pushingBody: "コミットを作成し、ファイルを送信しています。このタブを閉じておいても、問題があればお知らせします。",
+    doneTitle: "プッシュされました！",
+    doneFiles: "ブランチ {branch} に {count} 個のファイルをインポートしました",
+    doneCommit: "コミット {sha}",
+    doneCreated: "リポジトリを作成しました",
+    doneOpenGithub: "GitHub で開く",
+    doneCopyLink: "リンクをコピー",
+    doneDownload: ".zip でダウンロード",
+    doneImportAnother: "別のアーカイブをインポート",
   },
 
   notFound: {

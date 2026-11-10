@@ -11,6 +11,7 @@ export const nl: Dict = {
     importTitle: "Een archief importeren",
     importDescription:
       "Upload een .rar-, .zip-, .tar- of .tar.gz-archief om de bestanden te bekijken en het naar een GitHub-repository te pushen.",
+    jobTitle: "Importvolgsysteem",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const nl: Dict = {
     feature5Title: "Nieuwe of bestaande repo",
     feature5Body:
       "Maak een privé- of openbare repo, of voeg het archief toe aan een bestaande — op een aparte branch als je dat wilt.",
-    feature6Title: "AI-klare links",
-    feature6Body:
-      "Na de push: Codespaces, vscode.dev, clone-URL, gh-opdracht en .zip-archief. Eén kopieer-en-plak volstaat.",
 
     formatsTitle: "Elk archief, hoe oud ook",
     formatsBody:
@@ -127,12 +125,25 @@ export const nl: Dict = {
     demoStep2: "Extractie gecheckt",
     demoStep3: "Repo klaar",
     demoFileMeta: "18,4 MB · 1.284 bestanden",
-    demoPreview: "Voorbeeld",
     demoScan: "Paden gecheckt",
     demoPushed: "Gepusht · net nu",
     demoBranches: "main",
     demoNoAccount: "Geen account, geen terminal.",
-    demoPreviewNote: "Dit is een voorbeeld. Koppel GitHub om te uploaden.",
+    demoLocalBadge: "Lokaal",
+    demoDropHint: "Sleep hier een .zip",
+    demoDropBrowse: "of kies een bestand",
+    demoDropError: "Alleen .zip-bestanden worden geaccepteerd.",
+    demoReading: "Archief wordt gelezen…",
+    demoExtracting: "Uitpakken…",
+    demoReady: "Klaar om te pushen",
+    demoReadyMeta: "{count} bestanden gevonden · niets verliet je browser",
+    demoPushCta: "Naar GitHub pushen",
+    demoLocalNote: "Je bestanden blijven in je browser — er wordt niets geüpload.",
+    demoConnectTitle: "Bestand klaar!",
+    demoConnectBody: "Verbind je GitHub-account om de push af te ronden.",
+    demoConnectNote: "Het archief verliet je browser niet — het wordt gepusht vanuit je GitHub-sessie.",
+    demoConnectCta: "Inloggen met GitHub",
+    demoConnectLater: "Later",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const nl: Dict = {
     guarantee3: "Volledig voorbeeld voor elk versturen",
     copyright: "© {year} RepoDrop — jouw archieven, jouw GitHub.",
     reserved: "Besloten gedeelte",
+  },
+
+  job: {
+    statusQueued: "In wachtrij",
+    statusExtracting: "Uitpakken",
+    statusReady: "Klaar om te pushen",
+    statusPushing: "Bezig met pushen…",
+    statusDone: "Klaar",
+    statusFailed: "Mislukt",
+    extractingTitle: "Uitpakken…",
+    extractingBody: "Paden worden gecontroleerd, het groottelimiet toegepast en de wortelmap herkend. Alles gebeurt server-side, in een geïsoleerde ruimte.",
+    pushingTitle: "Pussen naar GitHub…",
+    pushingBody: "De commit wordt aangemaakt en de bestanden worden verstuurd. Je kunt dit tabblad open laten — we houden je op de hoogte.",
+    doneTitle: "Het is gepusht!",
+    doneFiles: "{count} bestanden geïmporteerd op branch {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "repository aangemaakt",
+    doneOpenGithub: "Openen op GitHub",
+    doneCopyLink: "Link kopiëren",
+    doneDownload: "Downloaden als .zip",
+    doneImportAnother: "Nog een archief importeren",
   },
 
   notFound: {

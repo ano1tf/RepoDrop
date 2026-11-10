@@ -11,6 +11,7 @@ export const zh: Dict = {
     importTitle: "导入压缩包",
     importDescription:
       "上传 .rar、.zip、.tar 或 .tar.gz 压缩包，预览其中的文件并推送到 GitHub 仓库。",
+    jobTitle: "导入跟踪",
   },
 
   nav: {
@@ -79,9 +80,6 @@ export const zh: Dict = {
     feature5Title: "新建或已有仓库",
     feature5Body:
       "创建私有或公开仓库，或把压缩包加入已有仓库——也可以推送到独立分支。",
-    feature6Title: "为 AI 准备的链接",
-    feature6Body:
-      "推送后：Codespaces、vscode.dev、克隆地址、gh 命令和 .zip 压缩包。复制粘贴即可。",
 
     formatsTitle: "无论多老的压缩包",
     formatsBody:
@@ -119,12 +117,25 @@ export const zh: Dict = {
     demoStep2: "解压已校验",
     demoStep3: "仓库就绪",
     demoFileMeta: "18.4 MB · 1,284 个文件",
-    demoPreview: "预览",
     demoScan: "路径已校验",
     demoPushed: "已推送 · 刚刚",
     demoBranches: "main",
     demoNoAccount: "不用账号，不用终端。",
-    demoPreviewNote: "这只是预览。连接 GitHub 即可开始上传。",
+    demoLocalBadge: "本地",
+    demoDropHint: "把 .zip 拖到这里",
+    demoDropBrowse: "或选择文件",
+    demoDropError: "仅支持 .zip 文件。",
+    demoReading: "正在读取压缩包…",
+    demoExtracting: "正在解压…",
+    demoReady: "可以推送",
+    demoReadyMeta: "检测到 {count} 个文件 · 没有离开你的浏览器",
+    demoPushCta: "推送到 GitHub",
+    demoLocalNote: "文件始终留在你的浏览器里 — 不会上传任何内容。",
+    demoConnectTitle: "文件已就绪！",
+    demoConnectBody: "连接你的 GitHub 账号以完成推送。",
+    demoConnectNote: "压缩包没有离开你的浏览器 — 推送将通过你的 GitHub 会话完成。",
+    demoConnectCta: "使用 GitHub 登录",
+    demoConnectLater: "稍后",
   },
 
   faq: {
@@ -200,6 +211,27 @@ export const zh: Dict = {
     guarantee3: "发送前完整预览",
     copyright: "© {year} RepoDrop — 你的压缩包，你的 GitHub。",
     reserved: "保留区域",
+  },
+
+  job: {
+    statusQueued: "排队中",
+    statusExtracting: "解压中",
+    statusReady: "可以推送",
+    statusPushing: "推送中…",
+    statusDone: "已完成",
+    statusFailed: "失败",
+    extractingTitle: "正在解压…",
+    extractingBody: "正在校验路径、应用体积上限并识别根目录。所有操作都在服务器上的隔离环境中完成。",
+    pushingTitle: "正在推送到 GitHub…",
+    pushingBody: "正在创建提交并发送文件。你可以留在此页面，我们会随时通知你。",
+    doneTitle: "推送成功！",
+    doneFiles: "已在分支 {branch} 导入 {count} 个文件",
+    doneCommit: "提交 {sha}",
+    doneCreated: "已创建仓库",
+    doneOpenGithub: "在 GitHub 上打开",
+    doneCopyLink: "复制链接",
+    doneDownload: "下载为 .zip",
+    doneImportAnother: "导入其他压缩包",
   },
 
   notFound: {

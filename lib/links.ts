@@ -1,12 +1,15 @@
 /**
- * Liens « prêts à l'emploi » autour d'un dépôt poussé.
+ * Liens vers un dépôt poussé.
  *
- * But : permettre de donner à un assistant de code (ou à un humain) un simple
- * lien qui ouvre le dépôt dans un éditeur en ligne — Codespaces, vscode.dev —
- * avec l'agent IA déjà connecté à l'identité GitHub de l'utilisateur.
+ * ⚠️ Historique : ce module exposait aussi les liens « prêts à donner à une
+ * IA » (Codespaces, vscode.dev, URL de clonage, commande `gh`). Cette section
+ * de l'écran de succès était un **prototype** : elle a été retirée, et avec
+ * elle les URL correspondantes. Il ne reste que le lien du dépôt, de la
+ * branche et du commit.
  *
- * Toutes les URL sont construites ici (source de vérité unique) et non dans
- * le composant : elles sont testables et restent cohérentes.
+ * Ce qui reste est la **source de vérité** des URL affichées : elles sont
+ * construites ici (et non dans le composant) pour rester testables et
+ * cohérentes.
  */
 import type { JobRecord } from "./types";
 
@@ -19,16 +22,6 @@ export interface RepoLinks {
   branchUrl: string;
   /** Page du commit poussé (null si inconnu) */
   commitUrl: string | null;
-  /** Code cloud avec agent IA (GitHub Codespaces) */
-  codespacesUrl: string;
-  /** vscode.dev (éditeur web officiel, agent Copilot) */
-  vscodeUrl: string;
-  /** URL de clonage (sans jeton : l'agent s'authentifie lui-même) */
-  cloneUrl: string;
-  /** Commande de clone pour la CLI `gh` (session déjà authentifiée) */
-  cloneCommand: string;
-  /** Nom de fichier proposé pour l'archive .zip */
-  zipName: string;
 }
 
 /** Encode un chemin GitHub en conservant les "/" (branches du type "feat/x"). */
@@ -37,16 +30,6 @@ export function encodePath(path: string): string {
     .split("/")
     .map((seg) => encodeURIComponent(seg))
     .join("/");
-}
-
-/** Nettoie un nom de fichier (aucun chemin, caractères sûrs). */
-export function safeFileName(name: string, fallback = "archive"): string {
-  const cleaned = name
-    .replace(/[^\w.-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^[-.]+|[-.]+$/g, "")
-    .slice(0, 80);
-  return cleaned || fallback;
 }
 
 /** "owner/repo" à partir du résultat de push (champ dédié ou URL). */
@@ -62,21 +45,11 @@ export function buildRepoLinks(push: NonNullable<JobRecord["push"]>): RepoLinks 
   const branch = push.branch || "main";
   const branchUrl = `${repoUrl}/tree/${encodePath(branch)}`;
   const commitUrl = push.commitSha ? `${repoUrl}/commit/${push.commitSha}` : null;
-  const params = new URLSearchParams({
-    quickstart: "1",
-    repo: fullName,
-    ref: branch,
-  });
 
   return {
     fullName,
     repoUrl,
     branchUrl,
     commitUrl,
-    codespacesUrl: `https://github.com/codespaces/new?${params.toString()}`,
-    vscodeUrl: `https://vscode.dev/github/${fullName}`,
-    cloneUrl: `https://github.com/${fullName}.git`,
-    cloneCommand: `gh repo clone ${fullName}`,
-    zipName: `${safeFileName(fullName.replace("/", "-"))}-${safeFileName(branch)}.zip`,
   };
 }

@@ -11,6 +11,7 @@ export const pt: Dict = {
     importTitle: "Importar um arquivo",
     importDescription:
       "Carregue um arquivo .rar, .zip, .tar ou .tar.gz para pré-visualizar os ficheiros e enviá-lo para um repositório GitHub.",
+    jobTitle: "Acompanhamento da importação",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const pt: Dict = {
     feature5Title: "Repositório novo ou existente",
     feature5Body:
       "Crie um repositório privado ou público, ou junte o arquivo a um existente — num branch dedicado, se preferir.",
-    feature6Title: "Ligações prontas para IA",
-    feature6Body:
-      "Depois do push: Codespaces, vscode.dev, URL de clone, comando gh e arquivo .zip. Basta copiar e colar.",
 
     formatsTitle: "Qualquer arquivo, independentemente da idade",
     formatsBody:
@@ -127,12 +125,25 @@ export const pt: Dict = {
     demoStep2: "Extração verificada",
     demoStep3: "Repo pronto",
     demoFileMeta: "18,4 MB · 1.284 ficheiros",
-    demoPreview: "Prévia",
     demoScan: "Caminhos verificados",
     demoPushed: "Pushado · agora",
     demoBranches: "main",
     demoNoAccount: "Zero conta, zero terminal.",
-    demoPreviewNote: "Isto é uma prévia. Conecte o GitHub para enviar.",
+    demoLocalBadge: "Local",
+    demoDropHint: "Arrasta um .zip aqui",
+    demoDropBrowse: "ou escolha um ficheiro",
+    demoDropError: "Apenas ficheiros .zip são aceites.",
+    demoReading: "A ler o arquivo…",
+    demoExtracting: "A extrair…",
+    demoReady: "Pronto para enviar",
+    demoReadyMeta: "{count} ficheiros detetados · nada saiu do navegador",
+    demoPushCta: "Enviar para o GitHub",
+    demoLocalNote: "Os seus ficheiros ficam no navegador — nada é enviado.",
+    demoConnectTitle: "Ficheiro pronto!",
+    demoConnectBody: "Ligue a sua conta GitHub para concluir o push.",
+    demoConnectNote: "O arquivo não saiu do navegador: será enviado a partir da sua sessão GitHub.",
+    demoConnectCta: "Entrar com GitHub",
+    demoConnectLater: "Mais tarde",
   },
 
   faq: {
@@ -213,6 +224,27 @@ export const pt: Dict = {
     guarantee3: "Pré-visualização completa antes de qualquer envio",
     copyright: "© {year} RepoDrop — os seus arquivos, o seu GitHub.",
     reserved: "Área reservada",
+  },
+
+  job: {
+    statusQueued: "Em fila",
+    statusExtracting: "A extrair",
+    statusReady: "Pronto para enviar",
+    statusPushing: "A enviar…",
+    statusDone: "Concluído",
+    statusFailed: "Falhou",
+    extractingTitle: "A extrair…",
+    extractingBody: "Verificação dos caminhos, limite de tamanho e deteção da pasta raiz. Tudo acontece no servidor, num espaço isolado.",
+    pushingTitle: "A enviar para o GitHub…",
+    pushingBody: "Criação do commit e envio dos ficheiros. Pode deixar esta aba aberta: avisamos.",
+    doneTitle: "Já foi enviado!",
+    doneFiles: "{count} ficheiros importados no branch {branch}",
+    doneCommit: "commit {sha}",
+    doneCreated: "repositório criado",
+    doneOpenGithub: "Abrir no GitHub",
+    doneCopyLink: "Copiar a ligação",
+    doneDownload: "Transferir como .zip",
+    doneImportAnother: "Importar outro arquivo",
   },
 
   notFound: {

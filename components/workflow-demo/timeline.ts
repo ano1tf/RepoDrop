@@ -22,6 +22,7 @@
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { DEMO_INTERACT_EVENT } from "./events";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -294,7 +295,11 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
      * revanche, dès que la démo quitte l'écran (ou que l'onglet passe en
      * arrière-plan), tout est mis en pause — pas de CPU brûlé pour personne. */
     let started = false;
+    let interacted = false;
     const play = () => {
+      // Une fois qu'un vrai fichier a pris la place de l'illustration, on ne
+      // relance plus la boucle (même si la démo repasse dans le viewport).
+      if (interacted) return;
       if (started) {
         loop.play();
         float.play();
@@ -327,10 +332,21 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
+    /* ------------------------------------------------------------ interaction
+       Le visiteur vient de déposer une vraie archive : la boucle
+       d'illustration n'a plus lieu d'être. On la met en pause (sans la
+       tuer : un retour en arrière resterait possible). */
+    const onInteract = () => {
+      interacted = true;
+      pause();
+    };
+    root.addEventListener(DEMO_INTERACT_EVENT, onInteract);
+
     /* Nettoyage : `matchMedia` révoque la timeline, les tweens et le trigger
        créé dans ce contexte. */
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
+      root.removeEventListener(DEMO_INTERACT_EVENT, onInteract);
       trigger.kill();
       float.kill();
       loop.kill();

@@ -16,14 +16,25 @@
  *   - la fermeture sur Échap ;
  *   - le focus dans la recherche à l'ouverture.
  *
- * L'écriture passe par `POST /api/lang` (validation stricte côté serveur), puis
- * `router.refresh()` : les Server Components se re-rendent dans la nouvelle
- * langue sans perdre la page courante.
+ * Le changement de langue passe par la Server Action `app/actions/lang.ts` :
+ * elle pose le cookie **et** invalide le cache de navigation côté client
+ * (les segments RSC préchargés par les `<Link>`, rendus dans l'ancienne
+ * langue). Sans cette invalidation, revenir sur une page préchargée
+ * afficherait l'ancienne langue : c'est le bug « ça revient en français ».
+ *
+ * `localStorage` n'est qu'un **miroir** du cookie : il permet de retrouver
+ * le choix de l'utilisateur si le cookie a été effacé ou bloqué.
  */
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Languages, Search } from "lucide-react";
-import { LOCALES, LOCALE_COOKIE, type Locale } from "@/lib/i18n/locales";
+import {
+  LOCALES,
+  readStoredLocale,
+  writeStoredLocale,
+  type Locale,
+} from "@/lib/i18n/locales";
+import { setLocale } from "@/app/actions/lang";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -47,6 +58,8 @@ export function LanguageSwitcher({
   const [open, setOpen] = useState(false);
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  /** Évite de rejouer la réconciliation à chaque rendu. */
+  const reconciled = useRef(false);
 
   const current = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
   const needle = query.trim().toLowerCase();
@@ -86,23 +99,45 @@ export function LanguageSwitcher({
     else setQuery("");
   }, [open]);
 
+  /**
+   * Reconciliation au chargement : si le navigateur se souvient d'une langue
+   * (`localStorage`) mais que le serveur n'a pas de cookie (cookie effacé,
+   * bloqué, ou navigation privée stricte), on remet le cookie à jour.
+   *
+   * C'est le filet de sécurité qui garantit que « la langue ne lâche pas ».
+   */
+  useEffect(() => {
+    if (reconciled.current) return;
+    reconciled.current = true;
+
+    const stored = readStoredLocale();
+    if (!stored || stored === locale) return;
+
+    void setLocale(stored).then((result) => {
+      if (result.ok) startTransition(() => router.refresh());
+    });
+    // Au montage uniquement : la réconciliation se fait une fois (le garde
+    // `reconciled` ci-dessus empêche toute relance).
+  }, []);
+
   async function choose(code: Locale) {
     setOpen(false);
     if (code === locale) return;
 
     try {
-      const res = await fetch("/api/lang", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ locale: code }),
-      });
-      if (!res.ok) return;
+      const result = await setLocale(code);
+      if (!result.ok) return;
     } catch {
       return; // réseau indisponible : on garde la langue courante
     }
 
+    // Miroir client : la langue choisie survit à un cookie effacé.
+    writeStoredLocale(code);
     // Repli immédiat côté client : le serveur vient de poser le cookie.
-    document.cookie = `${LOCALE_COOKIE}=${code}; path=/; max-age=31536000; samesite=lax`;
+    document.cookie = `rd_lang=${code}; path=/; max-age=31536000; samesite=lax`;
+    // L'action a déjà renvoyé le nouvel arbre RSC (cache de navigation
+    // invalidé) ; le refresh garantit que la page courante est bien rendue
+    // dans la nouvelle langue.
     startTransition(() => router.refresh());
   }
 
@@ -146,7 +181,7 @@ export function LanguageSwitcher({
         )}
       >
         <div className="border-b border-edge/70 p-2">
-          <label className="flex items-center gap-2 rounded-lg bg-panel2 px-2 py-1.5 ring-1 ring-edge focus-within:ring-go/50">
+          <label className="flex items-center gap-2 rounded-lg bg-panel2 px-1.5 py-1.5 ring-1 ring-edge focus-within:ring-go/50">
             <Search className="h-3.5 w-3.5 shrink-0 text-mist" aria-hidden="true" />
             <input
               ref={inputRef}

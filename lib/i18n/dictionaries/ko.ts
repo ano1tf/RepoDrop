@@ -11,6 +11,7 @@ export const ko: Dict = {
     importTitle: "압축 파일 가져오기",
     importDescription:
       ".rar, .zip, .tar, .tar.gz 압축 파일을 업로드하여 파일을 미리 보고 GitHub 저장소로 푸시하세요.",
+    jobTitle: "가져오기 진행 상황",
   },
 
   nav: {
@@ -81,9 +82,6 @@ export const ko: Dict = {
     feature5Title: "새 저장소든 기존 저장소든",
     feature5Body:
       "비공개 또는 공개 저장소를 만들거나 기존 저장소에 압축 파일을 추가하세요 — 원하면 전용 브랜치로도.",
-    feature6Title: "AI를 위한 링크",
-    feature6Body:
-      "푸시 후: Codespaces, vscode.dev, 클론 URL, gh 명령, .zip 압축 파일. 복사-붙여넣기면 충분합니다.",
 
     formatsTitle: "얼마나 오래된 압축 파일이든",
     formatsBody:
@@ -127,12 +125,25 @@ export const ko: Dict = {
     demoStep2: "압축 해제 검증됨",
     demoStep3: "리포 준비 완료",
     demoFileMeta: "18.4MB · 파일 1,284개",
-    demoPreview: "미리보기",
     demoScan: "경로 검증됨",
     demoPushed: "푸시됨 · 방금",
     demoBranches: "main",
     demoNoAccount: "계정도 터미널도 필요 없음.",
-    demoPreviewNote: "미리보기입니다. 업로드하려면 GitHub를 연결하세요.",
+    demoLocalBadge: "로컬",
+    demoDropHint: "여기에 .zip 파일을 놓으세요",
+    demoDropBrowse: "또는 파일 선택",
+    demoDropError: ".zip 파일만 사용할 수 있습니다.",
+    demoReading: "압축파일 읽는 중…",
+    demoExtracting: "압축 푸는 중…",
+    demoReady: "푸시 준비 완료",
+    demoReadyMeta: "파일 {count}개 감지됨 · 브라우저 밖으로 나가지 않았습니다",
+    demoPushCta: "GitHub로 푸시",
+    demoLocalNote: "파일은 브라우저에만 남습니다 — 아무것도 업로드되지 않습니다.",
+    demoConnectTitle: "파일이 준비되었습니다!",
+    demoConnectBody: "GitHub 계정을 연결해 푸시를 완료하세요.",
+    demoConnectNote: "압축파일은 브라우저 밖으로 나가지 않았습니다 — GitHub 세션에서 푸시됩니다.",
+    demoConnectCta: "GitHub로 연결",
+    demoConnectLater: "나중에",
   },
 
   faq: {
@@ -212,6 +223,27 @@ export const ko: Dict = {
     guarantee3: "어떤 전송 전에도 전체 미리보기",
     copyright: "© {year} RepoDrop — 당신의 압축 파일, 당신의 GitHub.",
     reserved: "관계자 전용",
+  },
+
+  job: {
+    statusQueued: "대기 중",
+    statusExtracting: "압축 푸는 중",
+    statusReady: "푸시 준비 완료",
+    statusPushing: "푸시 중…",
+    statusDone: "완료",
+    statusFailed: "실패",
+    extractingTitle: "압축 푸는 중…",
+    extractingBody: "경로 검증, 크기 제한 적용, 루트 폴더 확인을 진행합니다. 모든 작업은 서버의 격리된 공간에서 처리됩니다.",
+    pushingTitle: "GitHub로 푸시 중…",
+    pushingBody: "커밋을 만들고 파일을 전송하고 있습니다. 이 탭을 열어 두셔도 됩니다 — 진행 상황을 알려드리겠습니다.",
+    doneTitle: "푸시 완료!",
+    doneFiles: "{branch} 브랜치에 {count}개 파일을 가져왔습니다",
+    doneCommit: "커밋 {sha}",
+    doneCreated: "저장소 생성됨",
+    doneOpenGithub: "GitHub에서 열기",
+    doneCopyLink: "링크 복사",
+    doneDownload: ".zip으로 다운로드",
+    doneImportAnother: "다른 아카이브 가져오기",
   },
 
   notFound: {

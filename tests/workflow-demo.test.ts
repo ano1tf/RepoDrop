@@ -1,27 +1,34 @@
 /**
  * Tests du composant `WorkflowDemo` (démo « archive → dépôt » du hero).
  *
- * Deux contrats sont vérifiés ici :
+ * Trois contrats sont vérifiés ici :
  *
- * 1. **Le balisage est autosuffisant.** `WorkflowDemo` reste un Server
- *    Component : il doit rendre l'état *final* de la démo (barres pleines,
- *    coches visibles, dépôt rempli) sans JavaScript. C'est ce qui rend le
- *    composant correct si GSAP ne charge pas, ou si l'utilisateur a activé
+ * 1. **Le balisage est autosuffisant.** `WorkflowDemo` est un Client
+ *    Component, mais il est rendu côté serveur : son HTML doit rendre
+ *    l'état *final* de la démo (barres pleines, coches visibles, dépôt
+ *    rempli) sans JavaScript. C'est ce qui rend le composant correct si
+ *    GSAP ne charge pas, ou si l'utilisateur a activé
  *    `prefers-reduced-motion` — GSAP ne fait qu'habiller cet état.
  * 2. **Les crochets d'animation existent.** `data-wd*` et les sélecteurs du
- *    module `timeline.ts` doivent rester alignés, sinon la chorégraphie vise des
- *    éléments inexistants et échoue en silence.
+ *    module `timeline.ts` doivent rester alignés, sinon la chorégraphie vise
+ *    des éléments inexistants et échoue en silence.
+ * 3. **La carte 1 est une vraie zone de dépôt** : champ de fichier réel,
+ *    label accessible, invite explicite — et plus aucune mention de
+ *    « ceci est un aperçu ».
  */
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
+import { demoCopyFrom } from "@/components/workflow-demo/copy";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
 import { LOCALES } from "@/lib/i18n/locales";
 import type { Dict } from "@/lib/i18n/types";
 
 function render(t: Dict): string {
-  return renderToStaticMarkup(createElement(WorkflowDemo, { t }));
+  return renderToStaticMarkup(
+    createElement(WorkflowDemo, { copy: demoCopyFrom(t.home), locale: "fr" }),
+  );
 }
 
 const frHtml = render(DICTIONARIES.fr);
@@ -84,23 +91,25 @@ describe("WorkflowDemo", () => {
     expect((frHtml.match(/data-wd-intro/g) ?? []).length).toBe(4);
   });
 
-  it("présente la carte 1 comme un fichier statique, pas une dropzone", () => {
-    // Aucune bordure pointillée : c'est le code visuel d'une zone de dépôt.
-    expect(frHtml).not.toContain("border-dashed");
-    // La carte porte un badge « Aperçu » et une métadonnée de fichier.
-    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoPreview));
-    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoFileMeta));
-    // Plus aucune invite au glisser-déposer dans le rendu.
-    expect(frHtml.toLowerCase()).not.toContain("glissez-déposez");
-    expect(frHtml.toLowerCase()).not.toContain("drag and drop");
+  it("transforme la carte 1 en vraie zone de dépôt", () => {
+    // Un champ de fichier réel : c'est lui qui donne l'accès clavier.
+    expect(frHtml).toContain('type="file"');
+    expect(frHtml).toContain('accept=".zip,application/zip"');
+    // L'invite au dépôt est explicite, et le bouton déclenche le champ.
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoDropHint));
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoDropBrowse));
+    expect(frHtml).toContain('id="demo-zip-input"');
+    expect(frHtml).toContain("<button");
+    // La carte porte le badge « local » : l'archive ne quitte pas le navigateur.
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoLocalBadge));
   });
 
-  it("affiche la mise en garde « aperçu » sous les cartes", () => {
-    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoPreviewNote));
-    // Elle apparaît une fois de façon visible, et une fois dans la légende
-    // réservée aux lecteurs d'écran.
-    const occurrences = frHtml.split(escapeHtml(DICTIONARIES.fr.home.demoPreviewNote)).length - 1;
-    expect(occurrences).toBe(2);
+  it("ne dit plus « ceci est un aperçu »", () => {
+    // L'ancienne mention statique a été remplacée par la réassurance
+    // « vos fichiers restent dans votre navigateur ».
+    expect(frHtml).not.toContain("Ceci est un aperçu");
+    expect(frHtml).not.toContain("This is a preview");
+    expect(frHtml).toContain(escapeHtml(DICTIONARIES.fr.home.demoLocalNote));
   });
 
   it("ne laisse jamais un gabarit {placeholder} visible", () => {
@@ -148,12 +157,25 @@ describe("copie de la démo (WorkflowDemo)", () => {
     demoStep2: 26,
     demoStep3: 22,
     demoFileMeta: 28,
-    demoPreview: 14,
     demoScan: 26,
     demoPushed: 30,
     demoBranches: 12,
     demoNoAccount: 38,
-    demoPreviewNote: 70,
+    demoLocalBadge: 12,
+    demoDropHint: 30,
+    demoDropBrowse: 30,
+    demoDropError: 60,
+    demoReading: 30,
+    demoExtracting: 20,
+    demoReady: 24,
+    demoReadyMeta: 72,
+    demoPushCta: 24,
+    demoLocalNote: 78,
+    demoConnectTitle: 24,
+    demoConnectBody: 78,
+    demoConnectNote: 120,
+    demoConnectCta: 30,
+    demoConnectLater: 18,
   };
 
   it("tient dans la mise en page pour les 16 langues", () => {
