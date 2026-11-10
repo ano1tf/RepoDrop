@@ -2,15 +2,17 @@ import Link from "next/link";
 import { Archive, FileArchive, FolderArchive, ShieldCheck } from "lucide-react";
 import { LogoMark } from "@/components/Brand";
 import { SecretDoor } from "@/components/SecretDoor";
-import { getT } from "@/lib/i18n/server";
+import type { Dict } from "@/lib/i18n/types";
 
 /**
  * Pied de page global. Il héberge aussi la porte dérobée du panel staff
  * (`SecretDoor`) : le point quasi invisible, tout à droite.
+ *
+ * Comme l'en-tête, il est **synchrone** et reçoit le dictionnaire du layout
+ * racine : une seule résolution de langue par requête, donc aucun risque que
+ * le pied de page parle une autre langue que le corps.
  */
-export async function Footer() {
-  const { t } = await getT();
-
+export function Footer({ t }: { t: Dict }) {
   return (
     <footer className="relative mt-auto border-t border-edge/60 bg-ink2/60">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid-bg mask-fade opacity-40" />

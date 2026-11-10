@@ -3,7 +3,8 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { getLocale } from "@/lib/i18n/server";
+import { getT } from "@/lib/i18n/server";
+import { getSession } from "@/lib/session";
 import { dirOf } from "@/lib/i18n/locales";
 import {
   buildIcons,
@@ -76,7 +77,17 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getLocale();
+  /*
+   * **Une seule** résolution de la requête, en haut de l'arbre.
+   *
+   * `locale`, `t` et `session` sont ensuite passés en props à l'en-tête et au
+   * pied de page. Auparavant, chacun appelait `getT()` de son côté : trois
+   * lectures de cookies indépendantes pour la même requête, et surtout trois
+   * occasions de diverger (l'en-tête affichait la navigation en anglais sur un
+   * site français). Ici, la langue de la page et celle de la navigation sont
+   * littéralement le même objet `t`.
+   */
+  const [{ locale, t }, session] = await Promise.all([getT(), getSession()]);
 
   // `lang`/`dir` reflètent la langue réellement rendue : indispensable pour la
   // synthèse vocale, la césure et le rendu droite-à-gauche (arabe).
@@ -85,9 +96,9 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />
-        <Header />
+        <Header locale={locale} t={t} session={session} />
         <div className="flex flex-1 flex-col">{children}</div>
-        <Footer />
+        <Footer t={t} />
       </body>
     </html>
   );

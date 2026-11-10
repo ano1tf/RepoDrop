@@ -26,6 +26,7 @@ import {
 } from "@/lib/seo";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
 import { demoCopyFrom } from "@/components/workflow-demo/copy";
+import { TryDemoButton } from "@/components/workflow-demo/TryDemoButton";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -86,10 +87,21 @@ export default async function Home() {
       faq: faqItems,
     }),
   );
-  // Un visiteur doit se connecter avant de pouvoir importer ; un utilisateur
-  // connecté va droit à la page d'import.
-  const ctaHref = session ? "/import" : "/login";
+  /*
+   * Deux publics, deux CTA — et c'est volontaire :
+   *
+   *   - **connecté** : `/import`, la vraie page d'import (l'authentification
+   *     est déjà faite, on ne la redemande pas) ;
+   *   - **anonyme** : pas de `/login` immédiat. Le clic ouvre le sélecteur de
+   *     fichiers de la démo (`TryDemoButton`), le visiteur dépose, voit
+   *     l'aperçu, puis « Pousser sur GitHub » ouvre la modale « Connect
+   *     GitHub ». La connexion arrive au moment où elle a un sens.
+   *
+   * `/import`, lui, reste protégé : sans session, la page redirige vers
+   * `/login` (voir `app/import/page.tsx`).
+   */
   const ctaLabel = t.home.ctaImport;
+  const ctaClass = cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto px-8");
 
   return (
     <main className="flex-1">
@@ -134,14 +146,16 @@ export default async function Home() {
             />
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href={ctaHref}
-                className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto px-8")}
-              >
-                <FolderArchive className="h-4 w-4" />
-                {ctaLabel}
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </Link>
+              {session ? (
+                <Link href="/import" className={ctaClass}>
+                  <FolderArchive className="h-4 w-4" />
+                  {ctaLabel}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              ) : (
+                /* Anonyme : essaye la démo (sélecteur de fichiers), pas de login. */
+                <TryDemoButton label={ctaLabel} className={ctaClass} />
+              )}
               <a
                 href="#comment"
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
@@ -356,10 +370,17 @@ export default async function Home() {
             {t.home.ctaLead}
           </p>
           <div className="relative mt-7">
-            <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
-              {ctaLabel}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
+            {session ? (
+              <Link href="/import" className={cn(buttonVariants({ size: "lg" }))}>
+                {ctaLabel}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </Link>
+            ) : (
+              <TryDemoButton
+                label={ctaLabel}
+                className={cn(buttonVariants({ size: "lg" }))}
+              />
+            )}
           </div>
         </div>
       </section>

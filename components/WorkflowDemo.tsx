@@ -54,14 +54,15 @@ import {
 import { WorkflowDemoMotion } from "@/components/WorkflowDemoMotion";
 import { ConnectModal } from "@/components/workflow-demo/ConnectModal";
 import type { DemoCopy } from "@/components/workflow-demo/copy";
-import { DEMO_INTERACT_EVENT } from "@/components/workflow-demo/events";
+import {
+  DEMO_ID,
+  DEMO_INTERACT_EVENT,
+  DEMO_PICK_EVENT,
+} from "@/components/workflow-demo/events";
 import { readZipIndex, type ZipEntry } from "@/lib/zip-index";
 import { savePendingFile } from "@/lib/pending-import";
 import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
-
-/** Id du panneau animé : le wrapper client le retrouve sans ref partagée. */
-const DEMO_ID = "workflow-demo";
 
 /** Étapes de l'aperçu interactif. */
 type Phase = "idle" | "reading" | "extracting" | "ready" | "error";
@@ -210,6 +211,21 @@ export function WorkflowDemo({
   const openPicker = useCallback(() => {
     inputRef.current?.click();
   }, []);
+
+  /*
+   * Relais pour le CTA de la landing (`components/workflow-demo/TryDemoButton`)
+   * et pour tout autre bouton qui voudrait ouvrir le sélecteur de la démo :
+   * un visiteur non connecté peut ainsi essayer le glisser-déposer sans
+   * passer par `/login`. L'événement est écouté sur le panneau, qui existe dès
+   * le rendu serveur (aucune ref partagée nécessaire).
+   */
+  useEffect(() => {
+    const panel = document.getElementById(DEMO_ID);
+    if (!panel) return;
+    const onPick = () => openPicker();
+    panel.addEventListener(DEMO_PICK_EVENT, onPick);
+    return () => panel.removeEventListener(DEMO_PICK_EVENT, onPick);
+  }, [openPicker]);
 
   const reset = useCallback(() => {
     setPhase("idle");
