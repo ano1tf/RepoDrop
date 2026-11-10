@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  *
  * Elle sert de **preview** : chaque carte montre le titre et l'accroche tirés
  * du dictionnaire de la langue (pas une simple liste de noms), et cliquer
- * dessus bascule réellement l'interface (`/api/lang/switch?to=xx&next=/`), puis y
+ * dessus bascule réellement l'interface (`/api/locale?to=xx&next=/langues`), puis y
  * revient.
  *
  * `noindex` : c'est un utilitaire de démonstration, pas du contenu éditorial.
@@ -81,7 +81,7 @@ export default async function LanguagesPage() {
             return (
               <li key={l.code}>
                 <Link
-                  href={`/api/lang/switch?to=${l.code}&next=/langues`}
+                  href={`/api/locale?to=${l.code}&next=/langues`}
                   lang={l.code}
                   dir={l.dir}
                   aria-current={active ? "true" : undefined}

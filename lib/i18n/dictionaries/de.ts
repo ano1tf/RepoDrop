@@ -132,6 +132,7 @@ export const de: Dict = {
     demoLocalBadge: "Lokal",
     demoDropHint: "Ziehe eine .zip hierher",
     demoDropBrowse: "oder wähle eine Datei",
+    demoDropCta: "Archiv importieren",
     demoDropError: "Es werden nur .zip-Dateien akzeptiert.",
     demoReading: "Archiv wird gelesen…",
     demoExtracting: "Entpacken…",
@@ -182,6 +183,7 @@ export const de: Dict = {
 
   importPage: {
     title: "Archiv importieren",
+    dropTitle: "Ziehe dein Archiv hierher, um es zu GitHub zu pushen.",
     lead: "Lege eine .rar-, .zip- oder .tar-Datei (auch .tar.gz) mit deinem Code ab. Du siehst eine vollständige Vorschau, bevor etwas zu GitHub geht.",
     browseLead:
       "Du willst zuerst sehen, was schon in deinem Konto liegt? Durchstöbere deine Repositories und deren Inhalt, ohne etwas zu senden.",

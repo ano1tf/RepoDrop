@@ -164,6 +164,7 @@ describe("copie de la démo (WorkflowDemo)", () => {
     demoLocalBadge: 12,
     demoDropHint: 30,
     demoDropBrowse: 30,
+    demoDropCta: 26,
     demoDropError: 60,
     demoReading: 30,
     demoExtracting: 20,

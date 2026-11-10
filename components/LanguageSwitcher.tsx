@@ -16,17 +16,17 @@
  *   - la fermeture sur Échap ;
  *   - le focus dans la recherche à l'ouverture.
  *
- * Le changement de langue passe par la Server Action `app/actions/lang.ts` :
- * elle pose le cookie **et** invalide le cache de navigation côté client
- * (les segments RSC préchargés par les `<Link>`, rendus dans l'ancienne
- * langue). Sans cette invalidation, revenir sur une page préchargée
- * afficherait l'ancienne langue : c'est le bug « ça revient en français ».
+ * Le changement de langue passe par **`/api/locale`** (route GET) et un
+ * **aller-retour document complet** : le serveur pose le cookie `rd_lang` sur
+ * la réponse de redirection, puis sert la page déjà rendue dans la nouvelle
+ * langue. Aucune dépendance au cache de navigation côté client — c'est ce qui
+ * garantit que la langue persiste 100 % du temps, y compris après un retour
+ * arrière ou une réouverture d'onglet.
  *
  * `localStorage` n'est qu'un **miroir** du cookie : il permet de retrouver
  * le choix de l'utilisateur si le cookie a été effacé ou bloqué.
  */
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Check, Languages, Search } from "lucide-react";
 import {
   LOCALES,
@@ -34,7 +34,6 @@ import {
   writeStoredLocale,
   type Locale,
 } from "@/lib/i18n/locales";
-import { setLocale } from "@/app/actions/lang";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -45,6 +44,22 @@ interface Props {
   currentLabel: string;
 }
 
+/** Garde « une seule réconciliation par session ». */
+const RECONCILE_FLAG = "rd_lang_reconciled";
+
+/** Chemin courant + query + hash (toujours interne, lu côté client). */
+function currentPath(): string {
+  if (typeof window === "undefined") return "/";
+  return (
+    window.location.pathname + window.location.search + window.location.hash
+  );
+}
+
+/** URL de bascule : la route pose le cookie puis redirige vers `next`. */
+function switchUrl(code: Locale, next: string): string {
+  return `/api/locale?to=${encodeURIComponent(code)}&next=${encodeURIComponent(next)}`;
+}
+
 export function LanguageSwitcher({
   locale,
   label,
@@ -52,8 +67,7 @@ export function LanguageSwitcher({
   searchLabel,
   currentLabel,
 }: Props) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -100,11 +114,13 @@ export function LanguageSwitcher({
   }, [open]);
 
   /**
-   * Reconciliation au chargement : si le navigateur se souvient d'une langue
-   * (`localStorage`) mais que le serveur n'a pas de cookie (cookie effacé,
-   * bloqué, ou navigation privée stricte), on remet le cookie à jour.
-   *
-   * C'est le filet de sécurité qui garantit que « la langue ne lâche pas ».
+   * Réconciliation au chargement : si le navigateur se souvient d'une langue
+   * (`localStorage`) mais que le serveur a rendu dans une autre (cookie
+   * effacé, bloqué, ou navigation privée stricte), on repasse par
+   * `/api/locale`, qui repose le cookie et redirige. Une garde
+   * `sessionStorage` empêche toute boucle si le cookie ne peut pas être
+   * écrit (navigation privée stricte) : dans ce cas on accepte simplement la
+   * langue du serveur.
    */
   useEffect(() => {
     if (reconciled.current) return;
@@ -112,33 +128,27 @@ export function LanguageSwitcher({
 
     const stored = readStoredLocale();
     if (!stored || stored === locale) return;
+    try {
+      if (window.sessionStorage.getItem(RECONCILE_FLAG)) return;
+      window.sessionStorage.setItem(RECONCILE_FLAG, "1");
+    } catch {
+      // sessionStorage indisponible : la réconciliation reste tentée une
+      // fois par montage du composant, c'est suffisant.
+    }
 
-    void setLocale(stored).then((result) => {
-      if (result.ok) startTransition(() => router.refresh());
-    });
-    // Au montage uniquement : la réconciliation se fait une fois (le garde
-    // `reconciled` ci-dessus empêche toute relance).
-  }, []);
+    window.location.assign(switchUrl(stored, currentPath()));
+  }, [locale]);
 
-  async function choose(code: Locale) {
+  function choose(code: Locale) {
     setOpen(false);
     if (code === locale) return;
 
-    try {
-      const result = await setLocale(code);
-      if (!result.ok) return;
-    } catch {
-      return; // réseau indisponible : on garde la langue courante
-    }
-
     // Miroir client : la langue choisie survit à un cookie effacé.
     writeStoredLocale(code);
-    // Repli immédiat côté client : le serveur vient de poser le cookie.
-    document.cookie = `rd_lang=${code}; path=/; max-age=31536000; samesite=lax`;
-    // L'action a déjà renvoyé le nouvel arbre RSC (cache de navigation
-    // invalidé) ; le refresh garantit que la page courante est bien rendue
-    // dans la nouvelle langue.
-    startTransition(() => router.refresh());
+    setPending(true);
+    // Aller-retour document complet : la route pose le cookie, puis redirige
+    // vers la page courante rendue dans la nouvelle langue.
+    window.location.assign(switchUrl(code, currentPath()));
   }
 
   return (

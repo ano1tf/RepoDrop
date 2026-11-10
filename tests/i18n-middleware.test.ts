@@ -84,15 +84,15 @@ describe("middleware i18n", () => {
     expect(res.cookies.get(LOCALE_COOKIE)?.value).toBe(DEFAULT_LOCALE);
   });
 
-  it("n'écrit pas le cookie sur un appel de Server Action", () => {
-    // La Server Action `setLocale` pose elle-même le cookie : le middleware
-    // ne doit pas écrire une valeur concurrente sur la même réponse.
+  it("n'a pas de cas particulier pour une Server Action (la bascule passe par /api/locale)", () => {
+    // La bascule de langue étant un aller-retour document vers `/api/locale`,
+    // le middleware pose le cookie dans tous les cas où il manque ou est
+    // invalide — il n'y a plus d'écriture concurrente à craindre.
     const req = new NextRequest("http://localhost/", {
       headers: { "accept-language": "fr-FR", "next-action": "abc123" },
     });
     const res = middleware(req);
-    expect(res.cookies.get(LOCALE_COOKIE)).toBeUndefined();
-    // La langue est bien transmise au rendu.
+    expect(res.cookies.get(LOCALE_COOKIE)?.value).toBe(DEFAULT_LOCALE);
     expect(forwardedLocale(res)).toBe(DEFAULT_LOCALE);
   });
 });

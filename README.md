@@ -452,9 +452,7 @@ lib/i18n/
   dictionary.ts         # Record<Locale, Dict> + accès (getDictionary, section)
   server.ts             # getLocale() / getT() : cookie → x-rd-lang → Accept-Language
   format.ts             # fill("{upload} Mo") , placeholdersOf, formatNumber
-app/actions/lang.ts     # Server Action : pose le cookie + révoque les caches
-app/api/lang/route.ts   # POST validation stricte + cookie rd_lang (1 an)
-app/api/lang/switch/     # GET ?to=xx&next=/chemin : bascule par lien, 307
+app/api/locale/route.ts  # GET/POST : validation stricte + cookie rd_lang (1 an)
 app/langues/page.tsx     # /langues : galerie de démo, 16 cartes cliquables
 components/LanguageSwitcher.tsx
 ```
@@ -487,18 +485,23 @@ pièces :
    `rd_lang`, sinon `Accept-Language` —, la transmet au rendu via l'en-tête
    `x-rd-lang`, et la pose dans le cookie dès la première visite (la langue
    détectée devient explicite et stable).
-2. **`app/actions/lang.ts`** (Server Action) pose le cookie **et** appelle
-   `revalidatePath("/", "layout")`. L'action renvoie le nouvel arbre RSC, ce
-   qui **vide le cache de navigation côté client** : plus aucun segment
-   préchargé dans l'ancienne langue ne peut resservir.
+2. **`app/api/locale/route.ts`** pose le cookie sur la réponse à chaque
+   bascule, et le changement de langue est un **aller-retour document
+   complet** (`GET /api/locale?to=xx&next=/chemin`) : la page suivante est
+   rendue par le serveur déjà dans la nouvelle langue. Aucun segment RSC
+   préchargé dans l'ancienne langue ne peut resservir — le problème ne se
+   pose plus, par construction.
 3. **`localStorage`** (`rd_lang`) n'est qu'un **miroir** du cookie : si le
-   cookie a été effacé ou bloqué, le sélecteur le rétablit au chargement.
+   cookie a été effacé ou bloqué, le sélecteur le rétablit au chargement
+   (une seule tentative par session, pour ne pas boucler si le cookie est
+   bloqué).
 
-Deux façons de changer de langue : le sélecteur de l'en-tête (Server Action
-`setLocale`, sans rechargement) et des liens partageables
-`/api/lang/switch?to=ja&next=/repos`. Cette route GET pose le cookie puis
-redirige en 307 ; `next` est filtré par `safeNextPath` (chemins internes
-uniquement, sinon `/`) pour ne pas devenir une redirection ouverte.
+Deux façons de changer de langue : le sélecteur de l'en-tête, qui navigue
+vers `/api/locale?to=xx&next=<chemin courant>`, et des liens partageables du
+même type. La route GET pose le cookie puis redirige en 307 ; `next` est
+filtré par `safeNextPath` (chemins internes uniquement, sinon `/`) pour ne
+pas devenir une redirection ouverte. `POST /api/locale` (`{ locale }`) offre
+le même cookie en JSON pour les appels programmatiques.
 `/langues` sert de galerie de contrôle — les 16 cartes affichent le titre réel
 et un aperçu du héros dans chaque langue.
 

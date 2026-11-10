@@ -69,8 +69,10 @@ export default async function Home() {
       faq: faqItems,
     }),
   );
+  // Un visiteur doit se connecter avant de pouvoir importer ; un utilisateur
+  // connecté va droit à la page d'import.
   const ctaHref = session ? "/import" : "/login";
-  const ctaLabel = session ? t.home.ctaImport : t.home.ctaStart;
+  const ctaLabel = t.home.ctaImport;
 
   return (
     <main className="flex-1">
@@ -107,10 +109,18 @@ export default async function Home() {
 
             {/* La démo arrive AVANT le bouton GitHub : on montre le résultat
                 avant de demander un compte. */}
-            <WorkflowDemo copy={demoCopyFrom(t.home)} locale={locale} />
+            <WorkflowDemo
+              copy={demoCopyFrom(t.home)}
+              locale={locale}
+              authenticated={Boolean(session)}
+            />
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={ctaHref}
+                className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto px-8")}
+              >
+                <FolderArchive className="h-4 w-4" />
                 {ctaLabel}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Link>

@@ -132,6 +132,7 @@ export const tr: Dict = {
     demoLocalBadge: "Yerel",
     demoDropHint: "Buraya bir .zip bırakın",
     demoDropBrowse: "veya bir dosya seçin",
+    demoDropCta: "Arşiv aktar",
     demoDropError: "Yalnızca .zip dosyaları kabul edilir.",
     demoReading: "Arşiv okunuyor…",
     demoExtracting: "Çıkarılıyor…",
@@ -182,6 +183,7 @@ export const tr: Dict = {
 
   importPage: {
     title: "Arşiv aktar",
+    dropTitle: "Arşivinizi buraya sürükleyin, GitHub'a gönderin.",
     lead: "Kodunuzu içeren bir .rar, .zip veya .tar (aynı zamanda .tar.gz) dosyasını bırakın. GitHub'a herhangi bir gönderimden önce tam bir önizleme göreceksiniz.",
     browseLead:
       "Önce hesabınızda ne olduğuna bakmak ister misiniz? Hiçbir şey göndermeden depolarınızı ve içeriklerini gezin.",

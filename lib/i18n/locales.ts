@@ -9,9 +9,9 @@
  * indexent la version par défaut (français) — voir README.
  *
  * Le cookie n'est *pas* `httpOnly` pour une raison précise : il est écrit par
- * une **Server Action** (`app/actions/lang.ts`) afin que la valeur soit
- * validée contre `LOCALES` avant d'être posée. Une valeur inconnue retombe
- * toujours sur le français au lieu de casser le rendu.
+ * **`/api/locale`**, la route de bascule, afin que la valeur soit validée
+ * contre `LOCALES` avant d'être posée. Une valeur inconnue ne le remplace
+ * jamais (la redirection repart sans cookie) au lieu de casser le rendu.
  *
  * Le cookie est **la** source de vérité (le serveur la lit à chaque rendu) ;
  * `localStorage` n'en est qu'un miroir, utile pour recouvrir un cookie
@@ -56,7 +56,7 @@ export type Locale = (typeof LOCALES)[number]["code"];
 
 export const DEFAULT_LOCALE: Locale = "fr";
 
-/** Nom du cookie de préférence linguistique (posé par la Server Action). */
+/** Nom du cookie de préférence linguistique (posé par `/api/locale`). */
 export const LOCALE_COOKIE = "rd_lang";
 
 /**
@@ -118,9 +118,9 @@ export function ogLocaleOf(locale: Locale): string {
 
 /**
  * Variante **stricte** de `normalizeLocale` : renvoie `null` au lieu de replier
- * sur le français. Réservée aux entrées utilisateur (Server Action, `POST
- * /api/lang`), où accepter silencieusement « klingon » comme du français
- * masquerait un bug d'appel au lieu de le signaler.
+ * sur le français. Réservée aux entrées utilisateur (`/api/locale`), où
+ * accepter silencieusement « klingon » comme du français masquerait un bug
+ * d'appel au lieu de le signaler.
  *
  * Les variantes légitimes restent ramenées à leur langue de base
  * (`pt-BR` → `pt`, `de-AT` → `de`), exactement comme l'en-tête
@@ -200,8 +200,8 @@ export function localeDefinition(locale: Locale): LocaleDefinition {
  *
  * Seuls les chemins absolus **internes** sont acceptés : `https://evil.com`,
  * `//evil.com`, `/\evil.com` et `/<tab>` retombent tous sur `/`. Sans ce filtre,
- * `/api/lang/switch?to=de&next=//evil.com` serait une redirection ouverte
- * pilotée par un simple lien.
+ * `/api/locale?to=de&next=//evil.com` serait une redirection ouverte pilotée
+ * par un simple lien.
  */
 export function safeNextPath(value: string | null | undefined): string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";

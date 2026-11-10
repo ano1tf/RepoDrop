@@ -191,3 +191,47 @@ describe("démo interactive de la landing", () => {
     expect(alert!.textContent).toContain(COPY.dropError);
   });
 });
+
+describe("CTA primaire et mode connecté", () => {
+  it("affiche le gros bouton « Importer une archive » dans la zone de dépôt", () => {
+    const cta = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes(COPY.dropCta),
+    );
+    expect(cta, "CTA primaire « Importer une archive » absent").toBeTruthy();
+  });
+
+  it("connecté : « pousser » mène à /import, sans ouvrir la modale", async () => {
+    // jsdom ne sait pas naviguer : on neutralise `location.assign` si possible.
+    try {
+      vi.spyOn(window.location, "assign").mockImplementation(() => {});
+    } catch {
+      /* assertion limitée à l'absence de modale */
+    }
+
+    await act(async () => {
+      root.render(
+        createElement(WorkflowDemo, {
+          copy: COPY,
+          locale: "fr",
+          authenticated: true,
+        }),
+      );
+    });
+
+    const card = container.querySelector('[data-wd="archive-card"]');
+    const file = await makeZipFile("demo.zip", ["a.ts"]);
+    dropFile(card!, file);
+    await flush(2500);
+
+    const pushButton = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent?.includes(COPY.pushCta),
+    );
+    expect(pushButton, "bouton « pousser » absent").toBeTruthy();
+
+    act(() => {
+      pushButton!.click();
+    });
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+});

@@ -132,6 +132,7 @@ export const ru: Dict = {
     demoLocalBadge: "Локально",
     demoDropHint: "Перетащите сюда .zip",
     demoDropBrowse: "или выберите файл",
+    demoDropCta: "Импортировать архив",
     demoDropError: "Принимаются только файлы .zip.",
     demoReading: "Читаем архив…",
     demoExtracting: "Распаковка…",
@@ -182,6 +183,7 @@ export const ru: Dict = {
 
   importPage: {
     title: "Импорт архива",
+    dropTitle: "Перетащите архив сюда, чтобы отправить его на GitHub.",
     lead: "Перетащите файл .rar, .zip или .tar (а также .tar.gz) с вашим кодом. Вы увидите полный предпросмотр до любой отправки на GitHub.",
     browseLead:
       "Хотите сначала посмотреть, что уже есть в аккаунте? Просмотрите репозитории и их содержимое, ничего не отправляя.",

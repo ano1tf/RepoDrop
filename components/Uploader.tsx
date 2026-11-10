@@ -4,11 +4,12 @@
  * Zone de dépôt d'archive : validation locale (extension / poids), upload
  * XHR avec barre de progression, puis redirection vers la page du job.
  */
-import { useCallback, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Archive, AlertTriangle, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fill } from "@/lib/i18n/format";
+import { takePendingFile } from "@/lib/pending-import";
 import type { Dict } from "@/lib/i18n/types";
 
 interface Props {
@@ -76,6 +77,23 @@ export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
     },
     [maxLabel, router],
   );
+
+  /*
+   * Relais depuis la landing : si un `.zip` a été déposé dans la démo `/`
+   * avant le clic sur « Importer une archive » (ou un aller-retour OAuth),
+   * il patiente dans IndexedDB. On le relit ici — l'opération le supprime —
+   * puis on lance l'envoi comme s'il venait d'être glissé. La lecture et la
+   * suppression sont atomiques : pas de double envoi en StrictMode.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    void takePendingFile().then((file) => {
+      if (!cancelled && file) send(file);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [send]);
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
