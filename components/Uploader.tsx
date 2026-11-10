@@ -6,7 +6,7 @@
  */
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, AlertTriangle, UploadCloud } from "lucide-react";
+import { Archive, AlertTriangle, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fill } from "@/lib/i18n/format";
 import { takePendingFile } from "@/lib/pending-import";
@@ -15,13 +15,19 @@ import type { Dict } from "@/lib/i18n/types";
 interface Props {
   maxLabel: string;
   extractLabel: string;
+  /**
+   * Poids maximal accepté, en octets (`config.limits.maxUploadBytes`).
+   * Contrôlé **avant** l'envoi : inutile de faire monter 300 Mo pour récolter
+   * un 413 après plusieurs minutes de transfert.
+   */
+  maxBytes: number;
   /** Chaînes de la section `uploader` du dictionnaire courant. */
   t: Dict["uploader"];
 }
 
 const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
-export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
+export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props) {
   const router = useRouter();
   /*
    * Les chaînes viennent d'un objet recréé à chaque rendu serveur : on les
@@ -31,6 +37,11 @@ export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
   const tRef = useRef(strings);
   tRef.current = strings;
   const inputRef = useRef<HTMLInputElement>(null);
+  /**
+   * Requête en cours. Garder la référence est ce qui rend l'annulation
+   * possible : `XMLHttpRequest` n'est pas pilotable autrement.
+   */
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,17 +57,28 @@ export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
         setError(tRef.current.errorEmpty);
         return;
       }
+      /*
+       * Même règle que le serveur (`MAX_UPLOAD_MB`), mais annoncée tout de
+       * suite : le fichier ne quitte pas le navigateur, l'utilisateur n'attend
+       * pas la fin d'un transfert perdu d'avance.
+       */
+      if (file.size > maxBytes) {
+        setError(fill(tRef.current.errorTooLarge, { max: maxLabel }));
+        return;
+      }
 
       const form = new FormData();
       form.append("file", file, file.name);
 
       const xhr = new XMLHttpRequest();
+      xhrRef.current = xhr;
       xhr.open("POST", "/api/upload");
       xhr.responseType = "json";
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
       };
       xhr.onload = () => {
+        xhrRef.current = null;
         setProgress(null);
         if (xhr.status === 202 && xhr.response?.id) {
           router.push(`/jobs/${xhr.response.id}`);
@@ -70,13 +92,31 @@ export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
         );
       };
       xhr.onerror = () => {
+        xhrRef.current = null;
         setProgress(null);
         setError(tRef.current.errorNetwork);
       };
+      /*
+       * Annulation volontaire : on ne signale pas d'erreur (l'utilisateur
+       * sait ce qu'il a fait), on rend simplement la zone de dépôt.
+       */
+      xhr.onabort = () => {
+        xhrRef.current = null;
+        setProgress(null);
+      };
       xhr.send(form);
     },
-    [maxLabel, router],
+    [maxBytes, maxLabel, router],
   );
+
+  /** Interrompt l'envoi en cours et revient à la zone de dépôt. */
+  const cancel = useCallback(() => {
+    const xhr = xhrRef.current;
+    xhrRef.current = null;
+    setProgress(null);
+    // `abort()` peut être appelé après coup : le garde évite un état incohérent.
+    if (xhr && xhr.readyState !== XMLHttpRequest.DONE) xhr.abort();
+  }, []);
 
   /*
    * Relais depuis la landing : si un `.zip` a été déposé dans la démo `/`
@@ -153,6 +193,26 @@ export function Uploader({ maxLabel, extractLabel, t: strings }: Props) {
               />
             </div>
             <p className="mt-3 text-xs text-mist">{strings.keepOpen}</p>
+            {/*
+              Sortie de secours : une archive de 200 Mo sur une connexion
+              lente, c'est plusieurs minutes. Sans ce bouton, la seule issue
+              est de fermer l'onglet (et de perdre l'upload de toute façon).
+              `stopPropagation` : le clic ne doit pas ouvrir le sélecteur de
+              fichiers de la zone de dépôt.
+            */}
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cancel();
+                }}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-chalk ring-1 ring-edge transition-colors hover:bg-panel2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-go/60"
+              >
+                <X className="h-4 w-4" />
+                {strings.cancel}
+              </button>
+            </div>
           </div>
         ) : (
           <>

@@ -36,7 +36,13 @@ export async function ghRaw(
   } catch {
     throw new AppError("INTERNAL", undefined, "API GitHub injoignable");
   }
-  if (res.status === 401) throw new AppError("FORBIDDEN", undefined, "401 token invalide");
+  /*
+   * 401 = le jeton n'est plus valide (expiré, révoqué, ou révoqué par une
+   * nouvelle autorisation). Ce n'est PAS un problème de droits : l'utilisateur
+   * ne peut rien corriger dans les réglages du dépôt, il doit se reconnecter.
+   * D'où un code dédié, qui déclenche le CTA « Se reconnecter » côté UI.
+   */
+  if (res.status === 401) throw new AppError("UNAUTHORIZED");
   if (res.status === 403 || res.status === 429) {
     const reset = res.headers.get("x-ratelimit-reset");
     const when = reset ? new Date(Number(reset) * 1000).toLocaleTimeString("fr-FR") : "";

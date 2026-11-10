@@ -133,6 +133,7 @@ export const ko: Dict = {
     demoDropHint: "여기에 .zip 파일을 놓으세요",
     demoDropBrowse: "또는 파일 선택",
     demoDropCta: "압축 파일 가져오기",
+    demoDropTooLarge: "압축 파일이 너무 큽니다(최대 {max}).",
     demoDropError: ".zip 파일만 사용할 수 있습니다.",
     demoReading: "압축파일 읽는 중…",
     demoExtracting: "압축 푸는 중…",
@@ -207,6 +208,7 @@ export const ko: Dict = {
     errorTooLarge: "압축 파일이 너무 큽니다(최대 {max}).",
     errorHttp: "전송 실패(HTTP {status}). 다시 시도하세요.",
     errorNetwork: "전송 중 연결이 끊겼습니다. 다시 시도하세요.",
+    cancel: "취소",
   },
 
   footer: {

@@ -30,6 +30,7 @@ import {
 import type { Dict } from "@/lib/i18n/types";
 import type { JobRecord, PreviewEntry } from "@/lib/types";
 import { buildRepoLinks } from "@/lib/links";
+import { isUnauthorizedError } from "@/lib/errors";
 import type { PushableRepo } from "@/lib/github";
 import { formatBytes, formatCount } from "@/lib/utils";
 import { fill, formatNumber } from "@/lib/i18n/format";
@@ -209,6 +210,13 @@ function FailedState({
     job.pushOpts?.mode === "existing" &&
     Boolean(job.pushOpts.repo) &&
     /changé entre-temps|non-fast-forward|\[rejected\]|fetch first/i.test(job.error ?? "");
+  /*
+   * Jeton GitHub expiré/révoqué : aucune relance ne peut aboutir tant que la
+   * session n'est pas renouvelée. On remplace donc l'action principale
+   * (« Réessayer avec une autre archive ») par « Se reconnecter », qui purge
+   * la session côté serveur et relance l'OAuth GitHub.
+   */
+  const mustReconnect = isUnauthorizedError(job.error);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [retryError, setRetryError] = useState<string | null>(null);
@@ -305,7 +313,16 @@ function FailedState({
         )}
 
         <div className="flex flex-wrap justify-center gap-3">
-          <Link href="/import" className={buttonVariants({})}>
+          {mustReconnect && (
+            <Link href="/api/auth/login" className={buttonVariants({})}>
+              <RefreshCw className="h-4 w-4" />
+              Se reconnecter
+            </Link>
+          )}
+          <Link
+            href="/import"
+            className={buttonVariants({ variant: mustReconnect ? "outline" : "default" })}
+          >
             Réessayer avec une autre archive
           </Link>
           <Link href="/" className={buttonVariants({ variant: "ghost" })}>

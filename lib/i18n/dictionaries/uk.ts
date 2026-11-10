@@ -133,6 +133,7 @@ export const uk: Dict = {
     demoDropHint: "Перетягніть сюди .zip",
     demoDropBrowse: "або виберіть файл",
     demoDropCta: "Імпортувати архів",
+    demoDropTooLarge: "Архів завеликий: максимум {max}.",
     demoDropError: "Приймаються лише файли .zip.",
     demoReading: "Читаємо архів…",
     demoExtracting: "Розпакування…",
@@ -208,6 +209,7 @@ export const uk: Dict = {
     errorTooLarge: "Архів завеликий (макс. {max}).",
     errorHttp: "Не вдалося надіслати (HTTP {status}). Спробуйте ще раз.",
     errorNetwork: "З'єднання втрачено під час надсилання. Спробуйте ще раз.",
+    cancel: "Скасувати",
   },
 
   footer: {

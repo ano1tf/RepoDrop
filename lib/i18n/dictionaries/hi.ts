@@ -133,6 +133,7 @@ export const hi: Dict = {
     demoDropHint: "यहाँ .zip फ़ाइल छोड़ें",
     demoDropBrowse: "या फ़ाइल चुनें",
     demoDropCta: "आर्काइव इम्पोर्ट करें",
+    demoDropTooLarge: "आर्काइव बहुत बड़ा है: अधिकतम {max}।",
     demoDropError: "केवल .zip फ़ाइलें स्वीकार्य हैं।",
     demoReading: "आर्काइव पढ़ा जा रहा है…",
     demoExtracting: "निकाला जा रहा है…",
@@ -208,6 +209,7 @@ export const hi: Dict = {
     errorTooLarge: "आर्काइव बहुत बड़ा (अधिकतम {max})।",
     errorHttp: "भेजना विफल (HTTP {status})। फिर से कोशिश करें।",
     errorNetwork: "भेजते समय कनेक्शन टूट गया। फिर से कोशिश करें।",
+    cancel: "रद्द करें",
   },
 
   footer: {

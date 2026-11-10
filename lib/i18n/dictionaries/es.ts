@@ -133,6 +133,7 @@ export const es: Dict = {
     demoDropHint: "Arrastra un .zip aquí",
     demoDropBrowse: "o elige un archivo",
     demoDropCta: "Importar un archivo",
+    demoDropTooLarge: "Archivo demasiado grande: máximo {max}.",
     demoDropError: "Solo se aceptan archivos .zip.",
     demoReading: "Leyendo el archivo…",
     demoExtracting: "Extrayendo…",
@@ -208,6 +209,7 @@ export const es: Dict = {
     errorTooLarge: "Archivo demasiado grande (máx. {max}).",
     errorHttp: "Fallo en el envío (HTTP {status}). Inténtalo de nuevo.",
     errorNetwork: "Conexión perdida durante el envío. Inténtalo de nuevo.",
+    cancel: "Cancelar",
   },
 
   footer: {

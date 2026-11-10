@@ -125,6 +125,7 @@ export const zh: Dict = {
     demoDropHint: "把 .zip 拖到这里",
     demoDropBrowse: "或选择文件",
     demoDropCta: "导入压缩包",
+    demoDropTooLarge: "压缩包过大（上限 {max}）。",
     demoDropError: "仅支持 .zip 文件。",
     demoReading: "正在读取压缩包…",
     demoExtracting: "正在解压…",
@@ -196,6 +197,7 @@ export const zh: Dict = {
     errorTooLarge: "压缩包过大（最大 {max}）。",
     errorHttp: "发送失败（HTTP {status}），请重试。",
     errorNetwork: "发送时连接中断，请重试。",
+    cancel: "取消",
   },
 
   footer: {

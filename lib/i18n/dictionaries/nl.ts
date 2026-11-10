@@ -133,6 +133,7 @@ export const nl: Dict = {
     demoDropHint: "Sleep hier een .zip",
     demoDropBrowse: "of kies een bestand",
     demoDropCta: "Een archief importeren",
+    demoDropTooLarge: "Archief te groot: maximaal {max}.",
     demoDropError: "Alleen .zip-bestanden worden geaccepteerd.",
     demoReading: "Archief wordt gelezen…",
     demoExtracting: "Uitpakken…",
@@ -208,6 +209,7 @@ export const nl: Dict = {
     errorTooLarge: "Archief te groot (max. {max}).",
     errorHttp: "Verzenden mislukt (HTTP {status}). Probeer opnieuw.",
     errorNetwork: "Verbinding verbroken tijdens het verzenden. Probeer opnieuw.",
+    cancel: "Annuleren",
   },
 
   footer: {

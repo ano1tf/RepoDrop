@@ -17,6 +17,11 @@ export type ErrorCode =
   | "RATE_LIMITED"
   | "NOT_FOUND"
   | "FORBIDDEN"
+  /**
+   * Jeton GitHub expiré ou révoqué (HTTP 401). Distinct de FORBIDDEN : la
+   * seule issue est de se reconnecter, pas de demander des droits.
+   */
+  | "UNAUTHORIZED"
   | "REPO_EXISTS"
   | "NAME_INVALID"
   | "NO_CHANGES"
@@ -61,6 +66,8 @@ const FR: Record<ErrorCode, string> = {
   NOT_FOUND: "Ressource introuvable.",
   FORBIDDEN:
     "Vous n'avez pas les droits d'écriture sur ce dépôt (ou le jeton GitHub n'a pas le bon scope).",
+  UNAUTHORIZED:
+    "Votre session GitHub a expiré ou a été révoquée. Déconnectez-vous puis reconnectez-vous pour continuer.",
   REPO_EXISTS: "Un dépôt porte déjà ce nom sur votre compte.",
   NAME_INVALID: "Nom de dépôt ou de branche invalide.",
   NO_CHANGES: "Rien à pousser : les fichiers correspondent déjà au dépôt destination.",
@@ -80,6 +87,21 @@ const FR: Record<ErrorCode, string> = {
 
 export function frMessage(code: ErrorCode): string {
   return FR[code] ?? FR.INTERNAL;
+}
+
+/**
+ * Vrai si un message d'erreur **déjà traduit** désigne une session GitHub
+ * expirée ou révoquée.
+ *
+ * Pourquoi reconnaître le message et pas le code ? Seul le texte est persisté
+ * avec le job (`JobRecord.error`) : `JobView` ne reçoit jamais l'`ErrorCode`.
+ * On reconnaît donc la phrase de `UNAUTHORIZED`, ou un `401` explicite — les
+ * jobs enregistrés avant ce correctif portent encore « (401 token invalide) »
+ * et doivent eux aussi proposer la reconnexion.
+ */
+export function isUnauthorizedError(message: string | null | undefined): boolean {
+  if (!message) return false;
+  return message.includes(frMessage("UNAUTHORIZED")) || /\b401\b/.test(message);
 }
 
 /** Traduit une erreur inconnue en message FR sûr (jamais de détail technique/token). */

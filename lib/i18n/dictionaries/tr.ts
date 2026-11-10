@@ -133,6 +133,7 @@ export const tr: Dict = {
     demoDropHint: "Buraya bir .zip bırakın",
     demoDropBrowse: "veya bir dosya seçin",
     demoDropCta: "Arşiv aktar",
+    demoDropTooLarge: "Arşiv çok büyük: en fazla {max}.",
     demoDropError: "Yalnızca .zip dosyaları kabul edilir.",
     demoReading: "Arşiv okunuyor…",
     demoExtracting: "Çıkarılıyor…",
@@ -208,6 +209,7 @@ export const tr: Dict = {
     errorTooLarge: "Arşiv çok büyük (en fazla {max}).",
     errorHttp: "Gönderim başarısız (HTTP {status}). Tekrar deneyin.",
     errorNetwork: "Gönderim sırasında bağlantı koptu. Tekrar deneyin.",
+    cancel: "İptal",
   },
 
   footer: {
