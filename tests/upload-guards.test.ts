@@ -38,6 +38,17 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {} }),
 }));
 
+/**
+ * Chorégraphie GSAP neutralisée : elle n'est pas testée ici, et son import
+ * dynamique (`components/workflow-demo/timeline`) peut se résoudre **après**
+ * le démontage du test — jsdom est alors détruit et `document` n'existe plus
+ * (« ReferenceError: document is not defined », vu en CI). Un test des
+ * garde-fous d'upload n'a aucune raison de dépendre de cette course.
+ */
+vi.mock("@/components/WorkflowDemoMotion", () => ({
+  WorkflowDemoMotion: () => null,
+}));
+
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT =
   true;
 
