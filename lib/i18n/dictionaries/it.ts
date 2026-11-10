@@ -132,6 +132,7 @@ export const it: Dict = {
     demoLocalBadge: "Locale",
     demoDropHint: "Trascina qui un .zip",
     demoDropBrowse: "oppure scegli un file",
+    demoDropCta: "Importa un archivio",
     demoDropError: "Sono accettati solo i file .zip.",
     demoReading: "Lettura dell'archivio…",
     demoExtracting: "Estrazione…",
@@ -182,6 +183,7 @@ export const it: Dict = {
 
   importPage: {
     title: "Importa un archivio",
+    dropTitle: "Trascina qui il tuo archivio e invialo a GitHub.",
     lead: "Trascina un file .rar, .zip o .tar (anche .tar.gz) contenente il tuo codice. Vedrai un'anteprima completa prima di qualsiasi invio a GitHub.",
     browseLead:
       "Vuoi prima vedere cosa c'è già nel tuo account? Esplora i tuoi repository e il loro contenuto senza inviare nulla.",

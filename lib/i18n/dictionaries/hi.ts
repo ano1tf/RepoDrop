@@ -132,6 +132,7 @@ export const hi: Dict = {
     demoLocalBadge: "स्थानीय",
     demoDropHint: "यहाँ .zip फ़ाइल छोड़ें",
     demoDropBrowse: "या फ़ाइल चुनें",
+    demoDropCta: "आर्काइव इम्पोर्ट करें",
     demoDropError: "केवल .zip फ़ाइलें स्वीकार्य हैं।",
     demoReading: "आर्काइव पढ़ा जा रहा है…",
     demoExtracting: "निकाला जा रहा है…",
@@ -182,6 +183,7 @@ export const hi: Dict = {
 
   importPage: {
     title: "आर्काइव इम्पोर्ट करें",
+    dropTitle: "अपनी आर्काइव यहाँ खींचकर GitHub पर पुश करें।",
     lead: "अपना कोड रखने वाली .rar, .zip या .tar (और .tar.gz) फ़ाइल छोड़ें। GitHub पर कुछ भी भेजने से पहले आपको पूरा पूर्वावलोकन दिखेगा।",
     browseLead:
       "पहले देखना चाहते हैं कि आपके खाते में क्या है? कुछ भी भेजे बिना अपनी रिपॉज़ और उनकी सामग्री ब्राउज़ करें।",

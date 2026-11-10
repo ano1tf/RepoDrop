@@ -20,11 +20,9 @@
  *     que `lib/i18n/server.ts` relit. Le rendu serveur et le middleware
  *     voient ainsi **exactement** la même langue.
  *
- * Ce que le middleware ne fait **pas** : le cache de navigation côté
- * client. Next.js réutilise pendant 5 minutes les segments RSC préchargés
- * (`<Link>`), et ces segments ont été rendus dans l'ancienne langue. C'est
- * la Server Action `app/actions/lang.ts` qui invalide ce cache au moment du
- * changement de langue (`revalidatePath("/", "layout")`).
+ * Le changement de langue lui-même est assuré par `/api/locale` (route GET
+ * avec redirection) : c'est un aller-retour document classique, donc aucune
+ * course avec le cache de navigation côté client.
  */
 import { NextResponse, type NextRequest } from "next/server";
 import {
@@ -37,9 +35,9 @@ import {
 export const config = {
   /**
    * On laisse de côté :
-   * - `api` : les routes API ne sont pas localisées, et une route qui pose
-   *   elle-même le cookie (`/api/lang`) ne doit pas entrer en conflit avec
-   *   le middleware ;
+   * - `api` : les routes API ne sont pas localisées, et `/api/locale` pose
+   *   elle-même le cookie — elle ne doit pas entrer en conflit avec le
+   *   middleware ;
    * - `_next/*` : les assets sont servis tels quels ;
    * - les fichiers statiques (images, icônes, `robots.txt`, `sitemap.xml`).
    */
@@ -63,14 +61,11 @@ export function middleware(request: NextRequest): NextResponse {
   /*
    * On (re)pose le cookie s'il est absent ou invalide : la langue détectée
    * devient alors explicite et survit aux navigations comme aux sessions.
-   *
-   * Exception : les appels de **Server Action** (`Next-Action`). La Server
-   * Action `app/actions/lang.ts` pose elle-même le cookie (avec la langue
-   * que l'utilisateur vient de choisir) : le middleware ne doit pas écrire
-   * une valeur concurrente sur la même réponse.
+   * Une bascule de langue passe toujours par `/api/locale`, qui écrit le
+   * cookie lui-même et redirige — le middleware ne fait que rattraper les
+   * visites sans préférence.
    */
-  const isServerAction = request.headers.has("next-action");
-  if (!isServerAction && cookieValue !== locale) {
+  if (cookieValue !== locale) {
     response.cookies.set(LOCALE_COOKIE, locale, {
       path: "/",
       maxAge: LOCALE_COOKIE_MAX_AGE,

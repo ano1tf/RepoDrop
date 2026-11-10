@@ -380,11 +380,11 @@ l'en-tête. Le français reste la source de vérité des clés.
 | --- | --- |
 | Support de la langue | cookie `rd_lang` (1 an), pas de préfixe d'URL : une seule URL canonique par page, liens partagés intacts |
 | Résolution | cookie → `Accept-Language` → français |
-| Écriture | `POST /api/lang` avec validation **stricte** (`parseLocale`) ; une langue inconnue est un 400, jamais un repli silencieux |
+| Écriture | `POST /api/locale` avec validation **stricte** (`parseLocale`) ; une langue inconnue est un 400, jamais un repli silencieux |
 | Complétude | `Dict = DeepStringify<typeof fr>` : un dictionnaire incomplet ne compile pas |
 | Rendu | `<html lang dir>` suivent la langue ; `dir="rtl"` en arabe, mise en page en `padding-inline-start` |
 | SEO | titres, descriptions, `og:locale` et JSON-LD (dont la FAQ) localisés |
-| Bascule par lien | `GET /api/lang/switch?to=xx&next=/chemin` : cookie puis 307, `next` filtré par `safeNextPath` (pas d'open redirect) |
+| Bascule par lien | `GET /api/locale?to=xx&next=/chemin` : cookie puis 307, `next` filtré par `safeNextPath` (pas d'open redirect) |
 | Galerie de contrôle | `/langues` (`noIndex`) : 16 cartes avec titre réel, aperçu du héros, badge RTL, langue active en `aria-current` |
 
 Langues livrées : fr, en, es, de, it, pt, nl, pl, ru, uk, tr, ar (RTL), hi, zh,
@@ -393,7 +393,7 @@ ja, ko.
 Vérifié en HTTP sur un build de production : les 16 langues rendent le bon
 `<html lang dir>`, le bon titre, le bon `<h1>` et un JSON-LD cohérent ;
 `Accept-Language: de-DE` donne `de`, `pt-BR` donne `pt`, `xx-YY` donne `fr` ;
-`POST /api/lang` renvoie 400 pour `klingon`, `xx-YY` et `""`, 200 pour `ja`,
+`POST /api/locale` renvoie 400 pour `klingon`, `xx-YY` et `""`, 200 pour `ja`,
 `pt-BR` (→ `pt`) et `ar`. Le parcours complet d'un clic sur `/langues` vers
-`/api/lang/switch?to=ja&next=/langues` rend bien la page en japonais.
+`/api/locale?to=ja&next=/langues` rend bien la page en japonais.
 360 tests, lint, typecheck et build passent.

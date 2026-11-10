@@ -20,6 +20,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Page d'import — réservée aux utilisateurs connectés.
+ *
+ * Si une archive a été déposée sur la landing (`/`), elle a été déposée dans
+ * IndexedDB (`lib/pending-import.ts`) : le composant `Uploader` la récupère
+ * à son montage et lance l'envoi. Sinon, la zone de dépôt attend un fichier.
+ */
 export default async function ImportPage() {
   const [session, { t }] = await Promise.all([getSession(), getT()]);
   if (!session) redirect("/login");
@@ -33,16 +40,20 @@ export default async function ImportPage() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 hero-bg"
       />
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <div className="mb-8 animate-fade-up">
-          <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-go/10 text-go ring-1 ring-go/25">
-              <FolderArchive className="h-5 w-5" />
-            </span>
-            {t.importPage.title}
+      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+        {/* ------------------------------------------------------ titre */}
+        <div className="animate-fade-up text-center">
+          <span className="inline-grid h-14 w-14 place-items-center rounded-2xl bg-go/10 text-go ring-1 ring-go/25">
+            <FolderArchive className="h-7 w-7" />
+          </span>
+          {/* Titre large : c'est l'instruction principale de la page. */}
+          <h1 className="mx-auto mt-5 max-w-2xl text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl">
+            {t.importPage.dropTitle}
           </h1>
-          <p className="mt-3 text-sm text-mist">{t.importPage.lead}</p>
-          <div className="mt-4 flex flex-wrap gap-1.5">
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-mist">
+            {t.importPage.lead}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-1.5">
             {[".rar", ".zip", ".tar", ".tar.gz", ".tgz"].map((ext) => (
               <span
                 key={ext}
@@ -55,7 +66,12 @@ export default async function ImportPage() {
           </div>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-panel p-4 ring-1 ring-edge">
+        {/* ----------------------------------------------- zone de dépôt */}
+        <div className="mt-8">
+          <Uploader maxLabel={maxLabel} extractLabel={extractLabel} t={t.uploader} />
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-panel p-4 ring-1 ring-edge">
           <p className="text-sm text-mist">{t.importPage.browseLead}</p>
           <Link
             href="/repos"
@@ -65,8 +81,6 @@ export default async function ImportPage() {
             {t.importPage.browseCta}
           </Link>
         </div>
-
-        <Uploader maxLabel={maxLabel} extractLabel={extractLabel} t={t.uploader} />
 
         <ul className="mt-6 grid gap-2 text-xs text-mist sm:grid-cols-3">
           <li className="rounded-lg bg-panel p-3 ring-1 ring-edge">

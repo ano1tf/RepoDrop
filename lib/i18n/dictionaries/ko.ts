@@ -132,6 +132,7 @@ export const ko: Dict = {
     demoLocalBadge: "로컬",
     demoDropHint: "여기에 .zip 파일을 놓으세요",
     demoDropBrowse: "또는 파일 선택",
+    demoDropCta: "압축 파일 가져오기",
     demoDropError: ".zip 파일만 사용할 수 있습니다.",
     demoReading: "압축파일 읽는 중…",
     demoExtracting: "압축 푸는 중…",
@@ -181,6 +182,7 @@ export const ko: Dict = {
 
   importPage: {
     title: "압축 파일 가져오기",
+    dropTitle: "여기로 아카이브를 드래그하여 GitHub에 푸시하세요.",
     lead: "코드가 담긴 .rar, .zip 또는 .tar(.tar.gz 포함) 파일을 끌어다 놓으세요. GitHub로 무엇이든 보내기 전에 전체 미리보기를 볼 수 있습니다.",
     browseLead:
       "먼저 계정에 무엇이 있는지 보고 싶나요? 아무것도 보내지 않고 저장소와 내용을 살펴보세요.",

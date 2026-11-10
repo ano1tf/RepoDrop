@@ -56,6 +56,7 @@ import { ConnectModal } from "@/components/workflow-demo/ConnectModal";
 import type { DemoCopy } from "@/components/workflow-demo/copy";
 import { DEMO_INTERACT_EVENT } from "@/components/workflow-demo/events";
 import { readZipIndex, type ZipEntry } from "@/lib/zip-index";
+import { savePendingFile } from "@/lib/pending-import";
 import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 
@@ -68,9 +69,16 @@ type Phase = "idle" | "reading" | "extracting" | "ready" | "error";
 export function WorkflowDemo({
   copy,
   locale,
+  authenticated = false,
 }: {
   copy: DemoCopy;
   locale: string;
+  /**
+   * Visiteur connecté : le bouton « pousser » mène directement à `/import`
+   * (l'archive est relayée via IndexedDB). Sinon, la modale « Connecter
+   * GitHub » s'ouvre — c'est la conversion attendue.
+   */
+  authenticated?: boolean;
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [dragging, setDragging] = useState(false);
@@ -105,6 +113,11 @@ export function WorkflowDemo({
         setError(copy.dropError);
         return;
       }
+
+      // Relais pour /import : si le visiteur part se connecter (ou clique
+      // « pousser »), l'archive l'attend côté import — jamais uploadée pour
+      // autant, elle ne quitte le navigateur qu'après le choix du dépôt.
+      void savePendingFile(file);
 
       setPhase("reading");
       try {
@@ -448,7 +461,10 @@ export function WorkflowDemo({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setModalOpen(true)}
+                  onClick={() => {
+                    if (authenticated) window.location.assign("/import");
+                    else setModalOpen(true);
+                  }}
                   className="ms-auto inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-go px-2.5 py-1.5 text-[11px] font-semibold text-ink transition-colors hover:bg-[#4ee2ac]"
                 >
                   <Rocket className="h-3 w-3" aria-hidden="true" />
@@ -519,16 +535,25 @@ function DropHint({
   onBrowse: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-mist">
-      <UploadCloud className="h-3 w-3 shrink-0 text-go/80" aria-hidden="true" />
-      <span className="min-w-0">{copy.dropHint}</span>
+    <div className="flex flex-col items-center gap-1.5 py-1 text-center">
+      <p className="flex items-center gap-1.5 text-[11px] leading-snug text-mist">
+        <UploadCloud className="h-3 w-3 shrink-0 text-go/80" aria-hidden="true" />
+        <span className="min-w-0">{copy.dropHint}</span>
+      </p>
+      {/*
+        CTA primaire, centré : c'est l'appel à l'action principal de la démo
+        (et de la landing). Il ouvre le vrai `<input type="file">` masqué —
+        clic, clavier et lecteurs d'écran passent par le même chemin.
+      */}
       <button
         type="button"
         onClick={onBrowse}
-        className="cursor-pointer rounded-md bg-panel2 px-1.5 py-0.5 text-[10px] font-medium text-chalk ring-1 ring-edge transition-colors hover:bg-edge/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-go/60"
+        className="mt-0.5 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-go px-3 py-2 text-[11px] font-semibold text-ink shadow-[0_0_24px_-10px_rgba(52,211,153,0.7)] transition-colors hover:bg-[#4ee2ac] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-go/60"
       >
-        {copy.dropBrowse}
+        <UploadCloud className="h-3.5 w-3.5" aria-hidden="true" />
+        {copy.dropCta}
       </button>
+      <span className="text-[9px] leading-snug text-mist/70">{copy.dropBrowse}</span>
     </div>
   );
 }

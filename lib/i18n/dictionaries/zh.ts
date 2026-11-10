@@ -124,6 +124,7 @@ export const zh: Dict = {
     demoLocalBadge: "本地",
     demoDropHint: "把 .zip 拖到这里",
     demoDropBrowse: "或选择文件",
+    demoDropCta: "导入压缩包",
     demoDropError: "仅支持 .zip 文件。",
     demoReading: "正在读取压缩包…",
     demoExtracting: "正在解压…",
@@ -172,6 +173,7 @@ export const zh: Dict = {
 
   importPage: {
     title: "导入压缩包",
+    dropTitle: "将你的压缩包拖到这里，推送到 GitHub。",
     lead: "拖入包含你代码的 .rar、.zip 或 .tar 文件（也支持 .tar.gz）。在向 GitHub 发送任何内容之前，你会看到完整预览。",
     browseLead: "想先看看账号里已有什么？浏览你的仓库及其内容，不发送任何东西。",
     browseCta: "浏览我的仓库",

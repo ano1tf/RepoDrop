@@ -138,6 +138,7 @@ export const ar: Dict = {
     demoLocalBadge: "محلي",
     demoDropHint: "أفلت ملف .zip هنا",
     demoDropBrowse: "أو اختر ملفًا",
+    demoDropCta: "استيراد أرشيف",
     demoDropError: "يُقبلت ملفات .zip فقط.",
     demoReading: "جارٍ قراءة الأرشيف…",
     demoExtracting: "جارٍ الاستخراج…",
@@ -187,6 +188,7 @@ export const ar: Dict = {
 
   importPage: {
     title: "استيراد أرشيف",
+    dropTitle: "اسحب أرشيفك إلى هنا لدفعه إلى GitHub.",
     lead: "أفلِت ملف .rar أو .zip أو .tar (وكذلك .tar.gz) يحتوي على شيفرتك. سترى معاينة كاملة قبل أي إرسال إلى GitHub.",
     browseLead:
       "أتريد أولاً رؤية ما هو موجود في حسابك؟ تصفَّح مستودعاتك ومحتواها دون إرسال أي شيء.",

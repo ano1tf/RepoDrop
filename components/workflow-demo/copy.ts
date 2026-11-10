@@ -50,6 +50,8 @@ export interface DemoCopy {
   dropHint: string;
   /** Alternative clavier (choisir un fichier). */
   dropBrowse: string;
+  /** Gros bouton primaire de la zone de dépôt (« Importer une archive »). */
+  dropCta: string;
   /** Message d'erreur (format non supporté / archive illisible). */
   dropError: string;
   /** Étape « lecture de l'archive ». */
@@ -98,6 +100,7 @@ export function demoCopyFrom(home: Dict["home"]): DemoCopy {
 
     dropHint: home.demoDropHint,
     dropBrowse: home.demoDropBrowse,
+    dropCta: home.demoDropCta,
     dropError: home.demoDropError,
     reading: home.demoReading,
     extracting: home.demoExtracting,

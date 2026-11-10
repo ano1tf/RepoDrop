@@ -132,6 +132,7 @@ export const ja: Dict = {
     demoLocalBadge: "ローカル",
     demoDropHint: "ここに .zip をドロップ",
     demoDropBrowse: "またはファイルを選択",
+    demoDropCta: "アーカイブをインポート",
     demoDropError: "対応しているのは .zip ファイルのみです。",
     demoReading: "アーカイブを読み込み中…",
     demoExtracting: "展開中…",
@@ -181,6 +182,7 @@ export const ja: Dict = {
 
   importPage: {
     title: "アーカイブをインポート",
+    dropTitle: "ここにアーカイブをドラッグして GitHub にプッシュ",
     lead: "コードを含む .rar、.zip、.tar（.tar.gz も可）をドロップしてください。GitHub へ何かを送る前に完全なプレビューが表示されます。",
     browseLead:
       "まずアカウントの中身を確認しますか？何も送信せずにリポジトリとその内容を閲覧できます。",

@@ -132,6 +132,7 @@ export const es: Dict = {
     demoLocalBadge: "Local",
     demoDropHint: "Arrastra un .zip aquí",
     demoDropBrowse: "o elige un archivo",
+    demoDropCta: "Importar un archivo",
     demoDropError: "Solo se aceptan archivos .zip.",
     demoReading: "Leyendo el archivo…",
     demoExtracting: "Extrayendo…",
@@ -182,6 +183,7 @@ export const es: Dict = {
 
   importPage: {
     title: "Importar un archivo",
+    dropTitle: "Arrastra tu archivo aquí para subirlo a GitHub.",
     lead: "Suelta un fichero .rar, .zip o .tar (también .tar.gz) que contenga tu código. Verás una vista previa completa antes de cualquier envío a GitHub.",
     browseLead:
       "¿Quieres ver primero lo que ya hay en tu cuenta? Explora tus repositorios y su contenido sin enviar nada.",

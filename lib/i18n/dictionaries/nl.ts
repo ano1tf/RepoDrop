@@ -132,6 +132,7 @@ export const nl: Dict = {
     demoLocalBadge: "Lokaal",
     demoDropHint: "Sleep hier een .zip",
     demoDropBrowse: "of kies een bestand",
+    demoDropCta: "Een archief importeren",
     demoDropError: "Alleen .zip-bestanden worden geaccepteerd.",
     demoReading: "Archief wordt gelezen…",
     demoExtracting: "Uitpakken…",
@@ -182,6 +183,7 @@ export const nl: Dict = {
 
   importPage: {
     title: "Een archief importeren",
+    dropTitle: "Sleep je archief hierheen om het naar GitHub te pushen.",
     lead: "Sleep een .rar-, .zip- of .tar-bestand (ook .tar.gz) met je code erin. Je ziet een volledig voorbeeld voordat er iets naar GitHub gaat.",
     browseLead:
       "Wil je eerst zien wat er al in je account staat? Blader door je repo's en hun inhoud zonder iets te versturen.",

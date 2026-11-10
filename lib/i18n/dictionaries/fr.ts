@@ -143,6 +143,7 @@ export const fr = {
     demoLocalBadge: "Local",
     demoDropHint: "Glissez un .zip ici",
     demoDropBrowse: "ou choisissez un fichier",
+    demoDropCta: "Importer une archive",
     demoDropError: "Seuls les fichiers .zip sont acceptés.",
     demoReading: "Lecture de l'archive…",
     demoExtracting: "Extraction…",
@@ -193,6 +194,7 @@ export const fr = {
 
   importPage: {
     title: "Importer une archive",
+    dropTitle: "Glissez votre archive ici pour la pousser sur GitHub.",
     lead: "Déposez un fichier .rar, .zip ou .tar (aussi .tar.gz) contenant votre code. Vous verrez un aperçu complet avant tout envoi vers GitHub.",
     browseLead:
       "Vous voulez d'abord regarder ce qu'il y a déjà sur votre compte ? Parcourez vos dépôts et leur contenu, sans rien envoyer.",
