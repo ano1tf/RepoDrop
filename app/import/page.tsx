@@ -6,10 +6,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSession } from "@/lib/session";
 import { config } from "@/lib/config";
+import { getViewer } from "@/lib/github";
+import { AppError } from "@/lib/errors";
 import { Uploader } from "@/components/Uploader";
-import { formatBytes } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
-import { fill } from "@/lib/i18n/format";
+import { formatBytes, fill } from "@/lib/i18n/format";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -28,11 +29,28 @@ export async function generateMetadata(): Promise<Metadata> {
  * à son montage et lance l'envoi. Sinon, la zone de dépôt attend un fichier.
  */
 export default async function ImportPage() {
-  const [session, { t }] = await Promise.all([getSession(), getT()]);
+  const [session, { locale, t }] = await Promise.all([getSession(), getT()]);
   if (!session) redirect("/login");
 
-  const maxLabel = formatBytes(config.limits.maxUploadBytes);
-  const extractLabel = formatBytes(config.limits.maxExtractBytes);
+  /*
+   * Le cookie de session survit jusqu'à 7 jours, mais le jeton GitHub qu'il
+   * contient peut expirer ou être révoqué bien avant. Sans ce contrôle, le
+   * visiteur dépose une archive de 200 Mo, attend l'extraction… puis échoue au
+   * push sur un 401. On vérifie donc le jeton **avant** d'afficher la zone de
+   * dépôt : s'il est refusé, on passe par `/logout` (purge du cookie) qui
+   * relance immédiatement l'autorisation GitHub.
+   *
+   * Une panne réseau ou un quota API n'est PAS une session expirée : on laisse
+   * la page s'afficher, l'upload tranchera avec un message explicite.
+   */
+  try {
+    await getViewer(session.token);
+  } catch (err) {
+    if (err instanceof AppError && err.code === "UNAUTHORIZED") redirect("/logout");
+  }
+
+  const maxLabel = formatBytes(config.limits.maxUploadBytes, locale);
+  const extractLabel = formatBytes(config.limits.maxExtractBytes, locale);
 
   return (
     <main className="relative flex-1 overflow-hidden">
@@ -68,7 +86,12 @@ export default async function ImportPage() {
 
         {/* ----------------------------------------------- zone de dépôt */}
         <div className="mt-8">
-          <Uploader maxLabel={maxLabel} extractLabel={extractLabel} t={t.uploader} />
+          <Uploader
+            maxLabel={maxLabel}
+            extractLabel={extractLabel}
+            maxBytes={config.limits.maxUploadBytes}
+            t={t.uploader}
+          />
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-panel p-4 ring-1 ring-edge">

@@ -133,6 +133,7 @@ export const ja: Dict = {
     demoDropHint: "ここに .zip をドロップ",
     demoDropBrowse: "またはファイルを選択",
     demoDropCta: "アーカイブをインポート",
+    demoDropTooLarge: "アーカイブが大きすぎます（上限 {max}）。",
     demoDropError: "対応しているのは .zip ファイルのみです。",
     demoReading: "アーカイブを読み込み中…",
     demoExtracting: "展開中…",
@@ -207,6 +208,7 @@ export const ja: Dict = {
     errorTooLarge: "アーカイブが大きすぎます（最大 {max}）。",
     errorHttp: "送信に失敗しました（HTTP {status}）。もう一度お試しください。",
     errorNetwork: "送信中に接続が切れました。もう一度お試しください。",
+    cancel: "キャンセル",
   },
 
   footer: {

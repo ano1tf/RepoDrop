@@ -70,10 +70,9 @@ describe("authentification", () => {
     expect(requested()).toContain("GET /user");
   });
 
-  it("un jeton refusé devient FORBIDDEN", async () => {
+  it("un jeton refusé devient UNAUTHORIZED (session expirée, pas un manque de droits)", async () => {
     const err = await codeOf(gh.listRepos(BAD_TOKEN));
-    expect(err.code).toBe("FORBIDDEN");
-    expect(err.detail).toContain("401");
+    expect(err.code).toBe("UNAUTHORIZED");
   });
 
   it("un quota épuisé devient RATE_LIMITED", async () => {

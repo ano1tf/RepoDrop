@@ -32,6 +32,8 @@ import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
 import type { Dict } from "@/lib/i18n/types";
+import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
+import { config } from "@/lib/config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getT();
@@ -53,9 +55,24 @@ export default async function Home() {
   ]);
   const baseUrl = resolveSiteUrl({ headers: reqHeaders });
 
+  /*
+   * Les gabarits du dictionnaire portent des accolades (`{upload}`,
+   * `{extract}`, `{files}`) : ils doivent être remplis au rendu, sinon le
+   * visiteur lit « jusqu'à {upload} compressés ». Les valeurs viennent de la
+   * configuration (donc des vraies limites du serveur) et sont formatées dans
+   * la langue courante — « 200 Mo » en français, « 200 MB » en anglais.
+   * Le même objet `limitValues` alimente la FAQ visible **et** les données
+   * structurées JSON-LD, pour que les deux ne divergent jamais.
+   */
+  const limitValues = {
+    upload: formatBytes(config.limits.maxUploadBytes, locale),
+    extract: formatBytes(config.limits.maxExtractBytes, locale),
+    files: formatNumber(config.limits.maxFiles, locale),
+  };
+
   const faqItems = [
     { question: t.faq.q1, answer: t.faq.a1 },
-    { question: t.faq.q2, answer: t.faq.a2 },
+    { question: t.faq.q2, answer: fill(t.faq.a2, limitValues) },
     { question: t.faq.q3, answer: t.faq.a3 },
     { question: t.faq.q4, answer: t.faq.a4 },
     { question: t.faq.q5, answer: t.faq.a5 },
@@ -113,6 +130,7 @@ export default async function Home() {
               copy={demoCopyFrom(t.home)}
               locale={locale}
               authenticated={Boolean(session)}
+              maxBytes={config.limits.maxUploadBytes}
             />
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
@@ -269,7 +287,7 @@ export default async function Home() {
           <div className="grid gap-5 sm:grid-cols-2">
             {[
               { icon: ShieldCheck, title: t.home.guard1Title, body: t.home.guard1Body },
-              { icon: FileWarning, title: t.home.guard2Title, body: t.home.guard2Body },
+              { icon: FileWarning, title: t.home.guard2Title, body: fill(t.home.guard2Body, limitValues) },
               { icon: Lock, title: t.home.guard3Title, body: t.home.guard3Body },
               { icon: Gauge, title: t.home.guard4Title, body: t.home.guard4Body },
             ].map((g) => (
@@ -284,7 +302,7 @@ export default async function Home() {
               </div>
             ))}
           </div>
-          <p className="mt-6 text-xs text-mist">{t.home.limitsNote}</p>
+          <p className="mt-6 text-xs text-mist">{fill(t.home.limitsNote, limitValues)}</p>
         </div>
       </section>
 

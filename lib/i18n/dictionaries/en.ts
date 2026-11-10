@@ -138,6 +138,7 @@ export const en: Dict = {
     demoDropHint: "Drop a .zip here",
     demoDropBrowse: "or choose a file",
     demoDropCta: "Import an archive",
+    demoDropTooLarge: "Archive too large: {max} maximum.",
     demoDropError: "Only .zip files are accepted.",
     demoReading: "Reading the archive…",
     demoExtracting: "Extracting…",
@@ -212,6 +213,7 @@ export const en: Dict = {
     errorTooLarge: "Archive too large (max {max}).",
     errorHttp: "Upload failed (HTTP {status}). Try again.",
     errorNetwork: "Connection lost during upload. Try again.",
+    cancel: "Cancel",
   },
 
   footer: {

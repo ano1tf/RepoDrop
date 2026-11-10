@@ -139,6 +139,7 @@ export const ar: Dict = {
     demoDropHint: "أفلت ملف .zip هنا",
     demoDropBrowse: "أو اختر ملفًا",
     demoDropCta: "استيراد أرشيف",
+    demoDropTooLarge: "الأرشيف كبير جدًا: الحد الأقصى {max}.",
     demoDropError: "يُقبلت ملفات .zip فقط.",
     demoReading: "جارٍ قراءة الأرشيف…",
     demoExtracting: "جارٍ الاستخراج…",
@@ -213,6 +214,7 @@ export const ar: Dict = {
     errorTooLarge: "الأرشيف كبير جدًا (الحد الأقصى {max}).",
     errorHttp: "فشل الإرسال (HTTP {status}). أعد المحاولة.",
     errorNetwork: "انقطع الاتصال أثناء الإرسال. أعد المحاولة.",
+    cancel: "إلغاء",
   },
 
   footer: {

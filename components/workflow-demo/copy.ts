@@ -54,6 +54,8 @@ export interface DemoCopy {
   dropCta: string;
   /** Message d'erreur (format non supporté / archive illisible). */
   dropError: string;
+  /** Message d'erreur : archive au-delà de la limite d'envoi (`{max}`). */
+  dropTooLarge: string;
   /** Étape « lecture de l'archive ». */
   reading: string;
   /** Étape « extraction ». */
@@ -102,6 +104,7 @@ export function demoCopyFrom(home: Dict["home"]): DemoCopy {
     dropBrowse: home.demoDropBrowse,
     dropCta: home.demoDropCta,
     dropError: home.demoDropError,
+    dropTooLarge: home.demoDropTooLarge,
     reading: home.demoReading,
     extracting: home.demoExtracting,
     ready: home.demoReady,

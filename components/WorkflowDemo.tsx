@@ -70,6 +70,7 @@ export function WorkflowDemo({
   copy,
   locale,
   authenticated = false,
+  maxBytes,
 }: {
   copy: DemoCopy;
   locale: string;
@@ -79,6 +80,15 @@ export function WorkflowDemo({
    * GitHub » s'ouvre — c'est la conversion attendue.
    */
   authenticated?: boolean;
+  /**
+   * Poids maximal accepté pour une archive (`config.limits.maxUploadBytes`).
+   *
+   * Passé par le serveur : un Client Component ne peut pas importer
+   * `lib/config` (qui lit `process.env` et `node:crypto`) sans embarquer du
+   * code serveur dans le bundle. Absent (tests, intégrations tierces) : pas
+   * de contrôle local, le serveur reste seul juge.
+   */
+  maxBytes?: number;
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [dragging, setDragging] = useState(false);
@@ -114,10 +124,16 @@ export function WorkflowDemo({
         return;
       }
 
-      // Relais pour /import : si le visiteur part se connecter (ou clique
-      // « pousser »), l'archive l'attend côté import — jamais uploadée pour
-      // autant, elle ne quitte le navigateur qu'après le choix du dépôt.
-      void savePendingFile(file);
+      /*
+       * Contrôle **avant** lecture : inutile de parcourir le répertoire
+       * central d'une archive que le serveur refusera de toute façon. Le
+       * message annonce la limite réelle, formatée dans la langue de la page.
+       */
+      if (maxBytes !== undefined && file.size > maxBytes) {
+        setPhase("error");
+        setError(fill(copy.dropTooLarge, { max: formatBytes(maxBytes, locale) }));
+        return;
+      }
 
       setPhase("reading");
       try {
@@ -125,12 +141,25 @@ export function WorkflowDemo({
         const list = await readZipIndex(file);
         setEntries(list);
         setPhase("extracting");
+
+        /*
+         * Relais pour /import, **après** une lecture réussie : si le visiteur
+         * part se connecter (ou clique « pousser »), l'archive l'attend côté
+         * import — jamais uploadée pour autant, elle ne quitte le navigateur
+         * qu'après le choix du dépôt.
+         *
+         * Pourquoi si tard ? Une archive illisible (ou trop grosse) ne doit
+         * pas être rangée dans IndexedDB : `/import` la relancerait, l'envoi
+         * échouerait côté serveur, et le visiteur perdrait son fichier sans
+         * comprendre. On ne met en attente que ce que l'on sait exploitable.
+         */
+        void savePendingFile(file);
       } catch {
         setPhase("error");
         setError(copy.dropError);
       }
     },
-    [copy.dropError],
+    [copy.dropError, copy.dropTooLarge, locale, maxBytes],
   );
 
   /* ------------------------------------------- extraction simulée ------- */

@@ -144,6 +144,7 @@ export const fr = {
     demoDropHint: "Glissez un .zip ici",
     demoDropBrowse: "ou choisissez un fichier",
     demoDropCta: "Importer une archive",
+    demoDropTooLarge: "Archive trop volumineuse : {max} maximum.",
     demoDropError: "Seuls les fichiers .zip sont acceptés.",
     demoReading: "Lecture de l'archive…",
     demoExtracting: "Extraction…",
@@ -219,6 +220,7 @@ export const fr = {
     errorTooLarge: "Archive trop volumineuse (max {max}).",
     errorHttp: "Échec de l'envoi (HTTP {status}). Réessayez.",
     errorNetwork: "Connexion perdue pendant l'envoi. Réessayez.",
+    cancel: "Annuler",
   },
 
   footer: {
