@@ -12,7 +12,7 @@ export async function Header() {
   const [session, { locale, t }] = await Promise.all([getSession(), getT()]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-edge/70 glass">
+    <header className="sticky top-0 z-40 border-b border-edge/70 glass pt-[env(safe-area-inset-top)]">
       {/* Filet lumineux : rappelle l'accent du produit. */}
       <div
         aria-hidden="true"

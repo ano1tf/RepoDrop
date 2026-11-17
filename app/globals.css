@@ -33,14 +33,19 @@
   --shadow-panel: 0 1px 0 0 rgba(255, 255, 255, 0.03) inset, 0 18px 40px -24px rgba(0, 0, 0, 0.9);
   --shadow-glow: 0 0 40px -12px rgba(52, 211, 153, 0.45);
 
-  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-up: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in: fade-in 0.4s ease-out both;
   --animate-shimmer: shimmer 1.6s linear infinite;
-  --animate-indeterminate: indeterminate 1.4s ease-in-out infinite;
+  --animate-indeterminate: indeterminate 1.4s linear infinite;
   --animate-aurora: aurora 18s ease-in-out infinite alternate;
   --animate-float: float 7s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
   --animate-spin-slow: spin 14s linear infinite;
+
+  /* Courbes d'easing fortes (standards design engineering). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
   @keyframes fade-up {
     from {
@@ -117,6 +122,10 @@
   html {
     color-scheme: dark;
     scroll-behavior: smooth;
+    /* Supprime le flash gris/bleu sur tap : le signal « site web » le plus
+       fort sur mobile. Chaque élément cliquable doit avoir son propre
+       :active (voir règles plus bas). */
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     background-color: var(--color-ink);
@@ -124,6 +133,54 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  /* Pull-to-refresh ne détourne pas le scroll de la page. */
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+  /* Tap instantané : pas de délai de 300ms ni de double-tap zoom. */
+  button,
+  a,
+  [role="button"],
+  summary {
+    touch-action: manipulation;
+  }
+  /* Long-press ne sélectionne pas le texte des éléments interactifs. */
+  button,
+  a,
+  [role="button"],
+  summary {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* iOS ne zoome pas la page sur focus d'un input < 16px (piège classique). */
+  @media (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
+  /* Mouvement réduit : animations décoratives coupées, entrées raccourcies.
+     Les transitions d'opacité/couleur restent pour la compréhension. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    .animate-aurora,
+    .animate-float,
+    .animate-pulse-ring,
+    .animate-shimmer,
+    .animate-spin-slow {
+      animation: none !important;
+    }
+    .animate-fade-up {
+      animation-duration: 0.2s !important;
+    }
+    .animate-fade-in {
+      animation-duration: 0.2s !important;
+    }
   }
   h1,
   h2,

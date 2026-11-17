@@ -233,7 +233,7 @@ export default async function GuidePage({
                   <li key={r.slug}>
                     <Link
                       href={`/guides/${r.slug}`}
-                      className="panel group flex h-full flex-col gap-1 p-4 transition-all hover:-translate-y-0.5 hover:border-go/30"
+                      className="panel group flex h-full flex-col gap-1 p-4 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
                     >
                       <span className="flex items-center justify-between gap-2">
                         <span className="text-sm font-medium text-chalk">
@@ -261,7 +261,7 @@ export default async function GuidePage({
                 <Link
                   href={`/guides/${prev.slug}`}
                   rel="prev"
-                  className="panel group flex flex-col gap-1 p-4 transition-all hover:-translate-y-0.5 hover:border-go/30"
+                  className="panel group flex flex-col gap-1 p-4 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
                 >
                   <span className="flex items-center gap-1.5 text-xs text-mist">
                     <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden="true" />
@@ -276,7 +276,7 @@ export default async function GuidePage({
                 <Link
                   href={`/guides/${next.slug}`}
                   rel="next"
-                  className="panel group flex flex-col items-end gap-1 p-4 text-right transition-all hover:-translate-y-0.5 hover:border-go/30"
+                  className="panel group flex flex-col items-end gap-1 p-4 text-right transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
                 >
                   <span className="flex items-center gap-1.5 text-xs text-mist">
                     Suivant

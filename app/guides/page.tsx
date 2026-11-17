@@ -74,7 +74,7 @@ export default async function GuidesPage() {
             <li key={guide.slug}>
               <Link
                 href={`/guides/${guide.slug}`}
-                className="panel group flex h-full flex-col gap-2 p-5 transition-all hover:-translate-y-0.5 hover:border-go/30"
+                className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="font-semibold tracking-tight text-chalk">

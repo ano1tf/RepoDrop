@@ -84,6 +84,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   themeColor: "#080b12",
   colorScheme: "dark",
+  // Contenu repoussé hors des zones notch/indicateur (utilisé avec
+  // env(safe-area-inset-*) dans le header/footer).
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

@@ -104,7 +104,7 @@ export function SecretDoor() {
         onClick={onSecretClick}
         title=""
         className={cn(
-          "h-2 w-2 shrink-0 rounded-full bg-chalk/10 transition-opacity duration-500",
+          "h-2 w-2 shrink-0 rounded-full bg-chalk/10 transition-opacity duration-200 ease-out",
           "hover:bg-chalk/40 focus:outline-none",
           unlocked && "bg-go",
         )}

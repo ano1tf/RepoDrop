@@ -96,7 +96,7 @@ export default async function SearchPage({
                     <li key={guide.slug}>
                       <Link
                         href={`/guides/${guide.slug}`}
-                        className="panel group flex items-start gap-3 p-4 transition-all hover:-translate-y-0.5 hover:border-go/30"
+                        className="panel group flex items-start gap-3 p-4 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
                       >
                         <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-go/10 text-go ring-1 ring-go/25">
                           <Search className="h-3.5 w-3.5" aria-hidden="true" />

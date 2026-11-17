@@ -162,7 +162,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         className={cn(
-          "relative flex min-h-72 cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-8 text-center transition-all",
+          "relative flex min-h-72 cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-8 text-center transition-colors transition-transform duration-150 ease-out",
           "outline-none focus-visible:ring-2 focus-visible:ring-go/60",
           drag ? "border-go bg-go/5 scale-[1.01]" : "border-edge bg-panel hover:border-go/40",
           uploading && "cursor-default border-go/50",
@@ -188,8 +188,8 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-go to-sky transition-[width] duration-200"
-                style={{ width: `${progress}%` }}
+                className="h-full w-full origin-left rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-200 ease-out"
+                style={{ transform: `scaleX(${(progress ?? 0) / 100})` }}
               />
             </div>
             <p className="mt-3 text-xs text-mist">{strings.keepOpen}</p>

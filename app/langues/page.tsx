@@ -86,7 +86,7 @@ export default async function LanguagesPage() {
                   dir={l.dir}
                   aria-current={active ? "true" : undefined}
                   className={cn(
-                    "panel group flex h-full flex-col gap-2 p-4 transition-all",
+                    "panel group flex h-full flex-col gap-2 p-4 transition-colors transition-transform duration-200 ease-out",
                     active
                       ? "border-go/40 bg-go/5 ring-1 ring-go/25"
                       : "hover:-translate-y-0.5 hover:border-sky/30",

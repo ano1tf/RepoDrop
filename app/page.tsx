@@ -198,12 +198,12 @@ export default async function Home() {
           ].map((s) => (
             <div
               key={s.n}
-              className="panel group relative p-6 transition-all duration-300 hover:-translate-y-1 hover:border-go/30"
+              className="panel group relative p-6 transition-colors transition-transform duration-200 ease-out hover:-translate-y-1 hover:border-go/30"
             >
               <span className="absolute -top-3.5 left-6 grid h-7 w-7 place-items-center rounded-full bg-go text-xs font-bold text-ink shadow-[0_0_20px_-4px_rgba(52,211,153,0.8)] rtl:left-auto rtl:right-6">
                 {s.n}
               </span>
-              <s.icon className="mb-4 h-6 w-6 text-go transition-transform duration-300 group-hover:scale-110" />
+              <s.icon className="mb-4 h-6 w-6 text-go transition-transform duration-200 ease-out group-hover:scale-110" />
               <h3 className="font-semibold">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-mist">{s.body}</p>
             </div>
@@ -231,7 +231,7 @@ export default async function Home() {
             ].map((f) => (
               <div
                 key={f.title}
-                className="panel group p-6 transition-all duration-300 hover:-translate-y-1 hover:border-sky/30"
+                className="panel group p-6 transition-colors transition-transform duration-200 ease-out hover:-translate-y-1 hover:border-sky/30"
               >
                 <div className="mb-4 inline-grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-go/15 to-sky/10 text-go ring-1 ring-go/20 transition-colors group-hover:text-sky group-hover:ring-sky/30">
                   <f.icon className="h-5 w-5" />
@@ -331,7 +331,7 @@ export default async function Home() {
             <li key={guide.slug}>
               <Link
                 href={`/guides/${guide.slug}`}
-                className="panel group flex h-full flex-col gap-2 p-5 transition-all hover:-translate-y-0.5 hover:border-go/30"
+                className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
                 <h3 className="font-semibold tracking-tight text-chalk">
                   {guide.title}

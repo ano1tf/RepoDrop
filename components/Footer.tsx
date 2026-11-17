@@ -82,7 +82,7 @@ export async function Footer() {
           </FooterCol>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-edge/60 pt-6 text-xs text-mist sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-edge/60 pt-6 pb-[env(safe-area-inset-bottom)] text-xs text-mist sm:flex-row">
           <span>
             {t.footer.copyright.replace("{year}", String(new Date().getFullYear()))}
           </span>
