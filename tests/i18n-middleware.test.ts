@@ -57,6 +57,16 @@ describe("middleware i18n", () => {
     expect(forwardedLocale(res)).toBe("ja");
   });
 
+  it("annonce la langue de la page via l'en-tête Content-Language", () => {
+    // Source indépendante du `lang` du HTML : les crawlers qui n'analysent
+    // pas le DOM peuvent s'y fier pour localiser la page.
+    const res = middleware(request({ acceptLanguage: "de-DE,de;q=0.9" }));
+    expect(res.headers.get("content-language")).toBe("de");
+
+    const explicit = middleware(request({ cookie: "ar" }));
+    expect(explicit.headers.get("content-language")).toBe("ar");
+  });
+
   it("respecte le choix explicite de l'utilisateur", () => {
     const res = middleware(request({ cookie: "es", acceptLanguage: "fr-FR" }));
     expect(forwardedLocale(res)).toBe("es");

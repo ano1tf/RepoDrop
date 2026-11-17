@@ -212,6 +212,32 @@ export const tr: Dict = {
     cancel: "İptal",
   },
 
+  about: {
+    aboutTitle: "RepoDrop Hakkında",
+    aboutLead: "RepoDrop, .rar, .zip ve .tar arşivlerinizi tek bir tıkla GitHub'a import eden Fransız bir araç: güvenli çıkarma, gönderimden önce önizleme, terminal ve git yok.",
+    aboutIntro: "RepoDrop, bir arşivi saniyede bir GitHub deposuna dönüştürmek için vardır: kimsenin git yüklemesi, bir depo klonlaması veya komut satırını öğrenmesi gerekmez. Fikir basit: arşivi bırakırsınız, içeriğini kontrol edersiniz ve kodu GitHub'a önderirsiniz.",
+    aboutMissionTitle: "Missionımız",
+    aboutMissionBody: "GitHub'a kod importunu herkese ulaşılabilir kılmak, git bilgi düzeyine bakmaksızın. E-postayla alınmış bir arşiv, bir meslektaşın teslim ettiği bir proje, bir çalışma ihracı: komut satırı gereksiz bir engel olan durumlar. RepoDrop bunu ortadan kaldırır.",
+    aboutSecurityTitle: "Önce güvenlik",
+    aboutSecurityBody: "Her import izole edilir: sandbox'ta çıkarma, yol doğrulama (zip-slip'e karşı), boyut ve dosya sınırları. GitHub jetonu httpOnly çerezinde şifrelenir ve veritabanında hiçbir zaman saklanmaz. Gönderimden önce tam önizlemeyle son ana kadar kontrol sizindedir.",
+    aboutLocalTitle: "Fransız bir araç",
+    aboutLocalBody: "RepoDrop Fransa'da geliştirilir ve sürdürülür. Arayüz 16 dilde mevcuttur, ancak araç ve içeriği teknik bariyerler olmadan her yerde anlaşılır ve kullanılır şekilde tasarlanmıştır.",
+    aboutFaqTitle: "Son olarak",
+    aboutFaqBody: "RepoDrop git'i değiştirmez: sürtünmeyi giderir. Kodu hızlıca GitHub'a öndermek için kurulum gerektirmeyen bir durumda RepoDrop işi yapar — ve istediğinizde git ile çalışmaya devam etme özgürlüğüne sahip olursunuz.",
+  },
+  guides: {
+    guidesTitle: "Kılavuzlar",
+    guidesLead: "Adım adım kılavuzlar, arşivlerinizi .rar, .zip ve .tar olarak GitHub'a git veya terminal olmadan içe aktarın.",
+    readMore: "Kılavuzoku",
+    relatedTitle: "İlgili kılavuzlar",
+    backToGuides: "Kılavuzlara dön",
+    searchTitle: "Kılavuz ara",
+    searchPlaceholder: "Kılavuz ara…",
+    searchResultsFor: "«{q}» için sonuçlar",
+    searchNoResults: "Aramanızla eşleşen kılavuz yok.",
+    searchEmpty: "Kılavuzları aramak için bir arama yazın.",
+    guideNotFound: "Kılavuzu bulunamadı",
+  },
   footer: {
     tagline:
       "Kod arşivleriniz, GitHub'da, sürükle bırak ile. Terminal yok, klonlama yok, git yapılandırması yok.",

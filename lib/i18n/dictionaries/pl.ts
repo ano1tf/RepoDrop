@@ -212,6 +212,32 @@ export const pl: Dict = {
     cancel: "Anuluj",
   },
 
+  about: {
+    aboutTitle: "O RepoDrop",
+    aboutLead: "RepoDrop to narzędzie francuskie importujące archive .rar, .zip i .tar do GitHub w jeden klikanie: bezpieczna ekstrakcja, podgląd przed wysłaniem, bez terminala i git.",
+    aboutIntro: "RepoDrop powstało po to, by przekształcić archiwum w repozytorium GitHub w ułamku sekundy, bez koniecznościinstalowania git, klonowania repozytorium ani opanowania linii komend. Zasada jest prosta: zrzucasz archiwum, sprawdzasz jego zawartość i wysyłasz kod do GitHub.",
+    aboutMissionTitle: "Nasza misja",
+    aboutMissionBody: "Uczynić import kodu do GitHub dostępnym dla każdego, niezależnie od umiejętności w git. Archiwum otrzymane mailowo, projekt przekazany przez kolegę, wyeksportowana praca: sytuacje, w których linia komend to niepotrzebny szymbrak. RepoDrop go usuwa.",
+    aboutSecurityTitle: "Bezpieczeństwo na pierwszym miejscu",
+    aboutSecurityBody: "Każdy import jest izolowany: ekstrakcja w sandbox, walidacja ścieżek (antypasmowanie zip-slip), limity rozmiaru i plików. Token GitHub jest szyfrowany w ciasteczku httpOnly i nigdy nie jest przechowywany w bazie. Masz pełną kontrolę aż do ostatniego momentu z pełnym podglądem przed wysłaniem.",
+    aboutLocalTitle: "Narzędzie francuskie",
+    aboutLocalBody: "RepoDrop jest tworzone i utrzymywane we Francji. Interfejs jest dostępny w 16 językach, ale narzędzie i jego treści są zaprojektowane tak, by być rozumiane i używane w każdym miejscu, bez barierów technicznych.",
+    aboutFaqTitle: "Na koniec",
+    aboutFaqBody: "RepoDrop nie zastępuje git: usuwa tarcie. Gdy musisz szybko przesłać kod do GitHub, bez konfiguracji, RepoDrop wykonuje zadanie — a Ty zachowujesz wolność pracy z git, gdy tego chcesz.",
+  },
+  guides: {
+    guidesTitle: "Poradniki",
+    guidesLead: "Poradniki krok po kroku do importowania archiwów .rar, .zip i .tar do GitHub, bez git i bez terminala.",
+    readMore: "Przeczytaj poradnik",
+    relatedTitle: "Powiązane poradniki",
+    backToGuides: "Powrót do poradników",
+    searchTitle: "Szukaj poradnika",
+    searchPlaceholder: "Szukaj poradnika…",
+    searchResultsFor: "Wyniki dla „{q}“",
+    searchNoResults: "Żaden poradnik nie pasuje do wyszukiwania.",
+    searchEmpty: "Wpisz zapytanie, aby przeszukać poradniki.",
+    guideNotFound: "Poradnik nie znaleziony",
+  },
   footer: {
     tagline:
       "Twoje archiwa kodu, na GitHubie, przeciągnij i upuść. Bez terminala, bez klonowania, bez konfiguracji gita.",

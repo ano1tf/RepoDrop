@@ -174,6 +174,8 @@ describe("parseLocale (validation stricte)", () => {
 
   it("accepte les codes exacts, le français et les variantes régionales", () => {
     expect(parseLocale("fr")).toBe("fr");
+    expect(parseLocale("fr-FR")).toBe("fr");
+    expect(parseLocale("fr_CA")).toBe("fr");
     expect(parseLocale("ja")).toBe("ja");
     expect(parseLocale("pt-BR")).toBe("pt");
     expect(parseLocale("de-AT")).toBe("de");

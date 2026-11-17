@@ -212,6 +212,32 @@ export const nl: Dict = {
     cancel: "Annuleren",
   },
 
+  about: {
+    aboutTitle: "Over RepoDrop",
+    aboutLead: "RepoDrop is een Franse tool die uw .rar-, .zip- en .tar-archiven met één klik importeert naar GitHub: veilige extractie, voorbeeld voordat u verstuurt, zonder terminal en zonder git.",
+    aboutIntro: "RepoDrop bestaat om een archief in seconden om tezetten in een GitHub-repository, zonder dat iemand git moet installeren, een repository moet klonen of de opdrachtregel moet beheersen. Het idee is eenvoudig: u sleept een archief, controleert de inhoud en pusht de code naar GitHub.",
+    aboutMissionTitle: "Onze missie",
+    aboutMissionBody: "Code-import naar GitHub toegankelijk maken voor iedereen, ongeacht het niveau van git-kennis. Een per e-mail ontvangen archief, een door een collega overhandigd project, een werk-export: situaties waarin de opdrachtregel een onnodige obstakel is. RepoDrop verhelpt dat.",
+    aboutSecurityTitle: "Veiligheid eerst",
+    aboutSecurityBody: "Elke import is geïsoleerd: extractie in sandbox, padvalidatie (anti zip-slip), limieten voor grootte en bestanden. Het GitHub-token is geëncrypteerd in een httpOnly-cookie en wordt nooit in de database opgeslagen. U houdt tot het laatste moment de controle met een volledig voorbeeld voordat u verstuurt.",
+    aboutLocalTitle: "Een Franse tool",
+    aboutLocalBody: "RepoDrop wordt in Frankrijk ontwikkeld en onderhouden. De interface is in 16 talen beschikbaar, maar de tool en de inhoud zijn ontworpen om overal te worden begrepen en gebruikt, zonder technische barrières.",
+    aboutFaqTitle: "Concludend",
+    aboutFaqBody: "RepoDrop vervangt git niet: het verwijdert de wrijving. Wanneer u code snel naar GitHub moet pushen, zonder instellingen, vervult RepoDrop de taak — en u behoudt de vrijheid om met git door te gaan wanneer u dat wilt.",
+  },
+  guides: {
+    guidesTitle: "Handleidingen",
+    guidesLead: "Stap voor stap handleidingen om je .rar-, .zip- en .tar-archiven naar GitHub te importeren, zonder git of terminal.",
+    readMore: "Handleiding lezen",
+    relatedTitle: "Gerelateerde handleidingen",
+    backToGuides: "Terug naar de handleidingen",
+    searchTitle: "Handleiding zoeken",
+    searchPlaceholder: "Handleiding zoeken…",
+    searchResultsFor: "Resultaten voor „{q}“",
+    searchNoResults: "Geen handleiding komt overeen met je zoekopdracht.",
+    searchEmpty: "Typ een zoekopdracht om in de handleidingen te zoeken.",
+    guideNotFound: "Handleiding niet gevonden",
+  },
   footer: {
     tagline:
       "Je code-archieven, op GitHub, met slepen en neerzetten. Zonder terminal, zonder clone, zonder git-configuratie.",

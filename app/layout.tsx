@@ -38,6 +38,19 @@ export async function generateMetadata(): Promise<Metadata> {
     // Vérification Google Search Console : balise
     // <meta name="google-site-verification" content="…"> sur toutes les pages.
     verification: buildVerification(),
+    // Application web installable sur iOS (PWA) : titre de l'écran d'accueil
+    // et style de la barre d'état, au-delà du apple-touch-icon déjà posé.
+    appleWebApp: {
+      capable: true,
+      title: SITE_NAME,
+      statusBarStyle: "black-translucent",
+    },
+    // Désactive la détection automatique des numéros de téléphone : sans
+    // cela, Safari transforme tout numéro en lien cliquable, ce qui dégrade
+    // le rendu et peut fausser la détection de contenu par les moteurs.
+    formatDetection: {
+      telephone: false,
+    },
     robots: {
       index: true,
       follow: true,
@@ -82,6 +95,8 @@ export default async function RootLayout({
   // synthèse vocale, la césure et le rendu droite-à-gauche (arabe).
   return (
     <html lang={locale} dir={dirOf(locale)}>
+      {/* Découverte de contenu : lien RSS pour les agrégateurs et les moteurs. */}
+      <link rel="alternate" type="application/rss+xml" title="RepoDrop — Guides" href="/feed.xml" />
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />

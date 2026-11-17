@@ -394,14 +394,37 @@ Next.js ; `next.config.ts` n'intervient pas.
 | Surface | Balises produites |
 | --- | --- |
 | Titre | `title` + gabarit `%s · RepoDrop`, `application-name`, `author`, `creator`, `publisher`, `category`, `keywords` |
-| Indexation | `robots` + `googlebot` (`max-image-preview:large`, snippets illimités) ; `noindex` sur `/login`, `/import`, `/repos`, `/jobs/*` et 404 |
+| iOS PWA | `apple-web-app-capable`, `apple-mobile-web-app-title`, `apple-mobile-web-app-status-bar-style` |
+| Détection | `format-detection: telephone=no` (pas de lien automatique sur les numéros) |
+| Indexation | `robots` + `googlebot` (`max-image-preview:large`, snippets illimités) ; `noindex` sur `/login`, `/import`, `/repos`, `/jobs/*` et 404, renforcé par l'en-tête `X-Robots-Tag: noindex, nofollow` sur ces routes |
 | Canonique | `<link rel="canonical">` absolu résolu contre `metadataBase`, insensible aux `Host` forgés |
 | OpenGraph | `og:title/description/url/site_name/locale/type` + `og:image` complet (`width`, `height`, `type`, `alt`) |
-| Twitter/X | `twitter:card=summary_large_image`, titre, description, image ; `twitter:site`/`creator` **seulement** si `NEXT_PUBLIC_TWITTER_HANDLE` est défini |
+| Twitter/X | `twitter:card=summary_large_image`, titre, description, image (`twitter:image:alt` inclus) ; `twitter:site`/`creator` **seulement** si `NEXT_PUBLIC_TWITTER_HANDLE` est défini |
 | Icônes | SVG + PNG 192/512, `apple-touch-icon` 180, manifeste PWA avec entrée `maskable` |
-| Données structurées | `@graph` lié par `@id` : `Organization` (logo raster), `WebSite`, `WebPage`, `ImageObject`, `WebApplication`, `FAQPage` |
-| Vérification | `google-site-verification` (Search Console) sur toutes les pages HTML |
-| Fichiers | `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/opengraph-image`, `/twitter-image` |
+| Données structurées | `@graph` lié par `@id` : `Organization` (logo raster, description, `sameAs` si profils configurés), `WebSite` (`potentialAction` = `SearchAction` sitelinks search box), `WebPage` (dates éditoriales, `lastReviewed`, `mainEntity`, `breadcrumb`), `HowTo` (3 étapes, sur l'accueil et chaque guide), `Article` (dates éditoriales, sur la FAQ et chaque guide), `AboutPage` + `Organization` (`/a-propos`), `ImageObject` (`representativeOfPage`), `WebApplication` (gratuit, `screenshot`, offre `InStock`), `FAQPage` (dates des questions/réponses), `BreadcrumbList` |
+| Localisation | En-tête `Content-Language` posé par le middleware sur chaque réponse HTML, en plus de `<html lang>` |
+| Vérification | `google-site-verification` (Search Console) sur toutes les pages HTML ; `msvalidate.01` (Bing) si `BING_SITE_VERIFICATION` est défini |
+| Fichiers | `/sitemap.xml` (toutes les pages indexables + images), `/robots.txt`, `/manifest.webmanifest`, `/opengraph-image`, `/twitter-image`, `/feed.xml` (RSS 2.0) |
+
+**Contenu indexable (guides SEO).** Le site ne se contente pas d'une page
+d'accueil : `lib/seo-guides.ts` définit **8 guides ciblés par mots-clés longue
+traîne** (« importer rar sur github », « importer zip sur github », « importer
+tar sur github », « envoyer du code sur github sans git », « créer un dépôt
+github depuis une archive », « téléverser du code sur github », « importer du
+code sur github », « publier du code sur github »), rendus sous `/guides`
+(index `ItemList`) et `/guides/<slug>` (pré-rendu statique). Chaque guide a
+un titre H1, une métadescription unique, des mots-clés, des étapes (`HowTo`),
+une FAQ (`FAQPage`), des breadcrumbs et des balises `rel="prev"/"next"` vers
+le guide précédent/suivant — couvrent donc les résultats enrichis, les
+extraits « comment faire » et la longue traîne. La page `/faq` regroupe la FAQ
+sous un JSON-LD `Article` + `FAQPage`. La page `/recherche?q=` (noindex) est
+la cible du `SearchAction` (sitelinks search box). La page `/a-propos`
+(présente l'outil, sa mission, sa sécurité) publie un JSON-LD `AboutPage` +
+`Organization` (E-E-A-T) et figure dans le sitemap et le pied de page. L'accueil
+ajoute un nœud `HowTo` (3 étapes) à son `@graph`. Les pages de guide émettent
+`og:type=article` avec `article:*` (dates, section, tags). Le contenu
+éditorial est en français (langue d'indexation par défaut du site — voir
+`lib/i18n/locales.ts`).
 
 Quatre décisions qui évitent des pièges classiques :
 
@@ -421,7 +444,17 @@ Quatre décisions qui évitent des pièges classiques :
   (`lib/seo.ts`) est publié dans le HTML de chaque page : ce n'est pas un
   secret, et il doit être identique partout sous peine d'invalider la
   propriété vérifiée. `GOOGLE_SITE_VERIFICATION` permet de le surcharger pour
-  un déploiement de test ; un jeton vide n'émet aucune balise.
+  un déploiement de test ; un jeton vide n'émet aucune balise. `BING_SITE_VERIFICATION`
+  active en plus la vérification Bing (`msvalidate.01`).
+- **Sitemap sans page `noindex`.** `/login` est `noindex` : une URL `noindex`
+  dans `/sitemap.xml` est signalée comme une erreur par Search Console, elle n'y
+  figure donc pas. Les routes privées portent en plus l'en-tête
+  `X-Robots-Tag: noindex, nofollow` — une seconde barrière HTTP indépendante
+  du HTML, pour les crawlers qui ignoreraient la balise méta.
+- **`sameAs` volontairement vide par défaut.** L'entité `Organization` ne
+  mentionne de profils officiels (`NEXT_PUBLIC_GITHUB_URL`,
+  `NEXT_PUBLIC_DISCORD_URL`, `NEXT_PUBLIC_TWITTER_URL`) **qu'si ils sont
+  configurés** : une URL inventée associerait RepoDrop à un compte tiers.
 - **Aperçus sociaux statiques.** `/opengraph-image` et `/twitter-image` sont
   rendus une fois (`dynamic = "force-static"`), l'image Twitter réexportant la
   même source pour ne jamais diverger. Les crawlers ne déclenchent donc plus de

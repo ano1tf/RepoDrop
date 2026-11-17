@@ -216,6 +216,32 @@ export const en: Dict = {
     cancel: "Cancel",
   },
 
+  about: {
+    aboutTitle: "About RepoDrop",
+    aboutLead: "RepoDrop is a French tool that imports your .rar, .zip and .tar archives to GitHub in one click: secure extraction, preview before sending, no terminal or git.",
+    aboutIntro: "RepoDrop exists to turn an archive into a GitHub repository in seconds, without anyone having to install git, clone a repository or master the command line. The idea is simple: you drop an archive, you check what it contains, and you push the code to GitHub.",
+    aboutMissionTitle: "Our mission",
+    aboutMissionBody: "Make importing code to GitHub accessible to everyone, whatever their level of git expertise. An archive received by email, a project handed over by a colleague, a work export: all situations where the command line is an unnecessary obstacle. RepoDrop removes it.",
+    aboutSecurityTitle: "Security first",
+    aboutSecurityBody: "Every import is isolated: sandboxed extraction, path validation (anti zip-slip), size and file limits. The GitHub token is encrypted in an httpOnly cookie and never stored in the database. You keep control until the last moment with a full preview before anything is sent.",
+    aboutLocalTitle: "A French tool",
+    aboutLocalBody: "RepoDrop is developed and maintained in France. The interface is available in 16 languages, but the tool and its content are designed to be understood and used everywhere, without technical barriers.",
+    aboutFaqTitle: "In conclusion",
+    aboutFaqBody: "RepoDrop does not replace git: it removes the friction. When you need to push code to GitHub quickly, without setup, RepoDrop does the job — and you keep the freedom to continue with git whenever you want.",
+  },
+  guides: {
+    guidesTitle: "Guides",
+    guidesLead: "Step-by-step tutorials to import your .rar, .zip and .tar archives to GitHub, without git or a terminal.",
+    readMore: "Read the guide",
+    relatedTitle: "Related guides",
+    backToGuides: "Back to guides",
+    searchTitle: "Search a guide",
+    searchPlaceholder: "Search a guide…",
+    searchResultsFor: "Results for \"{q}\"",
+    searchNoResults: "No guide matches your search.",
+    searchEmpty: "Type a query to search the guides.",
+    guideNotFound: "Guide not found",
+  },
   footer: {
     tagline:
       "Your code archives, on GitHub, with a drag and drop. No terminal, no clone, no git setup.",

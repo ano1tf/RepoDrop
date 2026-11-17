@@ -211,6 +211,32 @@ export const ko: Dict = {
     cancel: "취소",
   },
 
+  about: {
+    aboutTitle: "RepoDrop 소개",
+    aboutLead: "RepoDrop는 .rar, .zip, .tar 아카이브를 한 번의 클릭으로 GitHub에 가져오는 프랑스 툴입니다. 안전한 추출, 전송 전 미리보기, 터미널과 git 없이 가능합니다.",
+    aboutIntro: "RepoDrop는 아카이브를 몇 초 만에 GitHub 저장소로 바꾸기 위해 존재합니다. 누구도 git를 설치하거나, 저장소를 클론하거나, 명령줄을 익힐 필요가 없습니다. 아이디어는 단순합니다. 아카이브를 놓치고, 내용을 확인하고, 코드를 GitHub에 푸시합니다.",
+    aboutMissionTitle: "우리의 사명",
+    aboutMissionBody: "git 실력에 상관없이 모든 사람이 GitHub로 코드를 가져올 수 있게 하는 것. 이메일로 받은 아카이브, 동료가 건네준 프로젝트, 작업 내보내기: 모두 명령줄이 불필요한 장애물이 되는 상황입니다. RepoDrop는 이를 제거합니다.",
+    aboutSecurityTitle: "안전 우선",
+    aboutSecurityBody: "모든 가져오기는 분리됩니다. 샌드박스에서의 추출, 경로 검증(zip-slip 방지), 크기와 파일 수 제한. GitHub 토큰은 httpOnly 쿠키로 암호화되어 데이터베이스에 전혀 저장되지 않습니다. 전송 전 완전한 미리보기로 마지막 순간까지 통제합니다.",
+    aboutLocalTitle: "프랑스 툴",
+    aboutLocalBody: "RepoDrop는 프랑스에서 개발되고 유지됩니다. 인터페이스는 16개 언어로 제공되지만, 툴과 그 콘텐츠는 기술적 장벽 없이 어디서나 이해되고 사용될 수 있도록 설계되었습니다.",
+    aboutFaqTitle: "맺음말",
+    aboutFaqBody: "RepoDrop는 git을 대체하지 않습니다. 마찰을 없애는 것입니다. 설정 없이 코드를 빠르게 GitHub에 푸시해야 할 때, RepoDrop가 작업을 해줍니다. 그리고 당신은 언제든 git로 계속할 자유를 유지합니다.",
+  },
+  guides: {
+    guidesTitle: "가이드",
+    guidesLead: "git 없이, 터미널 없이 .rar, .zip, .tar 아카이브를 GitHub로 가져오는 단계별 가이드.",
+    readMore: "가이드 읽기",
+    relatedTitle: "관련 가이드",
+    backToGuides: "가이드로 돌아가기",
+    searchTitle: "가이드 검색",
+    searchPlaceholder: "가이드 검색…",
+    searchResultsFor: "«{q}»에 대한 결과",
+    searchNoResults: "검색과 일치하는 가이드가 없습니다.",
+    searchEmpty: "키워드를 입력하여 가이드를 검색하세요.",
+    guideNotFound: "가이드를 찾을 수 없습니다",
+  },
   footer: {
     tagline:
       "코드 압축 파일을, 끌어다 놓으면 GitHub로. 터미널도, 클론도, git 설정도 없습니다.",

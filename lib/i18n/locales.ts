@@ -128,15 +128,19 @@ export function ogLocaleOf(locale: Locale): string {
  */
 export function parseLocale(raw: string | null | undefined): Locale | null {
   const normalized = normalizeLocale(raw, DEFAULT_LOCALE);
-  // `normalizeLocale` a replié : la valeur d'origine n'était pas supportée.
   if (normalized !== DEFAULT_LOCALE) return normalized;
+  // La valeur se normalise en français : soit c'est `fr` exact, soit une
+  // variante de français (`fr-FR`, `fr_CA`…), soit une valeur invalide qui a
+  // replié sur fr. On distingue par la langue de base de la valeur d'origine —
+  // `base === DEFAULT_LOCALE` seul ne reconnaîtrait pas `fr-FR`.
   const base = (raw ?? "")
     .split(",")[0]
     ?.split(";")[0]
     ?.trim()
     .toLowerCase()
     .replace(/_/g, "-");
-  return base === DEFAULT_LOCALE ? DEFAULT_LOCALE : null;
+  const primary = base?.split("-")[0] ?? "";
+  return primary === DEFAULT_LOCALE ? DEFAULT_LOCALE : null;
 }
 
 /**

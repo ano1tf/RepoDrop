@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { securityHeaders } from "./lib/security-headers";
+import { buildNoIndexHeaders } from "./lib/seo";
 
 const nextConfig: NextConfig = {
   /**
@@ -18,6 +19,33 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders({ frameAncestors: process.env.FRAME_ANCESTORS ?? "" }),
+      },
+      // Barrière HTTP `noindex` sur les routes privées, en plus des balises
+      // méta posées par chaque page (`lib/seo.ts`). Un crawler qui ignorerait
+      // la balise méta voit la directive directement dans l'en-tête de la réponse.
+      {
+        source: "/login",
+        headers: buildNoIndexHeaders(),
+      },
+      {
+        source: "/import",
+        headers: buildNoIndexHeaders(),
+      },
+      {
+        source: "/repos",
+        headers: buildNoIndexHeaders(),
+      },
+      {
+        source: "/jobs/:path*",
+        headers: buildNoIndexHeaders(),
+      },
+      {
+        source: "/staff",
+        headers: buildNoIndexHeaders(),
+      },
+      {
+        source: "/langues",
+        headers: buildNoIndexHeaders(),
       },
     ];
   },
