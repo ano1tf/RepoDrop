@@ -34,7 +34,21 @@ export const SITE_OG_IMAGE = {
   alt: "RepoDrop — Importez vos archives .rar, .zip et .tar directement sur GitHub",
 } as const;
 
-export const SITE_TWITTER_IMAGE = "/twitter-image";
+/**
+ * Image de carte Twitter/X (`twitter:image`).
+ *
+ * `alt` : les lecteurs d'écran et certains agrégateurs lisent
+ * `twitter:image:alt` ; sans lui, l'image de partage est un cadre muet. On
+ * réutilise l'alt de l'aperçu OpenGraph : un seul texte à maintenir.
+ * `width`/`height` : mêmes dimensions que l'aperçu OpenGraph, pour que les
+ * agrégateurs calculent le ratio sans recalcul.
+ */
+export const SITE_TWITTER_IMAGE = {
+  url: "/twitter-image",
+  width: SITE_OG_IMAGE.width,
+  height: SITE_OG_IMAGE.height,
+  alt: SITE_OG_IMAGE.alt,
+} as const;
 
 /**
  * Emplacement public du compte X/Twitter. Vide par défaut : on n'émet alors
@@ -56,13 +70,57 @@ export const SITE_GOOGLE_SITE_VERIFICATION =
   process.env.GOOGLE_SITE_VERIFICATION ?? "7AQ_yCc-DFuI95AFEHuKT6a3Pi5xPaS9YFqr7oop7ko";
 
 /**
+ * Jeton de vérification Bing Webmaster Tools (`<meta name="msvalidate.01">`).
+ *
+ * Vide par défaut : Bing n'exige pas de jeton pour indexer, et émettre une
+ * balise vide serait rejeté. `BING_SITE_VERIFICATION` permet d'activer la
+ * vérification de propriété lorsque l'on gère le site dans Bing.
+ */
+export const SITE_BING_SITE_VERIFICATION =
+  process.env.BING_SITE_VERIFICATION ?? "";
+
+/**
  * Bloc `verification` des métadonnées Next.js : émet les balises
  * `<meta name="…-site-verification" content="…">`. Un jeton vide est omis
- * plutôt qu'émis vide, ce que Search Console rejetterait.
+ * plutôt qu'émis vide, ce que Search Console / Bing rejetteraient.
+ *
+ * Bing passe par le champ `other` de Next.js, qui émet
+ * `<meta name="msvalidate.01" content="…">` — la balise attendue par Bing
+ * Webmaster Tools.
  */
 export function buildVerification(): Metadata["verification"] {
   const google = SITE_GOOGLE_SITE_VERIFICATION.trim();
-  return google ? { google } : undefined;
+  const bing = SITE_BING_SITE_VERIFICATION.trim();
+
+  const verification: NonNullable<Metadata["verification"]> = {};
+  if (google) verification.google = google;
+  if (bing) verification.other = { "msvalidate.01": bing };
+  return Object.keys(verification).length > 0 ? verification : undefined;
+}
+
+/**
+ * Profils officiels reliés à l'entité `Organization` par `sameAs`.
+ *
+ * Vide par défaut : on n'émet **aucune** balise plutôt qu'une URL inventée,
+ * qui associerait RepoDrop à un profil tiers. Chaque variable doit être une
+ * URL absolue http/https valide ; une valeur malformée est ignorée plutôt
+ * que publiée dans le JSON-LD.
+ */
+export const SITE_SAME_AS: readonly string[] = [
+  process.env.NEXT_PUBLIC_GITHUB_URL,
+  process.env.NEXT_PUBLIC_DISCORD_URL,
+  process.env.NEXT_PUBLIC_TWITTER_URL,
+].filter((url): url is string => isPublicUrl(url));
+
+/** Validé : URL absolue http/https, sans espace ni jeton. */
+function isPublicUrl(raw: string | undefined): raw is string {
+  if (!raw) return false;
+  try {
+    const parsed = new URL(raw.trim());
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -117,6 +175,25 @@ export function buildPageMetadata(opts: {
   overrideTitle?: string;
   /** Locale OpenGraph de la page (`fr_FR`, `en_US`…), `fr_FR` par défaut. */
   ogLocale?: string;
+  /** Mots-clés spécifiques à la page (écrits par-dessus les mots-clés globaux). */
+  keywords?: string[];
+  /** Type OpenGraph : `article` pour une page de contenu, `website` par défaut. */
+  ogType?: "website" | "article";
+  /** Balises `article:*` OpenGraph (pages de contenu datées). */
+  article?: {
+    publishedTime?: string;
+    modifiedTime?: string;
+    section?: string;
+    tags?: string[];
+  };
+  /**
+   * Lien de navigation séquentiel (`rel="prev"` / `rel="next"`). Les moteurs
+   * l'utilisent pour reconstituer la structure d'une série de contenus
+   * (index de guides) et consolident le maillage interne. Next.js l'émet
+   * via `metadata.pagination`.
+   */
+  prev?: string;
+  next?: string;
 }): Metadata {
   const fullTitle = opts.title
     ? `${opts.title} · ${SITE_NAME}`
@@ -127,19 +204,46 @@ export function buildPageMetadata(opts: {
     ...(opts.title ? { title: opts.title } : {}),
     ...(opts.overrideTitle ? { title: { absolute: opts.overrideTitle } } : {}),
     description,
+    ...(opts.keywords?.length ? { keywords: opts.keywords } : {}),
     alternates: {
       canonical: opts.path,
     },
+    ...(opts.prev || opts.next
+      ? {
+          pagination: {
+            ...(opts.prev ? { previous: opts.prev } : {}),
+            ...(opts.next ? { next: opts.next } : {}),
+          },
+        }
+      : {}),
     icons: buildIcons(),
     ...(opts.noIndex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
-      type: "website",
+      type: opts.ogType ?? "website",
       locale: opts.ogLocale ?? "fr_FR",
       siteName: SITE_NAME,
       url: opts.path,
       title: fullTitle,
       description,
       images: [SITE_OG_IMAGE],
+      ...(opts.article
+        ? {
+            article: {
+              ...(opts.article.publishedTime
+                ? { publishedTime: opts.article.publishedTime }
+                : {}),
+              ...(opts.article.modifiedTime
+                ? { modifiedTime: opts.article.modifiedTime }
+                : {}),
+              ...(opts.article.section
+                ? { section: opts.article.section }
+                : {}),
+              ...(opts.article.tags?.length
+                ? { tags: opts.article.tags }
+                : {}),
+            },
+          }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -353,18 +457,29 @@ export function resolveSiteUrl(opts: ResolveSiteUrlOptions = {}): string {
 /**
  * Plan de site (`/sitemap.xml`).
  *
- * Seules les pages publiques répondant `200 OK` sans session sont listées :
- * `/import`, `/repos`, `/jobs/*` et `/staff` redirigent vers `/login` ou sont
- * privées (`noindex`), ce que Google Search Console considère comme une erreur
- * si elles figurent dans un sitemap.
+ * Seules les pages publiques répondant `200 OK` sans session **et indexables**
+ * sont listées : `/import`, `/repos`, `/jobs/*` et `/staff` redirigent vers
+ * `/login` ou sont privées. `/login` est `noindex` : une URL `noindex` dans le
+ * sitemap est signalée comme une erreur par Google Search Console (« Submitted
+ * URL has meta noindex »), elle n'y figure donc **pas**.
  *
  * `lastModified` vaut par défaut la date éditoriale du site (ou
  * `SOURCE_DATE_EPOCH`), **jamais** `new Date()` : voir
  * `SITE_CONTENT_LAST_MODIFIED`.
  */
+export interface SitemapExtraPage {
+  url: string;
+  lastModified?: Date;
+  changeFrequency?: MetadataRoute.Sitemap[number]["changeFrequency"];
+  priority?: number;
+  /** Images associées à la page (sitemap d'images intégré). */
+  images?: string[];
+}
+
 export function buildSitemap(
   baseUrl: string,
   lastModified: Date = resolveContentLastModified(),
+  pages: readonly SitemapExtraPage[] = [],
 ): MetadataRoute.Sitemap {
   const now = lastModified;
   const origin = baseUrl.replace(/\/+$/, "");
@@ -374,14 +489,28 @@ export function buildSitemap(
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
+      images: [`${origin}${SITE_OG_IMAGE.url}`],
     },
-    {
-      url: `${origin}/login`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
+    ...pages.map((p) => ({
+      url: p.url,
+      ...(p.lastModified ? { lastModified: p.lastModified } : {}),
+      ...(p.changeFrequency ? { changeFrequency: p.changeFrequency } : {}),
+      ...(p.priority !== undefined ? { priority: p.priority } : {}),
+      ...(p.images ? { images: p.images } : {}),
+    })),
   ];
+}
+
+/**
+ * En-tête `X-Robots-Tag` pour les routes non indexables.
+ *
+ * Les pages privées posent déjà une balise méta `noindex` ; cet en-tête est
+ * une **seconde barrière** au niveau HTTP, indépendante du HTML : un moteur
+ * qui ignorerait la balise méta (ou un crawler simplifié) voit la directive
+ * directement dans la réponse. Appliqué aux routes privées de `next.config.ts`.
+ */
+export function buildNoIndexHeaders(): { key: string; value: string }[] {
+  return [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
 }
 
 /**
@@ -461,11 +590,14 @@ export function buildManifest(): MetadataRoute.Manifest {
  * site. Dépendances utiles aux résultats enrichis :
  *
  * - `Organization` fournit le `logo` (raster carré) et les `sameAs` (profils
- *   officiels) : sans ce nœud, Google n'a aucun logo de site à afficher ;
+ *   officiels, s'ils sont configurés) : sans ce nœud, Google n'a aucun logo
+ *   de site à afficher ;
  * - `WebPage` relie la page au site (`isPartOf`) et à l'application
- *   (`mainEntity`) — c'est le nœud attendu pour un `BreadcrumbList` ultérieur ;
+ *   (`mainEntity`), et pointe vers le `BreadcrumbList` (`breadcrumb`) ;
  * - `WebApplication` reste le nœud principal de la page, l'entité à propos de
- *   laquelle la page existe.
+ *   laquelle la page existe ;
+ * - `BreadcrumbList` : piste de navigation explicite pour les moteurs, même
+ *   sur une page d'accueil où elle ne contient qu'une entrée.
  */
 export function buildStructuredData(
   baseUrl: string,
@@ -478,6 +610,8 @@ export function buildStructuredData(
     title?: string;
     description?: string;
     faq?: readonly FaqItem[];
+    /** Étapes pas à pas (alimente le JSON-LD `HowTo` de la page). */
+    steps?: readonly string[];
   } = {},
 ) {
   const origin = baseUrl.replace(/\/+$/, "");
@@ -491,6 +625,7 @@ export function buildStructuredData(
       "@id": `${origin}/#organization`,
       name: SITE_NAME,
       url: origin,
+      description,
       logo: {
         "@type": "ImageObject",
         "@id": `${origin}/#logo`,
@@ -504,6 +639,9 @@ export function buildStructuredData(
       // seule exigerait un nœud `ImageObject` séparé, or Google lit le logo
       // directement sur l'Organization. Évite un pointeur orphelin.
       image: `${origin}${SITE_ICONS.structuredDataLogo}`,
+      // Profils officiels : absence de valeur par défaut (voir `SITE_SAME_AS`),
+      // une URL inventée associerait RepoDrop à un compte tiers.
+      ...(SITE_SAME_AS.length > 0 ? { sameAs: SITE_SAME_AS } : {}),
     },
     {
       "@type": "WebSite",
@@ -513,17 +651,32 @@ export function buildStructuredData(
       description,
       inLanguage: lang,
       publisher: { "@id": `${origin}/#organization` },
+      // Sitelinks Search Box : une page de recherche intégrée permet à
+      // Google d'afficher une barre de recherche enrichie dans les résultats.
+      potentialAction: buildSearchAction(origin),
     },
     {
       "@type": "WebPage",
       "@id": `${origin}/#webpage`,
       url: origin,
       name: title,
+      headline: title,
       description,
       inLanguage: lang,
+      // Dates éditoriale, pas l'heure de la requête : un `dateModified` qui
+      // bouge à chaque crawl est ignoré par les moteurs.
+      datePublished: SITE_CONTENT_LAST_MODIFIED,
+      dateModified: SITE_CONTENT_LAST_MODIFIED,
+      // Dernière révision éditoriale (même date que `dateModified` : le
+      // contenu de la page a été revu à cette date).
+      lastReviewed: SITE_CONTENT_LAST_MODIFIED,
       isPartOf: { "@id": `${origin}/#website` },
       about: { "@id": `${origin}/#app` },
+      // Entité principale de la page : l'application elle-même.
+      mainEntity: { "@id": `${origin}/#app` },
       primaryImageOfPage: { "@id": `${origin}/#primaryimage` },
+      // Piste de navigation pour les moteurs (un seul niveau sur l'accueil).
+      breadcrumb: { "@id": `${origin}/#breadcrumb` },
     },
     {
       "@type": "ImageObject",
@@ -533,6 +686,8 @@ export function buildStructuredData(
       width: SITE_OG_IMAGE.width,
       height: SITE_OG_IMAGE.height,
       caption: SITE_OG_IMAGE.alt,
+      // Image représentative de la page (image de partage principale).
+      representativeOfPage: true,
     },
     {
       "@type": "WebApplication",
@@ -545,12 +700,25 @@ export function buildStructuredData(
       inLanguage: lang,
       description,
       image: `${origin}${SITE_OG_IMAGE.url}`,
+      // Aperçu visuel de l'application pour les résultats enrichis : l'image
+      // OpenGraph sert de screenshot (même dimensions, déjà statique).
+      screenshot: {
+        url: `${origin}${SITE_OG_IMAGE.url}`,
+        caption: SITE_OG_IMAGE.alt,
+        width: SITE_OG_IMAGE.width,
+        height: SITE_OG_IMAGE.height,
+      },
       isPartOf: { "@id": `${origin}/#website` },
       publisher: { "@id": `${origin}/#organization` },
+      // Gratuit : propriété explicite pour les résultats enrichis d'application.
+      isAccessibleForFree: true,
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "EUR",
+        // Disponibilité explicite : une offre sans `availability` est
+        // parfois considérée comme incertaine par les moteurs.
+        availability: "https://schema.org/InStock",
       },
       featureList: [
         "Import d'archives .rar (RAR4/RAR5), .zip, .tar et .tar.gz vers GitHub",
@@ -560,20 +728,60 @@ export function buildStructuredData(
         "Jeton OAuth GitHub chiffré côté client (cookie httpOnly JWE), jamais stocké en base",
       ],
     },
+    // HowTo : les étapes « Comment ça marche » de l'accueil alimentent un
+    // résultat enrichi « comment faire » (seulement si des étapes sont fournies).
+    ...(content.steps && content.steps.length > 0
+      ? [
+          {
+            "@type": "HowTo",
+            "@id": `${origin}/#howto`,
+            name: title,
+            description,
+            inLanguage: lang,
+            step: content.steps.map((text, i) => ({
+              "@type": "HowToStep",
+              position: i + 1,
+              name: `Étape ${i + 1}`,
+              text,
+            })),
+          },
+        ]
+      : []),
     {
       "@type": "FAQPage",
       "@id": `${origin}/#faq`,
       url: `${origin}/#faq`,
       inLanguage: lang,
+      // Date éditoriale, jamais l'heure de la requête (voir SITE_CONTENT_LAST_MODIFIED).
+      dateModified: SITE_CONTENT_LAST_MODIFIED,
       isPartOf: { "@id": `${origin}/#webpage` },
       mainEntity: faq.map((item) => ({
         "@type": "Question",
         name: item.question,
+        // Dates éditoriales (voir SITE_CONTENT_LAST_MODIFIED), jamais l'heure
+        // de la requête : elles donnent un `datePublished` crédible aux
+        // questions et un `dateModified` aux réponses.
+        datePublished: SITE_CONTENT_LAST_MODIFIED,
         acceptedAnswer: {
           "@type": "Answer",
           text: item.answer,
+          dateModified: SITE_CONTENT_LAST_MODIFIED,
         },
       })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${origin}/#breadcrumb`,
+      inLanguage: lang,
+      isPartOf: { "@id": `${origin}/#webpage` },
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: SITE_NAME,
+          item: origin,
+        },
+      ],
     },
   ];
 
@@ -592,4 +800,291 @@ export function serializeJsonLd(data: unknown): string {
     .replace(/</g, "\\u003c")
     .replace(/>/g, "\\u003e")
     .replace(/&/g, "\\u0026");
+}
+
+/**
+ * Données structurées de la **page « À propos »** : `AboutPage` +
+ * `Organization` + `BreadcrumbList`.
+ *
+ * L'`AboutPage` rattache la page à l'entité `Organization` (via `about`)
+ * et alimente la crédibilité du site auprès des moteurs (E-E-A-T :
+ * expérience, expertise, autorité, confiance).
+ */
+export function buildAboutStructuredData(
+  origin: string,
+  opts: {
+    title: string;
+    description: string;
+    /** Breadcrumbs. */
+    breadcrumbs: readonly BreadcrumbItem[];
+    /** Langue du contenu (`fr` par défaut). */
+    inLanguage?: string;
+  },
+): Record<string, unknown> {
+  const originClean = origin.replace(/\/+$/, "");
+  const lang = opts.inLanguage ?? "fr";
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "AboutPage",
+        "@id": `${originClean}/#about`,
+        url: `${originClean}/a-propos`,
+        name: opts.title,
+        description: opts.description,
+        inLanguage: lang,
+        datePublished: SITE_CONTENT_LAST_MODIFIED,
+        dateModified: SITE_CONTENT_LAST_MODIFIED,
+        about: { "@id": `${originClean}/#organization` },
+        mainEntity: { "@id": `${originClean}/#organization` },
+      },
+      {
+        "@type": "Organization",
+        "@id": `${originClean}/#organization`,
+        name: SITE_NAME,
+        url: originClean,
+        description: opts.description,
+        logo: {
+          "@type": "ImageObject",
+          url: `${originClean}${SITE_ICONS.structuredDataLogo}`,
+          width: 512,
+          height: 512,
+        },
+        image: `${originClean}${SITE_ICONS.structuredDataLogo}`,
+      },
+      buildBreadcrumbList(origin, opts.breadcrumbs),
+    ],
+  };
+}
+
+/* ============================================================ pages de contenu */
+
+export interface BreadcrumbItem {
+  name: string;
+  path: string;
+}
+
+/**
+ * BreadcrumbList pour une page de contenu (guide, FAQ).
+ *
+ * Les chemins sont des URLs absolues résolues contre l'origine canonique :
+ * les moteurs exigent des `item` absolues pour afficher la piste de
+ * navigation dans les résultats.
+ */
+export function buildBreadcrumbList(
+  origin: string,
+  items: readonly BreadcrumbItem[],
+): Record<string, unknown> {
+  const originClean = origin.replace(/\/+$/, "");
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: item.path.startsWith("http")
+        ? item.path
+        : `${originClean}${item.path}`,
+    })),
+  };
+}
+
+/**
+ * Données structurées d'une **page guide** : Article + HowTo + FAQPage +
+ * BreadcrumbList, dans un seul graphe lié par `@id`.
+ *
+ * `Article` donne au moteur un contenu éditorial daté (datePublished /
+ * dateModified éditoriales, jamais l'heure de la requête) ; `HowTo` permet
+ * l'apparition en résultats enrichis « comment faire » ; `FAQPage` cible
+ * les extraits FAQ ; `BreadcrumbList` alimente la piste de navigation.
+ */
+export function buildArticleStructuredData(opts: {
+  origin: string;
+  title: string;
+  description: string;
+  /** Date ISO `AAAA-MM-JJ` (contenu éditorial, pas la requête). */
+  datePublished: string;
+  dateModified: string;
+  /** Mots-clés de la page. */
+  keywords?: readonly string[];
+  /** Étapes pas à pas (HowTo). */
+  steps?: readonly string[];
+  /** FAQ locale (FAQPage). */
+  faq?: readonly { question: string; answer: string }[];
+  /** Breadcrumbs. */
+  breadcrumbs?: readonly BreadcrumbItem[];
+  /** Langue du contenu (`fr` par défaut). */
+  inLanguage?: string;
+}): Record<string, unknown> {
+  const originClean = opts.origin.replace(/\/+$/, "");
+  const lang = opts.inLanguage ?? "fr";
+  const graph: Record<string, unknown>[] = [
+    {
+      "@type": "Article",
+      "@id": `${originClean}/#article`,
+      headline: opts.title,
+      name: opts.title,
+      description: opts.description,
+      inLanguage: lang,
+      datePublished: opts.datePublished,
+      dateModified: opts.dateModified,
+      mainEntityOfPage: { "@type": "WebPage", "@id": `${originClean}/#article` },
+      image: `${originClean}${SITE_OG_IMAGE.url}`,
+      author: { "@type": "Organization", name: SITE_NAME },
+      publisher: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        logo: {
+          "@type": "ImageObject",
+          url: `${originClean}${SITE_ICONS.structuredDataLogo}`,
+          width: 512,
+          height: 512,
+        },
+      },
+      ...(opts.keywords?.length ? { keywords: opts.keywords.join(", ") } : {}),
+    },
+  ];
+
+  if (opts.steps && opts.steps.length > 0) {
+    graph.push({
+      "@type": "HowTo",
+      "@id": `${originClean}/#howto`,
+      name: opts.title,
+      description: opts.description,
+      inLanguage: lang,
+      step: opts.steps.map((text, i) => ({
+        "@type": "HowToStep",
+        position: i + 1,
+        name: `Étape ${i + 1}`,
+        text,
+      })),
+    });
+  }
+
+  if (opts.faq && opts.faq.length > 0) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${originClean}/#faq`,
+      inLanguage: lang,
+      dateModified: opts.dateModified,
+      mainEntity: opts.faq.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        datePublished: opts.datePublished,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+          dateModified: opts.dateModified,
+        },
+      })),
+    });
+  }
+
+  if (opts.breadcrumbs && opts.breadcrumbs.length > 0) {
+    graph.push(buildBreadcrumbList(opts.origin, opts.breadcrumbs));
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": graph,
+  };
+}
+
+/**
+ * Données structurées de la **page d'index des guides** : ItemList listant
+ * les guides, avec breadcrumb. Aide les moteurs à découvrir et hiérarchiser
+ * l'ensemble du contenu éditorial.
+ */
+export function buildGuidesIndexStructuredData(
+  origin: string,
+  guides: readonly { title: string; slug: string; description: string }[],
+  breadcrumbs: readonly BreadcrumbItem[],
+): Record<string, unknown> {
+  const originClean = origin.replace(/\/+$/, "");
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ItemList",
+        "@id": `${originClean}/#guides`,
+        name: "Guides RepoDrop",
+        description:
+          "Tutoriels pas à pas pour importer vos archives .rar, .zip et .tar sur GitHub.",
+        numberOfItems: guides.length,
+        itemListElement: guides.map((g, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: g.title,
+          description: g.description,
+          item: `${originClean}/guides/${g.slug}`,
+        })),
+      },
+      buildBreadcrumbList(origin, breadcrumbs),
+    ],
+  };
+}
+
+/**
+ * Sitelinks Search Box : cible une page de recherche intégrée
+ * (`/recherche?q={search_term_string}`). Quand le site a une page de
+ * recherche fonctionnelle, Google peut afficher une barre de recherche
+ * enrichie dans les résultats — un gain de visibilité notable.
+ */
+export function buildSearchAction(origin: string): Record<string, unknown> {
+  const originClean = origin.replace(/\/+$/, "");
+  return {
+    "@type": "SearchAction",
+    target: `${originClean}/recherche?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  };
+}
+
+/**
+ * Flux RSS 2.0 : découverte de contenu par les agrégateurs et les moteurs
+ * qui l'abordent (Google Actualités, Feedly…). Le `link` de chaque item
+ * pointe vers la page guide absolue.
+ */
+export function buildRssFeed(
+  origin: string,
+  guides: readonly {
+    slug: string;
+    title: string;
+    description: string;
+    dateModified: string;
+  }[],
+  siteDescription: string,
+): string {
+  const originClean = origin.replace(/\/+$/, "");
+  const escape = (s: string) =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  const items = guides
+    .map((g) => {
+      const link = `${originClean}/guides/${g.slug}`;
+      return `    <item>
+      <title>${escape(g.title)}</title>
+      <link>${link}</link>
+      <guid isPermaLink="true">${link}</guid>
+      <description>${escape(g.description)}</description>
+      <pubDate>${new Date(`${g.dateModified}T00:00:00Z`).toUTCString()}</pubDate>
+    </item>`;
+    })
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${escape(SITE_NAME)} — Guides</title>
+    <link>${originClean}</link>
+    <description>${escape(siteDescription)}</description>
+    <language>fr</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+${items}
+  </channel>
+</rss>
+`;
 }

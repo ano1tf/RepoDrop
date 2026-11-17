@@ -217,6 +217,32 @@ export const ar: Dict = {
     cancel: "إلغاء",
   },
 
+  about: {
+    aboutTitle: "حول RepoDrop",
+    aboutLead: "RepoDrop أداة فرنسية تستورد أرشيفاتك .rar و .zip و .tar إلى GitHub بنقرة واحدة: استخراج آمن، معاينة قبل الإرسال، دون terminal ولا git.",
+    aboutIntro: "يوجد RepoDrop لتحويل الأرشيف إلى مستودع GitHub في ثوانٍ، دون أن يحتاج أي شخص إلى تثبيت git أو استنساخ مستودع أو إتقان سطر الأوامر. الفكرة بسيطة: تضع أرشيفاً، تتحقق من محتواها، وترسل الكود إلى GitHub.",
+    aboutMissionTitle: "مهمتنا",
+    aboutMissionBody: "جعل استيراد الكود إلى GitHub متاحاً للجميع، بغض النظر عن مستوى إتقان git. أرشيف ورد بالبريد، مشروع سلّمه زميل، تصدير عمل: مواقف يكون فيها سطر الأوامر عائقاً غير ضروري. RepoDrop يزيله.",
+    aboutSecurityTitle: "الأمان أولاً",
+    aboutSecurityBody: "كل استيراد معزول: استخراج في sandbox، تحقق من المسارات (ضد zip-slip)، حدود للحجم وعدد الملفات. رمز GitHub مشفر في كوكي httpOnly ولا يُحفظ أبداً في قاعدة البيانات. أنت تحتفظ بالسيطرة حتى اللحظة الأخيرة بمعاينة كاملة قبل الإرسال.",
+    aboutLocalTitle: "أداة فرنسية",
+    aboutLocalBody: "يتم تطوير RepoDrop والحفاظ عليه في فرنسا. الواجهة متاحة بـ 16 لغة، لكن الأداة ومحتواها مصمّمان ليُفهمَا ويُستخدمَا في أي مكان، دون حواجز تقنية.",
+    aboutFaqTitle: "ختاماً",
+    aboutFaqBody: "RepoDrop لا يحلّ محل git: إنه يزيل الاحتكاك. عندما تحتاج إلى إرسال الكود إلى GitHub بسرعة، دون إعداد، يقوم RepoDrop بالعمل — وتحتفظ بحرية مواصلة العمل مع git متى شئت.",
+  },
+  guides: {
+    guidesTitle: "الأدلة",
+    guidesLead: "أدلة خطوة بخطوة لاستيراد أرشيفاتك .rar و .zip و .tar إلى GitHub، دون git ولا terminal.",
+    readMore: "قراءة الدليل",
+    relatedTitle: "أدلة ذات صلة",
+    backToGuides: "العودة إلى الأدلة",
+    searchTitle: "البحث عن دليل",
+    searchPlaceholder: "البحث عن دليل…",
+    searchResultsFor: "نتائج «{q}»",
+    searchNoResults: "لا يوجد دليل يطابق بحثك.",
+    searchEmpty: "اكتب استعلامًا للبحث في الأدلة.",
+    guideNotFound: "الدليل غير موجود",
+  },
   footer: {
     tagline:
       "أرشيفات شيفرتك، على GitHub، بسحب وإفلات. بلا طرفية، بلا استنساخ، بلا إعداد git.",

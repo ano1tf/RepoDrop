@@ -223,6 +223,32 @@ export const fr = {
     cancel: "Annuler",
   },
 
+  about: {
+    aboutTitle: "À propos de RepoDrop",
+    aboutLead: "RepoDrop est un outil français qui importe vos archives .rar, .zip et .tar sur GitHub en un clic : extraction sécurisée, aperçu avant envoi, sans terminal ni git.",
+    aboutIntro: "RepoDrop existe pour faire d'une archive un dépôt GitHub en quelques secondes, sans que personne ne doive installer git, cloner un dépôt ou maîtriser la ligne de commande. L'idée est simple : vous déposez une archive, vous vérifiez ce qu'elle contient, et vous poussez le code vers GitHub.",
+    aboutMissionTitle: "Notre mission",
+    aboutMissionBody: "Rendre l'import de code sur GitHub accessible à tous, quel que soit le niveau de maîtrise de git. Une archive reçue par courriel, un projet transmis par un collègue, un export de travail : autant de situations où la ligne de commande est un obstacle inutile. RepoDrop la supprime.",
+    aboutSecurityTitle: "Sécurité d'abord",
+    aboutSecurityBody: "Chaque import est isolé : extraction sandboxée, validation des chemins (anti zip-slip), plafonds de taille et de fichiers. Le jeton GitHub est chiffré dans un cookie httpOnly et jamais stocké en base. Vous gardez le contrôle jusqu'au dernier instant avec un aperçu complet avant tout envoi.",
+    aboutLocalTitle: "Un outil français",
+    aboutLocalBody: "RepoDrop est développé et maintenu en France. L'interface est disponible en 16 langues, mais l'outil et ses contenus sont conçus pour être compris et utilisés partout, sans barrière technique.",
+    aboutFaqTitle: "Le mot de la fin",
+    aboutFaqBody: "RepoDrop ne remplace pas git : il en retire la friction. Quand vous avez besoin de pousser du code sur GitHub rapidement, sans configuration, RepoDrop fait le travail — et vous gardez la liberté de continuer avec git quand vous le souhaitez.",
+  },
+  guides: {
+    guidesTitle: "Guides",
+    guidesLead: "Tutoriels pas à pas pour importer vos archives .rar, .zip et .tar sur GitHub, sans git ni terminal.",
+    readMore: "Lire le guide",
+    relatedTitle: "Guides associés",
+    backToGuides: "Retour aux guides",
+    searchTitle: "Rechercher un guide",
+    searchPlaceholder: "Rechercher un guide…",
+    searchResultsFor: "Résultats pour « {q} »",
+    searchNoResults: "Aucun guide ne correspond à votre recherche.",
+    searchEmpty: "Saisissez une requête pour rechercher dans les guides.",
+    guideNotFound: "Guide introuvable",
+  },
   footer: {
     tagline:
       "Vos archives de code, sur GitHub, en un glisser-déposer. Sans terminal, sans clone, sans configuration git.",

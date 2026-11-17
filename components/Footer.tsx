@@ -48,6 +48,9 @@ export async function Footer() {
             <FooterLink href="/#comment">{t.footer.howItWorks}</FooterLink>
             <FooterLink href="/#securite">{t.footer.security}</FooterLink>
             <FooterLink href="/#faq">{t.footer.faq}</FooterLink>
+            <FooterLink href="/guides">{t.guides.guidesTitle}</FooterLink>
+            <FooterLink href="/faq">{t.home.faqTitle}</FooterLink>
+            <FooterLink href="/a-propos">{t.about.aboutTitle}</FooterLink>
             <FooterLink href="/langues">{t.nav.language}</FooterLink>
           </FooterCol>
 
@@ -79,7 +82,7 @@ export async function Footer() {
           </FooterCol>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-edge/60 pt-6 text-xs text-mist sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-edge/60 pt-6 pb-[env(safe-area-inset-bottom)] text-xs text-mist sm:flex-row">
           <span>
             {t.footer.copyright.replace("{year}", String(new Date().getFullYear()))}
           </span>

@@ -136,10 +136,11 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
       .set([comet, trail], { autoAlpha: 0 })
       .set(railFill, { scaleX: 0 })
       .set(bars, { scaleY: 0.14 })
-      .set([scanCheck, resultCheck], { scale: 0, autoAlpha: 0 })
+      // scale(0) → scale(0.92) : rien n'apparaît « de nulle part ».
+      .set([scanCheck, resultCheck], { scale: 0.92, autoAlpha: 0 })
       .set([scanLabel], { autoAlpha: 1 })
       .set(lines, { autoAlpha: 0.18, y: 5 })
-      .set(lineChecks, { scale: 0 })
+      .set(lineChecks, { scale: 0.92 })
       .set(result, { boxShadow: "0 0 0 0 rgba(52,211,153,0)" })
       // La carte est un fichier statique : sa bordure reste neutre, puis
       // s'illumine en vert quand le fichier est pris en charge.
@@ -183,7 +184,7 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
       .to(trail, { scaleX: 1, duration: 0.9, ease: "power2.out" }, 1.5)
       .to(
         comet,
-        { left: "100%", duration: 1.5, ease: "power1.inOut" },
+        { xPercent: 100, duration: 1.5, ease: "power1.inOut" },
         1.5,
       )
       .to(railFill, { scaleX: 1, duration: 1.6, ease: "power1.inOut" }, 1.5)
@@ -254,8 +255,8 @@ export function mountWorkflowDemo(root: HTMLElement): () => void {
         {
           scale: 1,
           autoAlpha: 1,
-          duration: 0.75,
-          ease: "elastic.out(1, 0.55)",
+          duration: 0.55,
+          ease: "back.out(2)",
         },
         5.25,
       )

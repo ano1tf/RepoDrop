@@ -59,6 +59,14 @@ export function middleware(request: NextRequest): NextResponse {
   });
 
   /*
+   * En-tête `Content-Language` sur la réponse : les moteurs l'utilisent pour
+   * comprendre la langue de la page sans dépendre uniquement de l'attribut
+   * `lang` du HTML (qu'ils lisent aussi, mais l'en-tête est une source
+   * indépendante, utile aux crawlers qui n'analysent pas le DOM).
+   */
+  response.headers.set("Content-Language", locale);
+
+  /*
    * On (re)pose le cookie s'il est absent ou invalide : la langue détectée
    * devient alors explicite et survit aux navigations comme aux sessions.
    * Une bascule de langue passe toujours par `/api/locale`, qui écrit le

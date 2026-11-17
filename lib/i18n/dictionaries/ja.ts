@@ -211,6 +211,32 @@ export const ja: Dict = {
     cancel: "キャンセル",
   },
 
+  about: {
+    aboutTitle: "RepoDropについて",
+    aboutLead: "RepoDropは、.rar、.zip、.tarアーカイブをワンクリックでGitHubにインポートするフランスのツールです。安全な抽出、送信前のプレビュー、ターミナルやgit不要。",
+    aboutIntro: "RepoDropは、アーカイブを数秒でGitHubリポジトリに変えるために存在します。誰もgitをインストールしたり、リポジトリをクローンしたり、コマンドラインを習得したりする必要はありません。アイデアはシンプルです。アーカイブをドロップし、内容を確認し、コードをGitHubにプッシュします。",
+    aboutMissionTitle: "私たちのミッション",
+    aboutMissionBody: "gitの知識レベルに関わらず、誰でもGitHubへのコードインポートを可能にすること。メールで届いたアーカイブ、同僚から渡されたプロジェクト、作業のエクスポート。どれもコマンドラインが不必要な障害になる状況です。RepoDropはそれを解消します。",
+    aboutSecurityTitle: "安全第一",
+    aboutSecurityBody: "インポートはすべて隔離されています。サンドボックス内での抽出、パスの検証（zip-slip対策）、サイズとファイル数の上限。GitHubトークンはhttpOnlyCookieで暗号化され、データベースには一切保存されません。送信前の完全なプレビューで、最後までコントロールを握れます。",
+    aboutLocalTitle: "フランスのツール",
+    aboutLocalBody: "RepoDropはフランスで開発・保守されています。インターフェイスは16言語で利用可能ですが、ツールとその内容は、技術的障壁なくどこでも理解され、使われるよう設計されています。",
+    aboutFaqTitle: "結びに",
+    aboutFaqBody: "RepoDropはgitを置き換えません。摩擦を取り除くだけです。セットアップなしで素早くコードをGitHubにプッシュしたいとき、RepoDropが作業をこなし、あなたはいつでもgitで続けられる自由を保っています。",
+  },
+  guides: {
+    guidesTitle: "ガイド",
+    guidesLead: "git もターミナルも使わず、.rar・.zip・.tar アーカイブを GitHub にインポートするための段階的なガイド。",
+    readMore: "ガイドを読む",
+    relatedTitle: "関連ガイド",
+    backToGuides: "ガイドに戻る",
+    searchTitle: "ガイドを検索",
+    searchPlaceholder: "ガイドを検索…",
+    searchResultsFor: "「{q}」の結果",
+    searchNoResults: "検索に一致するガイドはありません。",
+    searchEmpty: "キーワードを入力してガイドを検索してください。",
+    guideNotFound: "ガイドが見つかりません",
+  },
   footer: {
     tagline:
       "コードのアーカイブを、ドラッグ＆ドロップで GitHub へ。ターミナルもクローンも git 設定も不要。",

@@ -212,6 +212,32 @@ export const de: Dict = {
     cancel: "Abbrechen",
   },
 
+  about: {
+    aboutTitle: "Über RepoDrop",
+    aboutLead: "RepoDrop ist ein französisches Tool, das Ihre .rar-, .zip- und .tar-Archive mit einem Klick nach GitHub importiert: sichere Extraktion, Vorschau vor dem Senden, ohne Terminal und ohne git.",
+    aboutIntro: "RepoDrop existsiert, um ein Archiv in Sekunden in ein GitHub-Repository zu verwandeln, ohne dass jemand git installieren, ein Repository klonen oder die Kommandozeile beherrschen muss. Die Idee ist einfach: Sie laden ein Archiv hoch, prüfen dessen Inhalt und pushen den Code nach GitHub.",
+    aboutMissionTitle: "Unsere Mission",
+    aboutMissionBody: "Code-Import nach GitHub für jeden zugänglich machen, unabhängig vom git-Kenntnissstand. Ein per E-Mail erhaltenes Archiv, ein von einem Kollegen übergebenes Projekt, ein Arbeitsexport: Situationen, in denen die Kommandozeile ein unnötiges Hindernis ist. RepoDrop beseitigt es.",
+    aboutSecurityTitle: "Sicherheit zuerst",
+    aboutSecurityBody: "Jeder Import ist isoliert: Extraktion im Sandbox, Pfadvalidierung (Anti-Zip-Slip), Größen- und Dateilimits. Das GitHub-Token ist in einer httpOnly-Cookie verschlüsselt und wird niemals in der Datenbank gespeichert. Sie behalten bis zum letzten Moment die Kontrolle mit einer vollständigen Vorschau vor dem Senden.",
+    aboutLocalTitle: "Ein französisches Tool",
+    aboutLocalBody: "RepoDrop wird in Frankreich entwickelt und gepflegt. Die Oberfläche ist in 16 Sprachen verfügbar, aber das Tool und seine Inhalte sind so gestaltet, dass sie überall ohne technische Barrieren verstanden und genutzt werden können.",
+    aboutFaqTitle: "Abschließend",
+    aboutFaqBody: "RepoDrop ersetzt git nicht: Es beseitigt die Reibung. Wenn Sie Code schnell nach GitHub pushen müssen, ohne Einrichtung, erledigt RepoDrop die Arbeit — und Sie behalten die Freiheit, weiterhin mit git zu arbeiten.",
+  },
+  guides: {
+    guidesTitle: "Anleitungen",
+    guidesLead: "Schritt-für-Schritt-Anleitungen, um deine .rar-, .zip- und .tar-Archive nach GitHub zu importieren — ohne git und ohne Terminal.",
+    readMore: "Anleitung lesen",
+    relatedTitle: "Verwandte Anleitungen",
+    backToGuides: "Zurück zu den Anleitungen",
+    searchTitle: "Anleitung suchen",
+    searchPlaceholder: "Anleitung suchen…",
+    searchResultsFor: "Ergebnisse für „{q}“",
+    searchNoResults: "Keine Anleitung entspricht deiner Suche.",
+    searchEmpty: "Gib einen Suchbegriff ein, um die Anleitungen zu durchsuchen.",
+    guideNotFound: "Anleitung nicht gefunden",
+  },
   footer: {
     tagline:
       "Deine Code-Archive, per Drag-and-drop auf GitHub. Ohne Terminal, ohne Clone, ohne git-Einrichtung.",

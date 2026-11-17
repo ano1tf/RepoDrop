@@ -352,8 +352,8 @@ export function WorkflowDemo({
                         className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-panel2"
                       >
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-go to-sky transition-[width] duration-100 ease-linear"
-                          style={{ width: `${progress}%` }}
+                          className="h-full w-full origin-left rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-100 ease-linear"
+                          style={{ transform: `scaleX(${progress / 100})` }}
                         />
                       </div>
                     </div>
