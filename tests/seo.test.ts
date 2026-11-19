@@ -32,7 +32,7 @@ import {
 } from "@/lib/seo";
 import { LOCALES } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/dictionary";
-import { getGuides, GUIDES, searchGuides } from "@/lib/seo-guides";
+import { getGuides, guideQuery, GUIDES, MAX_GUIDE_QUERY_LENGTH, searchGuides } from "@/lib/seo-guides";
 import OpenGraphImage, {
   alt as ogAlt,
   contentType as ogContentType,
@@ -774,10 +774,15 @@ describe("éditions localisées des guides", () => {
   it.each(LOCALES)("couvre chaque guide en $code sans modifier les slugs", ({ code }) => {
     const guides = getGuides(code);
     expect(guides.map((guide) => guide.slug)).toEqual(GUIDES.map((guide) => guide.slug));
+    const tipHeading = getDictionary(code).guides.tipTitle;
+    const tips = guides.map((guide) => guide.sections.find(({ heading }) => heading === tipHeading));
+    expect(tips.every((tip) => tip?.paragraphs.every((text) => text.trim().length > 0))).toBe(true);
+    expect(new Set(tips.map((tip) => tip?.paragraphs.join(" "))).size).toBe(guides.length);
     for (const [i, guide] of guides.entries()) {
       const source = GUIDES[i];
       expect(guide.related).toEqual(source.related);
       expect(guide.datePublished).toBe(source.datePublished);
+      expect(guide.dateModified).toBe(source.dateModified);
       expect(guide.steps).toHaveLength(3);
       expect(guide.sections.length).toBeGreaterThan(0);
       expect(guide.faq.length).toBeGreaterThan(0);
@@ -796,6 +801,26 @@ describe("éditions localisées des guides", () => {
   it("recherche le contenu traduit et conserve les accents facultatifs", () => {
     expect(searchGuides("NUMERO DE ARCHIVOS", "es").map((guide) => guide.slug)).toContain("importer-rar-sur-github");
     expect(searchGuides("github sans git", "en")).toEqual([]);
+  });
+
+  it("classe les titres avant les mentions et accepte plusieurs termes dans le désordre", () => {
+    expect(searchGuides("GitHub .ZIP", "en")[0]?.slug).toBe("importer-zip-sur-github");
+    expect(searchGuides("ＧｉｔＨｕｂ、ＺＩＰ", "ja")[0]?.slug).toBe("importer-zip-sur-github");
+    expect(searchGuides("GitHub .tar.gz", "en")[0]?.slug).toBe("importer-tar-sur-github");
+    expect(searchGuides("GitHub unknown-word", "en")).toEqual([]);
+    expect(searchGuides("...?!", "en")).toEqual([]);
+  });
+
+  it("indexe les conseils spécifiques à l’édition consultée", () => {
+    expect(searchGuides("symbols hard links", "en")).toEqual([]);
+    expect(searchGuides("hard links actual files", "en")[0]?.slug).toBe("importer-tar-sur-github");
+    expect(searchGuides("liens physiques fichiers reels", "fr")[0]?.slug).toBe("importer-tar-sur-github");
+  });
+
+  it("retient le premier q et borne sa longueur pour les URL externes", () => {
+    expect(guideQuery(["  ZIP   Github ", "Ignored"])).toBe("ZIP   Github");
+    expect(guideQuery(undefined)).toBe("");
+    expect(guideQuery("a".repeat(MAX_GUIDE_QUERY_LENGTH + 1))).toHaveLength(MAX_GUIDE_QUERY_LENGTH);
   });
 
   it("annonce le flux traduit avec des liens qui conservent la langue et des GUID stables", () => {

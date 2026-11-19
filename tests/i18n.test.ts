@@ -7,6 +7,7 @@
  * `{…}` divergents, doublons de code, et traductions restées en français.
  */
 import { describe, expect, it } from "vitest";
+import { GITHUB_OAUTH_SCOPES } from "@/lib/github-scopes";
 import {
   DEFAULT_LOCALE,
   dirOf,
@@ -22,6 +23,7 @@ import {
 import { DICTIONARIES, getDictionary, section } from "@/lib/i18n/dictionary";
 import { fill, formatDateTime, formatNumber, formatRelativeTime, formatTime, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
 import { localizePath, localeSwitchPath } from "@/lib/i18n/navigation";
+import { findLanguages, searchKey } from "@/lib/i18n/search";
 
 /** Aplatit un dictionnaire en `section.clé` → valeur. */
 function flatten(obj: Record<string, unknown>, prefix = ""): Map<string, string> {
@@ -77,6 +79,12 @@ describe("catalogue de langues", () => {
 describe("dictionnaires", () => {
   const reference = flatten(DICTIONARIES[DEFAULT_LOCALE]);
 
+  it("décrit chacune des autorisations OAuth demandées, dans les 16 langues", () => {
+    for (const { code } of LOCALES) {
+      expect(Object.keys(DICTIONARIES[code].login.scopes).sort()).toEqual([...GITHUB_OAUTH_SCOPES].sort());
+    }
+  });
+
   it("couvre exactement les mêmes clés que le français", () => {
     for (const l of LOCALES) {
       const dict = flatten(DICTIONARIES[l.code]);
@@ -128,6 +136,29 @@ describe("dictionnaires", () => {
         `chaînes non traduites en ${l.code}`,
       ).toEqual([]);
     }
+  });
+});
+
+describe("recherche multilingue", () => {
+  it("compare les accents, la casse, la largeur et les lettres latines voisines", () => {
+    expect(searchKey("  ＧｉｔＨｕｂ ÖFFENTLICH  ", "de")).toBe("github offentlich");
+    expect(searchKey("İNGİLİZCE", "tr")).toBe(searchKey("INGILIZCE", "tr"));
+    expect(searchKey("œuvre et Łódź", "fr")).toBe("oeuvre et lodz");
+  });
+
+  it("ignore les signes vocaliques arabes mais conserve les voyelles du hindi", () => {
+    expect(searchKey("العَرَبِيَّة", "ar")).toBe("العربية");
+    expect(searchKey("हिन्दी", "hi")).toBe("हिन्दी");
+    expect(searchKey("कि", "hi")).not.toBe(searchKey("का", "hi"));
+  });
+
+  it("trouve les langues par leur nom natif, leur nom traduit ou leur code", () => {
+    const codes = (...args: Parameters<typeof findLanguages>) => findLanguages(...args).map((l) => l.code);
+    expect(codes("anglàis", "fr")).toEqual(["en"]);
+    expect(codes("日本語", "fr")).toEqual(["ja"]);
+    expect(codes("КО", "uk")).toContain("ko");
+    expect(codes("zzzz", "en")).toEqual([]);
+    expect(codes("", "en")).toHaveLength(16);
   });
 });
 

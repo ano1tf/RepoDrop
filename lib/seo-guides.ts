@@ -2,6 +2,7 @@ import { config } from "./config";
 import { getDictionary } from "./i18n/dictionary";
 import { fill, formatBytes, formatNumber } from "./i18n/format";
 import { DEFAULT_LOCALE, type Locale } from "./i18n/locales";
+import { searchKey } from "./i18n/search";
 
 export interface GuideSection {
   heading: string;
@@ -37,6 +38,17 @@ export interface Guide {
   related: string[];
 }
 
+function archiveLimitValues(locale: Locale) {
+  return {
+    upload: formatBytes(config.limits.maxUploadBytes, locale),
+    extract: formatBytes(config.limits.maxExtractBytes, locale),
+    files: formatNumber(config.limits.maxFiles, locale),
+  };
+}
+
+const frLimits = archiveLimitValues(DEFAULT_LOCALE);
+const frLimitSummary = `Les limites actuelles sont de ${frLimits.upload} pour l’archive compressée, ${frLimits.extract} après extraction et ${frLimits.files} fichiers.`;
+
 /** French editorial source and stable URLs for each locale. */
 export const GUIDES = [
   {
@@ -52,7 +64,7 @@ export const GUIDES = [
       "deposer rar github",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Vous avez reçu un fichier .rar ou vous possédez une archive RAR d'un projet et vous voulez la voir apparaître sur GitHub. Avec RepoDrop, pas besoin d'installer git, de cloner un dépôt ou de saisir la moindre commande : l'extraction et le push se font en quelques clics, directement depuis le navigateur.",
     sections: [
@@ -67,13 +79,13 @@ export const GUIDES = [
         heading: "Prérequis : un compte GitHub",
         paragraphs: [
           "La seule condition est d'avoir un compte GitHub. La connexion passe par OAuth : RepoDrop reçoit un jeton chiffré (cookie httpOnly JWE) qui reste dans votre navigateur et n'est jamais stocké en base de données ni dans les journaux.",
-          "L'autorisation demandée est minimale : la capacité de créer un dépôt et de pousser du code (scope `repo` et `workflow` pour la gestion des dépôts), rien d'autre.",
+          "Les autorisations GitHub sont détaillées à la connexion : `repo` pour accéder aux dépôts et y pousser du code, `workflow` pour les fichiers GitHub Actions, et `delete_repo` pour la suppression confirmée dans le navigateur de dépôts.",
         ],
       },
       {
         heading: "Limites à connaître",
         paragraphs: [
-          "Par défaut, une archive RAR peut peser jusqu'à 200 Mo compressés, 500 Mo décompressés, avec 20 000 fichiers maximum. Ces limites protègent le serveur et garantissent un traitement rapide de l'archive.",
+          frLimitSummary,
           "Les dossiers `node_modules`, les `.git` embarqués et les fichiers système (`.DS_Store`, `__MACOSX`) sont écartés par défaut. Si votre archive contient un unique dossier englobant, vous pouvez retirer ce dossier racine automatiquement pour placer vos fichiers directement à la racine du dépôt.",
         ],
       },
@@ -119,7 +131,7 @@ export const GUIDES = [
       "deposer zip github",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Le ZIP est le format d'archive le plus répandu : projets scolaires, archives de travail, dépôts de code transmis par courriel. Plutôt que de l'ouvrir manuellement, de recréer un dépôt et d'ajouter les fichiers un par un, RepoDrop importe le ZIP sur GitHub en une seule opération, avec un aperçu complet avant envoi.",
     sections: [
@@ -153,8 +165,7 @@ export const GUIDES = [
     faq: [
       {
         question: "Un ZIP de plusieurs centaines de fichiers est-il supporté ?",
-        answer:
-          "Oui, jusqu'à 20 000 fichiers et 500 Mo décompressés par défaut. Ces plafonds garantissent un traitement fiable et rapide de l'archive.",
+        answer: frLimitSummary,
       },
       {
         question: "Le ZIP est-il scanné pour les virus ?",
@@ -186,7 +197,7 @@ export const GUIDES = [
       "deposer tar.gz github",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Les archives TAR (.tar, .tar.gz, .tgz) sont omniprésentes sur les systèmes Linux et les environnements de développement : installation de logiciels, distribution de code source, export de projets. RepoDrop importe ces archives sur GitHub sans installer git et sans taper la moindre commande.",
     sections: [
@@ -200,8 +211,8 @@ export const GUIDES = [
       {
         heading: "Permissions et symlinks",
         paragraphs: [
-          "L'extraction TAR conserve l'ordre des entrées et applique les mêmes protections que pour les autres formats : validation des chemins (anti zip-slip) et plafonds de taille et de nombre de fichiers. Les symbolic links qui pourraient sortir de l'espace d'extraction sont refusés.",
-          "Les permissions lisibles par l'utilisateur sont conservées pour le contenu poussé ; ce qui compte pour GitHub est le contenu des fichiers, pas les métadonnées système.",
+          "L'extraction TAR conserve l'ordre des entrées et applique les mêmes protections que pour les autres formats : validation des chemins (anti zip-slip) et plafonds de taille et de nombre de fichiers. Les liens symboliques et les liens physiques ne sont pas recréés.",
+          "Vérifiez le contenu de l'aperçu : l'import transfère des fichiers et non une sauvegarde complète du système. Les métadonnées du système et les liens ne sont pas restaurés sur GitHub.",
         ],
       },
       {
@@ -230,8 +241,7 @@ export const GUIDES = [
       },
       {
         question: "Quelles sont les limites pour les archives TAR ?",
-        answer:
-          "200 Mo compressés, 500 Mo décompressés et 20 000 fichiers maximum par défaut. Ces plafonds protègent le serveur et garantissent un traitement rapide.",
+        answer: frLimitSummary,
       },
     ],
     related: [
@@ -253,7 +263,7 @@ export const GUIDES = [
       "importer du code sur github",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Vous avez du code à publier sur GitHub mais vous ne voulez pas (ou ne pouvez pas) installer git, cloner un dépôt et maîtriser les commandes de push. RepoDrop fait exactement le contraire : une interface dans le navigateur, un glisser-déposer d'archive, et votre code est sur GitHub — sans terminal, sans clone, sans configuration.",
     sections: [
@@ -297,8 +307,7 @@ export const GUIDES = [
       },
       {
         question: "Quelles archives puis-je importer ?",
-        answer:
-          "Les formats RAR (RAR4/RAR5), ZIP, TAR, TAR.GZ et TGT sont détectés automatiquement par leurs octets magiques. Les limites par défaut sont 200 Mo compressés, 500 Mo décompressés et 20 000 fichiers.",
+        answer: `Les formats RAR (RAR4/RAR5), ZIP, TAR, TAR.GZ et TGZ sont détectés automatiquement par leurs octets magiques. ${frLimitSummary}`,
       },
     ],
     related: [
@@ -320,7 +329,7 @@ export const GUIDES = [
       "dépôt github sans git",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Vous partez d'une archive (.rar, .zip, .tar) et vous voulez un dépôt GitHub complet, prêt à collaborer, sans passer par git. RepoDrop combine extraction, création de dépôt et push en une seule opération : l'archive devient un dépôt GitHub en quelques clics.",
     sections: [
@@ -387,7 +396,7 @@ export const GUIDES = [
       "téléverser fichier github",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Vous avez du code à téléverser sur GitHub et vous cherchez une méthode sans terminal, sans git installé, sans clone ni configuration. RepoDrop téléverse votre code sur GitHub depuis une simple archive : le contenu est extrait, vérifié dans un aperçu, puis poussé vers le dépôt choisi — en quelques clics.",
     sections: [
@@ -426,8 +435,7 @@ export const GUIDES = [
       },
       {
         question: "Quelles archives puis-je téléverser ?",
-        answer:
-          "Les formats RAR (RAR4/RAR5), ZIP, TAR, TAR.GZ et TGT sont détectés automatiquement par leurs octets magiques. Les limites par défaut sont 200 Mo compressés, 500 Mo décompressés et 20 000 fichiers.",
+        answer: `Les formats RAR (RAR4/RAR5), ZIP, TAR, TAR.GZ et TGZ sont détectés automatiquement par leurs octets magiques. ${frLimitSummary}`,
       },
       {
         question: "Mon code est-il visible par tout le monde ?",
@@ -454,7 +462,7 @@ export const GUIDES = [
       "import code github archive",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Vous partez d'un dossier de code ou d'une archive et vous voulez l'avoir sur GitHub. Avec RepoDrop, importer du code sur GitHub se résume à trois gestes : connecter son compte, déposer l'archive, pousser. Pas de git, pas de terminal, pas de clone — le code arrive sur GitHub sous votre identité, dans un dépôt que vous choisissez.",
     sections: [
@@ -521,7 +529,7 @@ export const GUIDES = [
       "github sans terminal",
     ],
     datePublished: "2026-11-07",
-    dateModified: "2026-11-07",
+    dateModified: "2026-11-18",
     intro:
       "Publier du code sur GitHub est souvent synonyme de lignes de commande, de clone et de configuration git. RepoDrop fait l'inverse : une archive déposée dans le navigateur devient un dépôt GitHub public ou privé, avec le code poussé en un clic — sans terminal, sans git, sans clone.",
     sections: [
@@ -585,13 +593,8 @@ export const GUIDE_SLUGS: readonly string[] = GUIDES.map((g) => g.slug);
  * Do not derive URLs, dates or related links from translated text.
  */
 export function getGuides(locale: Locale = DEFAULT_LOCALE): readonly Guide[] {
-  if (locale === DEFAULT_LOCALE) return GUIDES;
-  const { guides: copy, home, faq } = getDictionary(locale);
-  const formats = { question: faq.q2, answer: fill(faq.a2, {
-    upload: formatBytes(config.limits.maxUploadBytes, locale),
-    extract: formatBytes(config.limits.maxExtractBytes, locale),
-    files: formatNumber(config.limits.maxFiles, locale),
-  }) };
+  const { guides: copy, home, faq, job } = getDictionary(locale);
+  const formats = { question: faq.q2, answer: fill(faq.a2, archiveLimitValues(locale)) };
   const privacy = { question: faq.q3, answer: faq.a3 };
   const existing = { question: faq.q4, answer: faq.a4 };
   const filters = { question: faq.q5, answer: faq.a5 };
@@ -601,46 +604,49 @@ export function getGuides(locale: Locale = DEFAULT_LOCALE): readonly Guide[] {
   const editions: Record<(typeof GUIDES)[number]["slug"], {
     title: string;
     intro: string;
+    tip: string[];
     format?: string;
     topic: GuideFaqItem;
     questions: GuideFaqItem[];
   }> = {
     "importer-rar-sur-github": {
-      title: fill(copy.formatTitle, { format: "RAR" }), intro: copy.rarIntro, format: "RAR",
+      title: fill(copy.formatTitle, { format: "RAR" }), intro: copy.rarIntro, tip: [copy.rarTip], format: "RAR",
       topic: formats, questions: [privacy, existing],
     },
     "importer-zip-sur-github": {
-      title: fill(copy.formatTitle, { format: "ZIP" }), intro: copy.zipIntro, format: "ZIP",
+      title: fill(copy.formatTitle, { format: "ZIP" }), intro: copy.zipIntro, tip: [copy.zipTip], format: "ZIP",
       topic: filters, questions: [formats, existing],
     },
     "importer-tar-sur-github": {
-      title: fill(copy.formatTitle, { format: "TAR" }), intro: copy.tarIntro, format: ".tar / .tar.gz / .tgz",
+      title: fill(copy.formatTitle, { format: "TAR" }), intro: copy.tarIntro, tip: [copy.tarTip], format: ".tar / .tar.gz / .tgz",
       topic: formats, questions: [existing, filters],
     },
     "envoyer-du-code-sur-github-sans-git": {
-      title: copy.noGitTitle, intro: copy.noGitIntro,
+      title: copy.noGitTitle, intro: copy.noGitIntro, tip: [copy.noGitTip],
       topic: history, questions: [formats, privacy],
     },
     "creer-un-depot-github-depuis-une-archive": {
-      title: copy.newRepoTitle, intro: copy.newRepoIntro,
+      title: copy.newRepoTitle, intro: copy.newRepoIntro, tip: [copy.newRepoTip],
       topic: visibility, questions: [history, privacy],
     },
     "televerser-du-code-sur-github": {
-      title: copy.uploadTitle, intro: copy.uploadIntro,
+      title: copy.uploadTitle, intro: copy.uploadIntro, tip: [copy.uploadTip],
       topic: formats, questions: [visibility, privacy],
     },
     "importer-du-code-sur-github": {
-      title: copy.importTitle, intro: copy.importIntro,
+      title: copy.importTitle, intro: copy.importIntro, tip: [job.existingBranchHint, job.replaceWarning],
       topic: existing, questions: [history, filters],
     },
     "publier-du-code-sur-github": {
-      title: copy.publishTitle, intro: copy.publishIntro,
+      title: copy.publishTitle, intro: copy.publishIntro, tip: [copy.publishTip],
       topic: visibility, questions: [existing, history],
     },
   };
 
   return GUIDES.map((source) => {
     const edition = editions[source.slug];
+    const tip = { heading: copy.tipTitle, paragraphs: edition.tip };
+    if (locale === DEFAULT_LOCALE) return { ...source, sections: [...source.sections, tip] };
     return {
       ...source,
       title: edition.title,
@@ -651,6 +657,7 @@ export function getGuides(locale: Locale = DEFAULT_LOCALE): readonly Guide[] {
       sections: [
         { heading: edition.topic.question, paragraphs: [edition.topic.answer] },
         { heading: home.feature2Title, paragraphs: [copy.safeArchive] },
+        tip,
       ],
       faq: edition.questions,
     };
@@ -661,19 +668,40 @@ export function getGuide(slug: string, locale?: Locale): Guide | undefined {
   return getGuides(locale).find((g) => g.slug === slug);
 }
 
-/** Search the edition being displayed, with case and accent folding. */
+export const MAX_GUIDE_QUERY_LENGTH = 160;
+
+export function guideQuery(value: string | string[] | undefined): string {
+  const query = Array.isArray(value) ? value[0] : value;
+  return (query ?? "").trim().slice(0, MAX_GUIDE_QUERY_LENGTH).trim();
+}
+
+/** Match every term, in any order. Put guides that actually cover the subject
+ * above guides that only mention it in a shared FAQ or a list of formats. */
 export function searchGuides(query: string, locale: Locale = DEFAULT_LOCALE): Guide[] {
-  const normalize = (text: string) => text.trim().toLocaleLowerCase(locale)
-    .normalize("NFD").replace(/(?<=\p{Script=Latin})\p{Mark}+/gu, "").normalize("NFC");
-  const q = normalize(query);
-  if (!q) return [];
-  return getGuides(locale).filter((g) => normalize([
-    g.title,
-    g.description,
-    g.intro,
-    ...g.keywords,
-    ...g.steps,
-    ...g.sections.flatMap((s) => [s.heading, ...s.paragraphs]),
-    ...g.faq.flatMap((f) => [f.question, f.answer]),
-  ].join(" ")).includes(q));
+  const needle = searchKey(guideQuery(query), locale);
+  // Keep file extensions such as `tar.gz` together; accept e.g. `.ZIP, GitHub`.
+  const words = needle.match(/[\p{L}\p{N}][\p{L}\p{N}\p{M}]*(?:\.[\p{L}\p{N}]+)*/gu) ?? [];
+  if (!words.length) return [];
+  const terms = [...new Set(words)];
+
+  return getGuides(locale).flatMap((guide) => {
+    const title = searchKey(guide.title, locale);
+    const summary = searchKey([guide.description, guide.intro].join(" "), locale);
+    const keywords = searchKey(guide.keywords.join(" "), locale);
+    const body = searchKey([
+      ...guide.steps,
+      ...guide.sections.flatMap(({ heading, paragraphs }) => [heading, ...paragraphs]),
+      ...guide.faq.flatMap(({ question, answer }) => [question, answer]),
+    ].join(" "), locale);
+    // An exact title is the best destination even for long queries.
+    let score = title === needle ? 200 : title.includes(needle) ? 20 : 0;
+    for (const term of terms) {
+      if (title.includes(term)) score += 12;
+      else if (keywords.includes(term)) score += 5;
+      else if (summary.includes(term)) score += 3;
+      else if (body.includes(term)) score += 1;
+      else return [];
+    }
+    return [{ guide, score }];
+  }).sort((a, b) => b.score - a.score).map(({ guide }) => guide);
 }

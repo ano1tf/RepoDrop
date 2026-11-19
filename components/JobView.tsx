@@ -339,14 +339,11 @@ function DoneState({
     commitSha: push.commitSha,
   });
   const shortSha = push.commitSha?.slice(0, 7);
-  const branch = links.branchUrl.replace(/^.*\/tree\//, "");
+  const branch = push.branch || "main";
   // Le compteur de fichiers suit la langue de l'interface (1 234 / 1,234).
   const fileCount = formatNumber(job.preview?.fileCount ?? 0, locale);
-  /*
-   * Les gabarits sont découpés **avant** remplissage : la branche et le SHA
-   * s'affichent dans une puce monospace, au milieu de la phrase. La position
-   * du décorateur est donc celle du gabarit traduit, pas celle du français.
-   */
+  // Les libellés restent corrects même avec un seul fichier. On insère les
+  // puces après découpage pour isoler le nom de branche et le SHA du texte RTL.
   const [beforeBranch, afterBranch = ""] = copy.doneFiles.split("{branch}");
   const [beforeSha, afterSha = ""] = copy.doneCommit.split("{sha}");
   return (
@@ -361,19 +358,19 @@ function DoneState({
             <h2 className="text-lg font-semibold">{copy.doneTitle}</h2>
             <p className="mx-auto mt-2 max-w-lg text-sm text-mist">
               {fill(beforeBranch, { count: fileCount })}
-              <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">
-                {branch}
+              <code className="break-all rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">
+                <bdi>{branch}</bdi>
               </code>
               {fill(afterBranch, { count: fileCount })}
               {shortSha && (
                 <>
                   {" · "}
                   {beforeSha}
-                  <code className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">{shortSha}</code>
+                  <code dir="ltr" className="rounded bg-panel2 px-1.5 py-0.5 text-xs text-chalk ring-1 ring-edge">{shortSha}</code>
                   {afterSha}
                 </>
               )}
-              {push.created && ` · ${copy.doneCreated}`}.
+              {push.created && ` · ${copy.doneCreated}`}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">

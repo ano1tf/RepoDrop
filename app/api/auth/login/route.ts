@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
+import { GITHUB_OAUTH_SCOPES } from "@/lib/github-scopes";
 import { config } from "@/lib/config";
 import { isSecureRequest, redirectTo } from "@/lib/http";
 import { localeFromUrl, localizePath } from "@/lib/i18n/navigation";
@@ -39,7 +40,7 @@ export async function GET(req: Request): Promise<Response> {
     // `delete_repo` est indispensable à l'action « Supprimer le dépôt » du
     // navigateur de dépôts : sans lui GitHub répond 404 (et non 403).
     // Un compte déjà connecté doit se reconnecter pour l'obtenir.
-    scope: "repo workflow delete_repo",
+    scope: GITHUB_OAUTH_SCOPES.join(" "),
     state,
     allow_signup: "true",
   });

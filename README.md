@@ -5,7 +5,7 @@
 
 RepoDrop est un outil web français à interface multilingue qui :
 
-1. se connecte à **votre** GitHub (OAuth, scopes `repo` + `workflow`) ;
+1. se connecte à **votre** GitHub (OAuth, scopes `repo`, `workflow` et `delete_repo`) ;
 2. reçoit votre **archive `.rar` / `.zip` / `.tar[.gz]`** ;
 3. l'extrait dans un **espace sandboxé** (chemins vérifiés, anti-bombes) ;
 4. vous montre un **aperçu complet** avant tout envoi ;
@@ -43,7 +43,7 @@ Variables importantes :
 
 | Variable | Rôle | Défaut |
 |---|---|---|
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | OAuth App GitHub. **Important :** déclarer les scopes `repo` et `workflow` dans l'OAuth App (sans `workflow`, GitHub rejette les push qui touchent à `/.github/workflows/`). | — |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | OAuth App GitHub. L’écran de connexion explique les scopes demandés. Sans `workflow`, GitHub refuse les push qui modifient `/.github/workflows/`. | — |
 | `APP_URL` | URL publique (callback OAuth + sonde de disponibilité) | `http://localhost:3000` |
 | `SESSION_SECRET` | Chiffrement du cookie de session **et du jeton Discord** | — |
 | `DEV_AUTH=1` | Bouton « connexion directe » via `GH_TOKEN` du serveur (**dev uniquement**) | off |
@@ -93,7 +93,7 @@ npx next dev -H 0.0.0.0 -p 10000
 
 ## Utilisation
 
-1. **Connexion** avec GitHub (scopes `repo` et `workflow`). L'écran de connexion liste ces scopes et leur raison.
+1. **Connexion** avec GitHub (scopes `repo`, `workflow` et `delete_repo`). L'écran de connexion liste ces scopes et leur raison.
 2. **Importer** → glisser-déposer du `.rar`, `.zip`, `.tar` ou `.tar.gz`.
 3. **Aperçu** : fichiers, poids, dossier racine, `node_modules`, filtres.
 4. **Destination** :
@@ -423,8 +423,11 @@ la cible du `SearchAction` (sitelinks search box). La page `/a-propos`
 `Organization` (E-E-A-T) et figure dans le sitemap et le pied de page. L'accueil
 ajoute un nœud `HowTo` (3 étapes) à son `@graph`. Les pages de guide émettent
 `og:type=article` avec `article:*` (dates, section, tags). Les huit guides
-ont une édition dans chacune des 16 langues. Le français reste la langue de
-repli et les URL canoniques ne changent pas.
+ont une édition dans chacune des 16 langues, avec un conseil propre au format
+ou au scénario. Ils affichent les limites configurées sur le serveur. La
+recherche accepte plusieurs mots dans n’importe quel ordre et privilégie les
+titres pertinents. Le français reste la langue de repli ; les URL canoniques
+ne changent pas.
 
 Quatre décisions qui évitent des pièges classiques :
 
@@ -486,6 +489,7 @@ lib/i18n/
   server.ts             # getLocaleState() / getT() : lecture de la langue résolue
   format.ts             # gabarits, nombres, tailles et dates localisés
   navigation.ts         # liens de bascule et repli ?lang=
+  search.ts             # recherche accentuée, multilingue, sans altérer le texte
 app/api/locale/route.ts  # GET/POST : validation stricte + cookies de préférence (1 an)
 app/langues/page.tsx     # /langues : galerie de démo, 16 cartes cliquables
 components/LanguageSwitcher.tsx
@@ -514,7 +518,10 @@ Trois décisions et ce qu'elles évitent :
 Le sélecteur et les cartes de `/langues` utilisent des liens natifs vers
 `/api/locale?to=xx&next=<chemin>`. La bascule recharge le document : ni les
 segments Next mis en cache ni un ancien choix dans `localStorage` ne peuvent
-réappliquer la langue précédente. Un préchargement ne pose aucun cookie.
+réappliquer la langue précédente. Un préchargement ne pose aucun cookie. Le
+sélecteur accepte les flèches pour parcourir les choix, Entrée pour activer le
+choix et Échap pour revenir au bouton. Sans JavaScript, les liens restent
+utilisables.
 
 La route GET valide la langue, filtre le chemin de retour (`safeNextPath`),
 pose le cookie `rd_lang` et renvoie une redirection relative avec `?lang=xx`,

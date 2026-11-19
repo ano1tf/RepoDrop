@@ -30,7 +30,9 @@ function returning(state: string, search = "code=fixture-code") {
 describe("langue lors de l’aller-retour OAuth", () => {
   it("associe la langue explicite à l’état vérifié par le cookie", async () => {
     const response = await login(new Request("https://repodrop.test/api/auth/login?lang=ja"));
-    const state = new URL(response.headers.get("location")!).searchParams.get("state");
+    const params = new URL(response.headers.get("location")!).searchParams;
+    const state = params.get("state");
+    expect(params.get("scope")).toBe("repo workflow delete_repo");
     expect(state).toMatch(/^[0-9a-f]{32}\.ja$/);
     expect(fake.jar.set).toHaveBeenCalledWith("rd_oauth", state, expect.objectContaining({ httpOnly: true, maxAge: 600 }));
   });

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LocaleLink from "@/components/LocaleLink";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, Search } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 import { ogLocaleOf } from "@/lib/i18n/locales";
 import {
@@ -69,9 +69,13 @@ export default async function GuidesPage() {
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
             {t.guides.guidesLead}
           </p>
+          <LocaleLink href="/recherche" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-5")}>
+            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            {t.guides.searchTitle}
+          </LocaleLink>
         </div>
 
-        <ul className="mt-10 grid gap-4">
+        <ul className="mt-8 grid gap-4">
           {guides.map((guide) => (
             <li key={guide.slug}>
               <LocaleLink

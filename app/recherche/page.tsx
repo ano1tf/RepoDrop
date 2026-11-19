@@ -4,12 +4,12 @@ import { ArrowRight, Search } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 import { LOCALE_PARAM, ogLocaleOf } from "@/lib/i18n/locales";
 import { buildPageMetadata } from "@/lib/seo";
-import { searchGuides } from "@/lib/seo-guides";
+import { guideQuery, MAX_GUIDE_QUERY_LENGTH, searchGuides } from "@/lib/seo-guides";
 
 /**
  * Page de recherche intégrée (`/recherche?q=…`).
  *
- * C'est la **cible du `SearchAction`** (sitelinks search box) declared dans
+ * C'est la **cible du `SearchAction`** (sitelinks search box) déclaré dans
  * les données structurées de l'accueil : Google peut afficher une barre de
  * recherche enrichie dans les résultats. La page est `noindex` : une page de
  * recherche ne doit pas être indexée (contenu dynamique, pas de valeur
@@ -34,8 +34,9 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string | string[] }>;
 }) {
   const [{ q: rawQuery }, { locale, urlLocale, t }] = await Promise.all([searchParams, getT()]);
-  const q = Array.isArray(rawQuery) ? rawQuery[0] : rawQuery;
-  const results = searchGuides(q ?? "", locale);
+  const q = guideQuery(rawQuery);
+  const results = searchGuides(q, locale);
+  const [beforeQuery, afterQuery] = t.guides.searchResultsFor.split("{q}");
 
   return (
     <main className="flex-1">
@@ -53,23 +54,23 @@ export default async function SearchPage({
           <form
             action="/recherche"
             method="get"
+            role="search"
             className="mt-6"
             aria-label={t.guides.searchTitle}
           >
             {urlLocale && <input type="hidden" name={LOCALE_PARAM} value={urlLocale} />}
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search
-                  className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mist"
-                  aria-hidden="true"
-                />
+              <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg border border-edge/70 bg-panel2/60 px-3.5 transition-colors focus-within:border-go/60">
+                <Search className="h-4 w-4 shrink-0 text-mist" aria-hidden="true" />
                 <input
                   type="search"
                   name="q"
-                  defaultValue={q ?? ""}
+                  defaultValue={q}
+                  maxLength={MAX_GUIDE_QUERY_LENGTH}
+                  dir="auto"
                   placeholder={t.guides.searchPlaceholder}
                   aria-label={t.guides.searchPlaceholder}
-                  className="w-full rounded-lg border border-edge/70 bg-panel2/60 py-2.5 ps-10 pe-3 text-sm text-chalk outline-none transition-colors placeholder:text-mist/60 focus:border-go/60"
+                  className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-chalk outline-none placeholder:text-mist/60"
                 />
               </div>
               <button
@@ -82,18 +83,20 @@ export default async function SearchPage({
           </form>
 
           <div className="mt-8">
-            {q === undefined || q.trim() === "" ? (
-              <p className="text-sm leading-relaxed text-mist">
-                {t.guides.searchEmpty}
-              </p>
-            ) : results.length === 0 ? (
-              <p className="text-sm leading-relaxed text-mist">
-                {t.guides.searchNoResults}
-              </p>
+            {results.length === 0 ? (
+              <div className="panel space-y-3 p-4">
+                <p className="text-sm leading-relaxed text-mist">
+                  {q ? t.guides.searchNoResults : t.guides.searchEmpty}
+                </p>
+                <LocaleLink href="/guides" className="inline-flex items-center gap-1.5 text-sm font-medium text-go hover:underline">
+                  {t.guides.backToGuides}
+                  <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden="true" />
+                </LocaleLink>
+              </div>
             ) : (
               <>
                 <p className="mb-4 text-sm text-mist">
-                  {t.guides.searchResultsFor.replace("{q}", q)}
+                  {beforeQuery}<bdi className="break-all">{q}</bdi>{afterQuery}
                 </p>
                 <ul className="space-y-3">
                   {results.map((guide) => (

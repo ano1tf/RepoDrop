@@ -20,7 +20,7 @@ import { LOCALES } from "@/lib/i18n/locales";
 import type { JobRecord } from "@/lib/types";
 
 /** Un job terminé, tel que le serveur le renvoie à l'écran de succès. */
-function doneJob(): JobRecord {
+function doneJob(fileCount: number, branch: string): JobRecord {
   return {
     id: "job-1",
     login: "dimalaxyt",
@@ -29,7 +29,7 @@ function doneJob(): JobRecord {
     status: "done",
     error: null,
     preview: {
-      fileCount: 1234,
+      fileCount,
       totalSize: 1024,
       tree: [],
       singleRootDir: null,
@@ -41,7 +41,7 @@ function doneJob(): JobRecord {
     push: {
       url: "https://github.com/DimalaxYT/mon-projet",
       fullName: "DimalaxYT/mon-projet",
-      branch: "main",
+      branch,
       commitSha: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
       created: true,
     },
@@ -52,11 +52,11 @@ function doneJob(): JobRecord {
 }
 
 /** Rend l'écran de succès dans la langue demandée. */
-function render(locale: string): string {
+function render(locale: string, fileCount = 1234, branch = "main"): string {
   const dict = DICTIONARIES[locale as keyof typeof DICTIONARIES];
   return renderToStaticMarkup(
     createElement(JobView, {
-      initialJob: doneJob(),
+      initialJob: doneJob(fileCount, branch),
       strings: dict,
       locale,
     }),
@@ -109,9 +109,17 @@ describe("écran de succès — les 16 langues", () => {
     }
   });
 
-  it("localise le compteur de fichiers", () => {
-    // 1 234 en français, 1,234 en anglais : le séparateur suit la langue.
-    expect(render("fr")).toContain("1");
-    expect(render("en")).toContain("1,234");
+  it("localise le compteur de fichiers, y compris une archive d'un seul fichier", () => {
+    expect(render("fr")).toMatch(/Fichiers importés : 1\s234/);
+    expect(render("en")).toContain("Files imported: 1,234");
+    const single = render("en", 1);
+    expect(single).toContain("Files imported: 1 · Branch:");
+    expect(single).not.toContain("1 files imported");
+  });
+
+  it("isole et affiche le nom de branche, pas sa version encodée pour une URL", () => {
+    const rtl = render("ar", 2, "doc/équipe");
+    expect(rtl).toContain("<bdi>doc/équipe</bdi>");
+    expect(rtl).not.toContain("doc/%C3%A9quipe");
   });
 });

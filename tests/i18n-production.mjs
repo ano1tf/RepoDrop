@@ -71,6 +71,9 @@ test("la langue choisie survit au rendu public et connecté en production", { ti
     APP_URL: "http://localhost:3000",
     DB_PATH: join(dir, "test.db"),
     JOBS_DIR: join(dir, "jobs"),
+    MAX_UPLOAD_MB: "37",
+    MAX_EXTRACT_MB: "98",
+    MAX_FILES: "4321",
     DEV_AUTH: "1",
     GITHUB_API_URL: github.url,
     GITHUB_CLIENT_ID: "",
@@ -114,17 +117,36 @@ test("la langue choisie survit au rendu public et connecté en production", { ti
   assert.equal(prefetch.headers.has("set-cookie"), false);
 
   const guidePath = "/guides/importer-rar-sur-github";
+  const frenchGuide = await localizedHtml(await page(origin, guidePath), "fr");
+  assert.match(frenchGuide, /37\s+Mo[^<]*98\s+Mo[^<]*4\s321 fichiers/);
   const guide = await localizedHtml(await page(origin, `${guidePath}?lang=ja`), "ja");
   assert.match(guide, /<h1[^>]*>[^<]*RAR[^<]*インポート[^<]*<\/h1>/);
   assert.ok(guide.includes('href="/guides?lang=ja"'));
   assert.ok(guide.includes('href="/manifest.webmanifest?lang=ja"'));
   assert.ok(guide.includes('href="/feed.xml?lang=ja"'));
   assert.match(guide, /"inLanguage":"ja"/);
+  assert.match(guide, /<h2[^>]*>実用的なヒント<\/h2>/);
+  assert.match(guide, /37\s*MB[^<]*98\s*MB[^<]*4,321/);
   assert.doesNotMatch(guide, /<h1[^>]*>Comment importer/);
 
-  const search = await localizedHtml(await page(origin, "/recherche?q=RAR&lang=ja"), "ja");
-  assert.ok(search.includes(`href="${guidePath}?lang=ja"`));
+  const guides = await localizedHtml(await page(origin, "/guides?lang=ja"), "ja");
+  assert.ok(guides.includes('href="/recherche?lang=ja"'));
+  const query = encodeURIComponent("ＧｉｔＨｕｂ、ＺＩＰ");
+  const search = await localizedHtml(await page(origin, `/recherche?q=${query}&q=ignored&lang=ja`), "ja");
+  assert.equal(search.match(/href="(\/guides\/[^"\s]+)"/)?.[1], "/guides/importer-zip-sur-github?lang=ja");
   assert.match(search, /name="lang" value="ja"/);
+  assert.match(search, /<bdi[^>]*>ＧｉｔＨｕｂ、ＺＩＰ<\/bdi>/);
+
+  const empty = await localizedHtml(await page(origin, "/recherche?q=zipzzzz&lang=en"), "en");
+  assert.match(empty, /No guide matches your search/);
+  assert.ok(empty.includes('href="/guides?lang=en"'));
+
+  const signIn = await localizedHtml(await page(origin, "/login?error=constructor&lang=en"), "en");
+  assert.match(signIn, /Sign-in error\./);
+  assert.match(signIn, /GitHub permissions requested/);
+  assert.deepEqual([...signIn.matchAll(/<dt><code dir="ltr"[^>]*>(\w+)<\/code><\/dt>/g)].map((match) => match[1]),
+    ["repo", "workflow", "delete_repo"]);
+  assert.match(signIn, /Delete a repository only after you confirm the action in the repository browser\./);
 
   const rss = await page(origin, "/feed.xml?lang=ja");
   assert.equal(rss.headers.get("content-language"), "ja");

@@ -98,14 +98,14 @@ export async function Header() {
             <>
               <LocaleLink
                 href="/login"
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden md:inline-flex")}
               >
                 {t.nav.login}
               </LocaleLink>
-              <LocaleLink href="/login" className={cn(buttonVariants({ size: "sm" }))}>
+              <LocaleLink href="/login" className={buttonVariants({ size: "sm" })}>
                 <GitHubIcon />
-                <span className="hidden sm:inline">{t.nav.start}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 sm:hidden" />
+                <span className="sr-only sm:not-sr-only">{t.nav.start}</span>
+                <ArrowUpRight className="h-3.5 w-3.5 sm:hidden" aria-hidden="true" />
               </LocaleLink>
             </>
           )}

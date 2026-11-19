@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GuideProse } from "@/components/GuideProse";
 import LocaleLink from "@/components/LocaleLink";
 import { ArrowLeft, ArrowRight, Calendar, ChevronDown } from "lucide-react";
 import { headers } from "next/headers";
@@ -179,7 +180,7 @@ export default async function GuidePage({
                 <div className="mt-4 space-y-4">
                   {section.paragraphs.map((p, i) => (
                     <p key={i} className="text-sm leading-relaxed text-mist">
-                      {p}
+                      <GuideProse text={p} />
                     </p>
                   ))}
                 </div>
@@ -206,7 +207,7 @@ export default async function GuidePage({
                         />
                       </summary>
                       <div className="border-t border-edge/60 px-4 pb-4 pt-3 text-sm leading-relaxed text-mist">
-                        {item.answer}
+                        <GuideProse text={item.answer} />
                       </div>
                     </details>
                   ))}

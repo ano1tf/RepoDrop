@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Check, Languages, Search } from "lucide-react";
-import { LOCALES, localeDefinition, type Locale } from "@/lib/i18n/locales";
+import { localeDefinition, type Locale } from "@/lib/i18n/locales";
 import { localeSwitchPath } from "@/lib/i18n/navigation";
+import { findLanguages } from "@/lib/i18n/search";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -13,10 +14,6 @@ interface Props {
   searchLabel: string;
   currentLabel: string;
   emptyLabel: string;
-}
-
-function searchKey(text: string, locale: Locale): string {
-  return text.toLocaleLowerCase(locale).normalize("NFD").replace(/\p{M}/gu, "");
 }
 
 export function LanguageSwitcher({
@@ -35,35 +32,50 @@ export function LanguageSwitcher({
   const returnTo = (pathname ?? "/") + (search ? `?${search}` : "");
 
   const current = localeDefinition(locale);
-  const needle = searchKey(query.trim(), locale);
-  const names = needle ? new Intl.DisplayNames(locale, { type: "language" }) : null;
-  const filtered = needle
-    ? LOCALES.filter((l) =>
-        [l.nativeName, l.englishName, names?.of(l.code) ?? "", l.code].some(
-          (name) => searchKey(name, locale).includes(needle),
-        ),
-      )
-    : LOCALES;
+  const filtered = useMemo(() => findLanguages(query, locale), [query, locale]);
+
+  function navigateOptions(event: ReactKeyboardEvent<HTMLDetailsElement>) {
+    const details = event.currentTarget;
+    if (!details.open || event.nativeEvent.isComposing ||
+        event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      details.open = false;
+      details.querySelector("summary")?.focus();
+      return;
+    }
+
+    const links = Array.from(details.querySelectorAll<HTMLAnchorElement>("a[lang]"));
+    if (!links.length) return;
+    const fromSearch = event.target === inputRef.current;
+    const index = links.findIndex((link) => link === event.target);
+    if (!fromSearch && index < 0) return;
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const delta = event.key === "ArrowDown" ? 1 : -1;
+      const next = fromSearch ? links[delta === 1 ? 0 : links.length - 1] : links[index + delta];
+      (next ?? inputRef.current)?.focus();
+    } else if (!fromSearch && (event.key === "Home" || event.key === "End")) {
+      event.preventDefault();
+      links[event.key === "Home" ? 0 : links.length - 1]?.focus();
+    } else if (fromSearch && event.key === "Enter") {
+      event.preventDefault();
+      if (links.length === 1) links[0].click();
+      else links[0].focus();
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (detailsRef.current) detailsRef.current.open = false;
-      detailsRef.current?.querySelector<HTMLElement>("summary")?.focus();
-    };
     const onPointerDown = (e: PointerEvent) => {
       const details = detailsRef.current;
       if (details && !details.contains(e.target as Node)) details.open = false;
     };
 
-    document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("pointerdown", onPointerDown);
-    };
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
   useEffect(() => {
@@ -74,6 +86,10 @@ export function LanguageSwitcher({
   return (
     <details
       ref={detailsRef}
+      onKeyDown={navigateOptions}
+      onBlur={(e) => {
+        if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false;
+      }}
       onToggle={(e) => setOpen(e.currentTarget.open)}
       className="sm:relative"
     >
@@ -108,6 +124,7 @@ export function LanguageSwitcher({
             <input
               ref={inputRef}
               type="search"
+              dir="auto"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchLabel}
@@ -131,7 +148,6 @@ export function LanguageSwitcher({
                   rel="nofollow"
                   aria-current={active ? "true" : undefined}
                   lang={l.code}
-                  dir={l.dir}
                   onClick={(e) => {
                     // Le fragment n'est pas transmis au serveur au rendu du lien.
                     if (window.location.hash) {
@@ -148,7 +164,7 @@ export function LanguageSwitcher({
                   <span aria-hidden="true" className="text-base leading-none">
                     {l.flag}
                   </span>
-                  <span className="flex-1 truncate">{l.nativeName}</span>
+                  <span className="flex-1 truncate"><bdi dir={l.dir}>{l.nativeName}</bdi></span>
                   <span aria-hidden="true" className="font-mono text-[10px] uppercase opacity-60">
                     {l.code}
                   </span>
