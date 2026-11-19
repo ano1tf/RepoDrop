@@ -49,6 +49,7 @@ async function render(locale: Locale) {
         login: "octo",
         locale,
         copy: t.repos,
+        ui: t.ui,
         importLabel: t.nav.importArchive,
       }),
     }));

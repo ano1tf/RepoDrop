@@ -20,7 +20,7 @@ import {
   safeNextPath,
 } from "@/lib/i18n/locales";
 import { DICTIONARIES, getDictionary, section } from "@/lib/i18n/dictionary";
-import { fill, formatNumber, formatRelativeTime, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
+import { fill, formatDateTime, formatNumber, formatRelativeTime, formatTime, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
 import { localizePath, localeSwitchPath } from "@/lib/i18n/navigation";
 
 /** Aplatit un dictionnaire en `section.clé` → valeur. */
@@ -210,6 +210,13 @@ describe("formatage", () => {
     expect(formatRelativeTime(now - 120_000, "en", now)).toBe("2 minutes ago");
     expect(formatRelativeTime(now - 120_000, "fr", now)).toBe("il y a 2 minutes");
     expect(formatRelativeTime(NaN, "fr", now)).toBe("—");
+  });
+
+  it("rend les horodatages UTC sans périodes du jour ambiguës entre versions ICU", () => {
+    const ts = Date.UTC(2026, 10, 18, 23, 12);
+    expect(formatTime(ts, "ko")).toBe("23:12");
+    expect(formatDateTime(ts, "ko")).toContain("23시");
+    expect(formatDateTime("invalid", "fr")).toBe("—");
   });
 
   it("localise les nombres et survit à une locale invalide", () => {

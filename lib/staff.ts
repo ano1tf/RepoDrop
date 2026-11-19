@@ -75,7 +75,7 @@ export type StaffCheck =
   | {
       ok: false;
       status: 401 | 403;
-      message: string;
+      code: "AUTH_REQUIRED" | "STAFF_DENIED" | "STAFF_LOCKED";
       /** true quand seul le mot de passe manque (compte staff reconnu). */
       locked?: boolean;
     };
@@ -88,20 +88,20 @@ export type StaffCheck =
 export async function checkStaff(): Promise<StaffCheck> {
   const session = await getSession();
   if (!session) {
-    return { ok: false, status: 401, message: "Authentification requise." };
+    return { ok: false, status: 401, code: "AUTH_REQUIRED" };
   }
   if (!(await isStaffAccount(session))) {
     return {
       ok: false,
       status: 403,
-      message: "Ce compte n'a pas accès à cet espace.",
+      code: "STAFF_DENIED",
     };
   }
   if ((await isStaffPasswordSet()) && session.staffUnlocked !== true) {
     return {
       ok: false,
       status: 403,
-      message: "Mot de passe du panel requis.",
+      code: "STAFF_LOCKED",
       locked: true,
     };
   }

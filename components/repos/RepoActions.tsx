@@ -25,18 +25,26 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLocalizedPath } from "@/components/LocaleLink";
+import { fill } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 import type { RepoSummary } from "@/lib/repo-types";
 
 export function RepoActions({
   repo,
+  copy,
+  ui,
   onUpdated,
   onDeleted,
 }: {
   repo: RepoSummary;
+  copy: Dict["repos"];
+  ui: Dict["ui"];
   onUpdated: (next: RepoSummary) => void;
   onDeleted: (fullName: string) => void;
 }) {
+  const localize = useLocalizedPath();
   const [name, setName] = useState(repo.name);
   const [description, setDescription] = useState(repo.description ?? "");
   const [busy, setBusy] = useState<"" | "patch" | "delete">("");
@@ -57,7 +65,7 @@ export function RepoActions({
     setFeedback(null);
     try {
       const res = await fetch(
-        `/api/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.name)}`,
+        localize(`/api/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.name)}`),
         {
           method,
           headers: { "Content-Type": "application/json" },
@@ -66,24 +74,22 @@ export function RepoActions({
       );
       const data = (await res.json().catch(() => ({}))) as {
         repo?: RepoSummary;
-        deleted?: string;
         error?: string;
       };
       if (!res.ok) {
-        setFeedback({ ok: false, text: data.error ?? `Échec (HTTP ${res.status}).` });
+        setFeedback({ ok: false, text: data.error ?? fill(ui.httpError, { status: res.status }) });
         return;
       }
       if (method === "DELETE") {
-        setFeedback({ ok: true, text: `Dépôt ${data.deleted ?? repo.full_name} supprimé.` });
         onDeleted(repo.full_name);
         return;
       }
       if (data.repo) {
         onUpdated(data.repo);
-        setFeedback({ ok: true, text: "Dépôt mis à jour." });
+        setFeedback({ ok: true, text: ui.saved });
       }
     } catch {
-      setFeedback({ ok: false, text: "Impossible de joindre le serveur." });
+      setFeedback({ ok: false, text: ui.offline });
     } finally {
       setBusy("");
     }
@@ -117,16 +123,17 @@ export function RepoActions({
       >
         <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-mist">
           <Pencil className="h-3.5 w-3.5" />
-          Renommer / décrire
+          {copy.editDetails}
         </h3>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="repo-name" className="mb-1.5 block text-xs text-mist">
-              Nom du dépôt
+              {ui.repoName}
             </label>
             <Input
               id="repo-name"
+              dir="ltr"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={!repo.can.push || busy !== ""}
@@ -135,21 +142,20 @@ export function RepoActions({
             {name.trim() !== repo.name && (
               <p className="mt-1.5 flex items-start gap-1.5 text-[11px] text-amber">
                 <AlertTriangle className="mt-px h-3 w-3 shrink-0" />
-                Renommer casse les clones, les liens et les pages GitHub existants.
-                GitHub redirige l'ancien nom, mais pas indéfiniment.
+                {copy.renameWarning}
               </p>
             )}
           </div>
           <div>
             <label htmlFor="repo-desc" className="mb-1.5 block text-xs text-mist">
-              Description
+              {ui.description}
             </label>
             <Input
               id="repo-desc"
+              dir="auto"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={!repo.can.push || busy !== ""}
-              placeholder="À quoi sert ce dépôt ?"
               maxLength={350}
             />
           </div>
@@ -162,11 +168,11 @@ export function RepoActions({
             ) : (
               <Check className="h-3.5 w-3.5" />
             )}
-            Enregistrer
+            {ui.save}
           </Button>
           {!repo.can.push && (
             <span className="text-[11px] text-mist">
-              Droits d'écriture insuffisants sur ce dépôt.
+              {copy.readOnly}
             </span>
           )}
         </div>
@@ -181,14 +187,11 @@ export function RepoActions({
             ) : (
               <Eye className="h-3.5 w-3.5" />
             )}
-            Visibilité
+            {ui.visibility}
           </h3>
           <p className="mt-1 text-xs text-mist">
-            Actuellement{" "}
-            <strong className="text-chalk">{repo.private ? "privé" : "public"}</strong>.
-            {repo.private
-              ? " Le rendre public expose tout l'historique des commits."
-              : " Le rendre privé retire l'accès à tous les anonymes."}
+            <strong className="text-chalk">{repo.private ? ui.private : ui.public}</strong>{" · "}
+            {repo.private ? copy.publicWarning : copy.privateWarning}
           </p>
         </div>
         <Button
@@ -204,7 +207,7 @@ export function RepoActions({
           ) : (
             <Lock className="h-3.5 w-3.5" />
           )}
-          Rendre {repo.private ? "public" : "privé"}
+          {repo.private ? copy.makePublic : copy.makePrivate}
         </Button>
       </div>
 
@@ -220,10 +223,10 @@ export function RepoActions({
             <div>
               <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-mist">
                 <Trash2 className="h-3.5 w-3.5" />
-                Zone sensible
+                {copy.dangerZone}
               </h3>
               <p className="mt-1 text-xs text-mist">
-                La suppression est définitive : code, historique, issues et wiki.
+                {copy.deleteWarning}
               </p>
             </div>
             <Button
@@ -236,24 +239,22 @@ export function RepoActions({
               }}
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Supprimer le dépôt
+              {copy.deleteRepo}
             </Button>
           </div>
         ) : (
           <div>
             <h3 className="flex items-center gap-2 text-sm font-semibold text-danger">
               <AlertTriangle className="h-4 w-4" />
-              Supprimer {repo.full_name}
+              {copy.deleteRepo}: <bdi dir="ltr">{repo.full_name}</bdi>
             </h3>
             <p className="mt-2 text-xs leading-relaxed text-mist">
-              Aucune récupération possible. Tapez{" "}
-              <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-chalk ring-1 ring-edge">
-                {repo.full_name}
-              </code>{" "}
-              pour débloquer le bouton.
+              {fill(copy.deleteConfirm, { repo: repo.full_name })}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Input
+                aria-label={ui.confirmation}
+                dir="ltr"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder={repo.full_name}
@@ -272,7 +273,7 @@ export function RepoActions({
                 ) : (
                   <Trash2 className="h-4 w-4" />
                 )}
-                Supprimer définitivement
+                {copy.deletePermanent}
               </Button>
               <Button
                 variant="ghost"
@@ -282,7 +283,7 @@ export function RepoActions({
                   setConfirmText("");
                 }}
               >
-                Annuler
+                {ui.cancel}
               </Button>
             </div>
           </div>
@@ -309,11 +310,11 @@ export function RepoActions({
 
       <div className="flex flex-wrap gap-1.5">
         <Badge variant={repo.private ? "muted" : "sky"}>
-          {repo.private ? "privé" : "public"}
+          {repo.private ? ui.private : ui.public}
         </Badge>
-        {repo.archived && <Badge variant="amber">archivé</Badge>}
+        {repo.archived && <Badge variant="amber">{ui.archived}</Badge>}
         {repo.fork && <Badge variant="muted">fork</Badge>}
-        {!repo.can.push && <Badge variant="amber">lecture seule</Badge>}
+        {!repo.can.push && <Badge variant="amber">{copy.readOnly}</Badge>}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import LocaleLink from "@/components/LocaleLink";
 import { ArrowRight, Search } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
-import { DEFAULT_LOCALE, LOCALE_PARAM, ogLocaleOf } from "@/lib/i18n/locales";
+import { LOCALE_PARAM, ogLocaleOf } from "@/lib/i18n/locales";
 import { buildPageMetadata } from "@/lib/seo";
 import { searchGuides } from "@/lib/seo-guides";
 
@@ -31,10 +31,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const [{ q }, { locale, urlLocale, t }] = await Promise.all([searchParams, getT()]);
-  const results = searchGuides(q ?? "");
+  const [{ q: rawQuery }, { locale, urlLocale, t }] = await Promise.all([searchParams, getT()]);
+  const q = Array.isArray(rawQuery) ? rawQuery[0] : rawQuery;
+  const results = searchGuides(q ?? "", locale);
 
   return (
     <main className="flex-1">
@@ -94,9 +95,6 @@ export default async function SearchPage({
                 <p className="mb-4 text-sm text-mist">
                   {t.guides.searchResultsFor.replace("{q}", q)}
                 </p>
-                {locale !== DEFAULT_LOCALE && (
-                  <p className="mb-4 text-sm text-mist">{t.guides.inFrench}</p>
-                )}
                 <ul className="space-y-3">
                   {results.map((guide) => (
                     <li key={guide.slug}>
@@ -107,7 +105,7 @@ export default async function SearchPage({
                         <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-go/10 text-go ring-1 ring-go/25">
                           <Search className="h-3.5 w-3.5" aria-hidden="true" />
                         </span>
-                        <div lang={DEFAULT_LOCALE} dir="ltr" className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1">
                           <h2 className="font-semibold text-chalk">
                             {guide.title}
                           </h2>

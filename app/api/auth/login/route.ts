@@ -12,12 +12,14 @@ import { localeFromUrl, localizePath } from "@/lib/i18n/navigation";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request): Promise<Response> {
+  const urlLocale = localeFromUrl(new URL(req.url));
   if (!config.github.configured) {
     // Redirection relative : le navigateur la résout sur l'origine courante.
-    return redirectTo(localizePath("/login?error=config", localeFromUrl(new URL(req.url))));
+    return redirectTo(localizePath("/login?error=config", urlLocale));
   }
 
-  const state = randomBytes(16).toString("hex");
+  const nonce = randomBytes(16).toString("hex");
+  const state = urlLocale ? `${nonce}.${urlLocale}` : nonce;
   const jar = await cookies();
   jar.set("rd_oauth", state, {
     httpOnly: true,

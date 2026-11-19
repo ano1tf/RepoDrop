@@ -1,19 +1,7 @@
-/**
- * Contenu éditorial indexable : **guides SEO** ciblés par requêtes longue
- * traîne. Chaque guide est une page publique, unique, indexable — c'est ce
- * qui fait passer RepoDrop d'une seule page indexable (l'accueil) à une
- * couverture de mots-clés complète.
- *
- * Le contenu est en **français** : les moteurs indexent la version par
- * défaut du site (voir le commentaire de `lib/i18n/locales.ts`). Les pages
- * restent accessibles dans toutes les langues pour l'interface, mais leur
- * contenu éditorial et leurs métadonnées sont rédigés en français, langue
- * d'indexation par défaut.
- *
- * Toutes les informations techniques mentionnées (formats, limites, sécurité)
- * sont cohérentes avec `lib/config.ts` et `lib/extract/*` — le contenu ne
- * doit jamais diverger du produit réel.
- */
+import { config } from "./config";
+import { getDictionary } from "./i18n/dictionary";
+import { fill, formatBytes, formatNumber } from "./i18n/format";
+import { DEFAULT_LOCALE, type Locale } from "./i18n/locales";
 
 export interface GuideSection {
   heading: string;
@@ -49,7 +37,8 @@ export interface Guide {
   related: string[];
 }
 
-export const GUIDES: readonly Guide[] = [
+/** French editorial source and stable URLs for each locale. */
+export const GUIDES = [
   {
     slug: "importer-rar-sur-github",
     title: "Comment importer un fichier RAR sur GitHub",
@@ -70,7 +59,7 @@ export const GUIDES: readonly Guide[] = [
       {
         heading: "Ce que fait RepoDrop avec un fichier RAR",
         paragraphs: [
-          "RepoDrop détecte le format RAR par ses octets magiques côté serveur, supporting à la fois les archives RAR4 (les plus anciens) et RAR5 (les plus courants aujourd'hui). L'archive est extraite dans un espace temporaire sandboxé : les chemins sont vérifiés (anti zip-slip) et les limites de taille et de nombre de fichiers appliquées avant toute écriture.",
+          "RepoDrop détecte le format RAR par ses octets magiques côté serveur, avec prise en charge des archives RAR4 (les plus anciennes) et RAR5 (les plus courants aujourd'hui). L'archive est extraite dans un espace temporaire sandboxé : les chemins sont vérifiés (anti zip-slip) et les limites de taille et de nombre de fichiers appliquées avant toute écriture.",
           "Une fois les fichiers extraits, un aperçu complet de l'arborescence s'affiche : vous vérifiez exactement ce qui sera poussé avant d'envoyer quoi que ce soit sur GitHub. Vous pouvez ensuite choisir de créer un dépôt neuf ou de pousser sur une branche dédiée d'un dépôt existant.",
         ],
       },
@@ -586,31 +575,105 @@ export const GUIDES: readonly Guide[] = [
       "envoyer-du-code-sur-github-sans-git",
     ],
   },
-] as const;
+] as const satisfies readonly Guide[];
 
 /** Slugs des guides, dans l'ordre d'affichage. */
 export const GUIDE_SLUGS: readonly string[] = GUIDES.map((g) => g.slug);
 
-/** Guide par slug (`undefined` si inconnu). */
-export function getGuide(slug: string): Guide | undefined {
-  return GUIDES.find((g) => g.slug === slug);
+/** The localized editions share instructions and FAQs where the workflow is
+ * the same, while retaining an introduction and advice specific to each guide.
+ * Do not derive URLs, dates or related links from translated text.
+ */
+export function getGuides(locale: Locale = DEFAULT_LOCALE): readonly Guide[] {
+  if (locale === DEFAULT_LOCALE) return GUIDES;
+  const { guides: copy, home, faq } = getDictionary(locale);
+  const formats = { question: faq.q2, answer: fill(faq.a2, {
+    upload: formatBytes(config.limits.maxUploadBytes, locale),
+    extract: formatBytes(config.limits.maxExtractBytes, locale),
+    files: formatNumber(config.limits.maxFiles, locale),
+  }) };
+  const privacy = { question: faq.q3, answer: faq.a3 };
+  const existing = { question: faq.q4, answer: faq.a4 };
+  const filters = { question: faq.q5, answer: faq.a5 };
+  const history = { question: copy.historyQ, answer: copy.historyA };
+  const visibility = { question: copy.privateQ, answer: copy.privateA };
+  const allFormats = ".rar, .zip, .tar, .tar.gz, .tgz";
+  const editions: Record<(typeof GUIDES)[number]["slug"], {
+    title: string;
+    intro: string;
+    format?: string;
+    topic: GuideFaqItem;
+    questions: GuideFaqItem[];
+  }> = {
+    "importer-rar-sur-github": {
+      title: fill(copy.formatTitle, { format: "RAR" }), intro: copy.rarIntro, format: "RAR",
+      topic: formats, questions: [privacy, existing],
+    },
+    "importer-zip-sur-github": {
+      title: fill(copy.formatTitle, { format: "ZIP" }), intro: copy.zipIntro, format: "ZIP",
+      topic: filters, questions: [formats, existing],
+    },
+    "importer-tar-sur-github": {
+      title: fill(copy.formatTitle, { format: "TAR" }), intro: copy.tarIntro, format: ".tar / .tar.gz / .tgz",
+      topic: formats, questions: [existing, filters],
+    },
+    "envoyer-du-code-sur-github-sans-git": {
+      title: copy.noGitTitle, intro: copy.noGitIntro,
+      topic: history, questions: [formats, privacy],
+    },
+    "creer-un-depot-github-depuis-une-archive": {
+      title: copy.newRepoTitle, intro: copy.newRepoIntro,
+      topic: visibility, questions: [history, privacy],
+    },
+    "televerser-du-code-sur-github": {
+      title: copy.uploadTitle, intro: copy.uploadIntro,
+      topic: formats, questions: [visibility, privacy],
+    },
+    "importer-du-code-sur-github": {
+      title: copy.importTitle, intro: copy.importIntro,
+      topic: existing, questions: [history, filters],
+    },
+    "publier-du-code-sur-github": {
+      title: copy.publishTitle, intro: copy.publishIntro,
+      topic: visibility, questions: [existing, history],
+    },
+  };
+
+  return GUIDES.map((source) => {
+    const edition = editions[source.slug];
+    return {
+      ...source,
+      title: edition.title,
+      description: edition.intro,
+      intro: edition.intro,
+      keywords: [edition.title, edition.format ?? allFormats],
+      steps: [home.step1Title, fill(copy.dropFormat, { format: edition.format ?? allFormats }), copy.review],
+      sections: [
+        { heading: edition.topic.question, paragraphs: [edition.topic.answer] },
+        { heading: home.feature2Title, paragraphs: [copy.safeArchive] },
+      ],
+      faq: edition.questions,
+    };
+  });
 }
 
-/** Tous les guides contenant la requête (insensible à la casse). */
-export function searchGuides(query: string): Guide[] {
-  const q = query.trim().toLowerCase();
+export function getGuide(slug: string, locale?: Locale): Guide | undefined {
+  return getGuides(locale).find((g) => g.slug === slug);
+}
+
+/** Search the edition being displayed, with case and accent folding. */
+export function searchGuides(query: string, locale: Locale = DEFAULT_LOCALE): Guide[] {
+  const normalize = (text: string) => text.trim().toLocaleLowerCase(locale)
+    .normalize("NFD").replace(/(?<=\p{Script=Latin})\p{Mark}+/gu, "").normalize("NFC");
+  const q = normalize(query);
   if (!q) return [];
-  return GUIDES.filter((g) => {
-    const haystack = [
-      g.title,
-      g.description,
-      g.intro,
-      ...g.keywords,
-      ...g.sections.flatMap((s) => [s.heading, ...s.paragraphs]),
-      ...g.faq.flatMap((f) => [f.question, f.answer]),
-    ]
-      .join(" ")
-      .toLowerCase();
-    return haystack.includes(q);
-  });
+  return getGuides(locale).filter((g) => normalize([
+    g.title,
+    g.description,
+    g.intro,
+    ...g.keywords,
+    ...g.steps,
+    ...g.sections.flatMap((s) => [s.heading, ...s.paragraphs]),
+    ...g.faq.flatMap((f) => [f.question, f.answer]),
+  ].join(" ")).includes(q));
 }

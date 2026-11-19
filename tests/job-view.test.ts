@@ -57,7 +57,7 @@ function render(locale: string): string {
   return renderToStaticMarkup(
     createElement(JobView, {
       initialJob: doneJob(),
-      copy: dict.job,
+      strings: dict,
       locale,
     }),
   );

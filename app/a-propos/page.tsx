@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
     title: t.about.aboutTitle,
     description: t.about.aboutLead,
-    keywords: ["RepoDrop", "à propos RepoDrop", "outil import GitHub", "import archive GitHub outil", "pourquoi RepoDrop"],
+    keywords: [SITE_NAME, t.about.aboutTitle, "GitHub", ".rar", ".zip", ".tar.gz"],
     path: "/a-propos",
     ogLocale: ogLocaleOf(locale),
   });

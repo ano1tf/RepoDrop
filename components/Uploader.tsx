@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useLocalizedPath } from "@/components/LocaleLink";
 import { Archive, AlertTriangle, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fill } from "@/lib/i18n/format";
+import { fill, formatPercent } from "@/lib/i18n/format";
 import { takePendingFile } from "@/lib/pending-import";
 import type { Dict } from "@/lib/i18n/types";
 
@@ -22,13 +22,14 @@ interface Props {
    * un 413 après plusieurs minutes de transfert.
    */
   maxBytes: number;
+  locale: string;
   /** Chaînes de la section `uploader` du dictionnaire courant. */
   t: Dict["uploader"];
 }
 
 const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
-export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props) {
+export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings }: Props) {
   const router = useRouter();
   const localize = useLocalizedPath();
   /*
@@ -74,7 +75,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
 
       const xhr = new XMLHttpRequest();
       xhrRef.current = xhr;
-      xhr.open("POST", "/api/upload");
+      xhr.open("POST", localize("/api/upload"));
       xhr.responseType = "json";
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
@@ -186,11 +187,11 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
           <div className="w-full max-w-sm">
             <div className="mb-3 flex items-center justify-center gap-2 text-sm text-chalk">
               <UploadCloud className="h-5 w-5 text-go" />
-              {fill(strings.uploading, { progress: progress ?? 0 })}
+              {fill(strings.uploading, { progress: formatPercent(progress ?? 0, locale) })}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
               <div
-                className="h-full w-full origin-left rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-200 ease-out"
+                className="h-full w-full origin-left rtl:origin-right rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-200 ease-out"
                 style={{ transform: `scaleX(${(progress ?? 0) / 100})` }}
               />
             </div>

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { ensureWorkerInit, jobOwnedBy } from "@/lib/jobs";
 import { JobView } from "@/components/JobView";
+import { localizeJob } from "@/lib/i18n/job-errors";
 import { getT } from "@/lib/i18n/server";
 import { localizePath } from "@/lib/i18n/navigation";
 import { buildPageMetadata } from "@/lib/seo";
@@ -39,7 +40,7 @@ export default async function JobPage({
 
   return (
     <main>
-      <JobView initialJob={job} copy={t.job} locale={locale} />
+      <JobView initialJob={localizeJob(job, locale)} strings={{ job: t.job, ui: t.ui, repos: t.repos, notFound: t.notFound }} locale={locale} />
     </main>
   );
 }

@@ -231,8 +231,7 @@ describe("écritures sur GitHub", () => {
 
   it("un 404 sur DELETE signale le scope manquant delete_repo", async () => {
     const err = await codeOf(gh.deleteRepo(TOKEN, "dimalaxyt", "legacy", "dimalaxyt/legacy"));
-    expect(err.code).toBe("FORBIDDEN");
-    expect(err.detail).toContain("delete_repo");
+    expect(err.code).toBe("DELETE_SCOPE_MISSING");
   });
 });
 

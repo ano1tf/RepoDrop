@@ -22,6 +22,8 @@ export interface UptimeStats {
 
 /** Réponse de GET /api/staff/activity. */
 export interface ActivityResponse {
+  /** Shared clock for relative dates in SSR and hydration. */
+  generatedAt: number;
   events: ActivityEvent[];
   total: number;
   stats: ActivityStats;

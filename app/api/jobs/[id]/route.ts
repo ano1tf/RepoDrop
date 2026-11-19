@@ -1,7 +1,12 @@
 /** GET /api/jobs/[id] — état du job (statut, aperçu, résultat du push). */
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { json } from "@/lib/http";
 import { ensureWorkerInit, jobOwnedBy } from "@/lib/jobs";
+
+import { localizeJob } from "@/lib/i18n/job-errors";
+import { requestLocale } from "@/lib/i18n/request";
+
+import { apiError } from "@/lib/i18n/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -9,14 +14,15 @@ interface Params {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_req: Request, { params }: Params): Promise<Response> {
+export async function GET(req: Request, { params }: Params): Promise<Response> {
   ensureWorkerInit();
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return apiError(req, "AUTH_REQUIRED", 401);
 
   const { id } = await params;
   const job = jobOwnedBy(id, session.login);
-  if (!job) return jsonError("Job introuvable.", 404);
+  if (!job) return apiError(req, "NOT_FOUND", 404);
 
-  return json({ job });
+  const locale = requestLocale(req);
+  return json({ job: localizeJob(job, locale) }, 200, { "Content-Language": locale });
 }

@@ -4,8 +4,9 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LocaleNavigation } from "@/components/LocaleLink";
-import { getLocaleState, getT } from "@/lib/i18n/server";
-import { dirOf, ogLocaleOf } from "@/lib/i18n/locales";
+import { getT } from "@/lib/i18n/server";
+import { DEFAULT_LOCALE, dirOf, ogLocaleOf } from "@/lib/i18n/locales";
+import { localizePath } from "@/lib/i18n/navigation";
 import {
   buildIcons,
   buildVerification,
@@ -29,7 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s · ${SITE_NAME}`,
     },
     description: t.meta.description,
-    keywords: SITE_KEYWORDS,
+    keywords: locale === DEFAULT_LOCALE ? SITE_KEYWORDS : [SITE_NAME, "GitHub", ".rar", ".zip", ".tar.gz"],
+    manifest: localizePath("/manifest.webmanifest", locale === DEFAULT_LOCALE ? null : locale),
     authors: [{ name: SITE_NAME }],
     creator: SITE_NAME,
     publisher: SITE_NAME,
@@ -92,14 +94,14 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { locale, urlLocale } = await getLocaleState();
+  const { locale, urlLocale, t } = await getT();
 
   // `lang`/`dir` reflètent la langue réellement rendue : indispensable pour la
   // synthèse vocale, la césure et le rendu droite-à-gauche (arabe).
   return (
     <html lang={locale} dir={dirOf(locale)}>
       {/* Découverte de contenu : lien RSS pour les agrégateurs et les moteurs. */}
-      <link rel="alternate" type="application/rss+xml" title="RepoDrop — Guides" href="/feed.xml" />
+      <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} — ${t.guides.guidesTitle}`} href={localizePath("/feed.xml", locale === DEFAULT_LOCALE ? null : locale)} />
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />

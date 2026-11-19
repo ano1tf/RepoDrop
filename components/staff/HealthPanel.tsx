@@ -5,9 +5,11 @@
  * et l'état de la configuration — utile pour diagnostiquer sans SSH.
  */
 import { AlertTriangle, CheckCircle2, Gauge, ServerCog } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn, formatBytes, formatDateTime, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { fill, formatBytes, formatDateTime, formatDuration, formatNumber, formatPercent, formatRelativeTime } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
+import type { Locale } from "@/lib/i18n/locales";
 import type { PingRow, UptimeStats } from "@/lib/staff-types";
 
 export interface ConfigView {
@@ -26,63 +28,64 @@ export interface ConfigView {
 
 export function HealthPanel({
   pings,
+  locale,
+  copy,
   uptime,
   configView,
 }: {
   pings: PingRow[];
+  locale: Locale;
+  copy: Pick<Dict, "system" | "ui" | "staff"> & { archiveLimit: string };
   uptime: UptimeStats;
   configView: ConfigView;
 }) {
   // Du plus ancien au plus récent pour la lecture gauche → droite.
+  const { system: t, ui } = copy;
   const ordered = [...pings].reverse();
+  const maxLatency = Math.max(1, ...ordered.map((p) => p.latencyMs ?? 0));
+  const duration = (ms: number | null) => ms === null ? "—" : formatDuration(ms, "millisecond", locale);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gauge className="h-4 w-4 text-violet-300" />
-            Disponibilité du site
+            {t.uptime}
           </CardTitle>
           <CardDescription>
-            Chaque barre est une sonde du bot Discord ({pings.length} dernières,
-            7 jours conservés).
+            {t.uptimeLead}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-2">
             <Metric
-              label="Disponibilité 24 h"
-              value={uptime.uptimePct !== null ? `${uptime.uptimePct} %` : "—"}
+              label={t.uptime24}
+              value={uptime.uptimePct !== null ? formatPercent(uptime.uptimePct, locale) : "—"}
             />
             <Metric
-              label="Latence moyenne"
-              value={uptime.avgLatencyMs !== null ? `${uptime.avgLatencyMs} ms` : "—"}
+              label={t.averageLatency}
+              value={duration(uptime.avgLatencyMs)}
             />
-            <Metric label="Sondes" value={`${uptime.ok}/${uptime.total}`} />
+            <Metric label={t.probes} value={`${formatNumber(uptime.ok, locale)} / ${formatNumber(uptime.total, locale)}`} />
           </div>
 
           {ordered.length === 0 ? (
             <p className="rounded-xl bg-panel2 p-6 text-center text-sm text-mist ring-1 ring-edge">
-              Aucune sonde pour l'instant. Activez le bot Discord (onglet
-              précédent) ou cliquez sur « Ping maintenant ».
+              {t.empty}
             </p>
           ) : (
             <div className="flex h-24 items-end gap-[2px] rounded-xl bg-panel2 p-2 ring-1 ring-edge">
               {ordered.map((p) => {
-                const maxLatency = Math.max(
-                  1,
-                  ...ordered.map((x) => x.latencyMs ?? 0),
-                );
                 const h = p.ok
                   ? Math.max(8, Math.round(((p.latencyMs ?? 0) / maxLatency) * 100))
                   : 100;
                 return (
                   <span
                     key={p.id}
-                    title={`${p.ok ? "OK" : "HS"} · ${formatDateTime(p.createdAt)}${
-                      p.latencyMs !== null ? ` · ${p.latencyMs} ms` : ""
-                    }${p.error ? ` · ${p.error}` : ""}`}
+                    title={`${p.ok ? ui.success : ui.failed} · ${formatDateTime(p.createdAt, locale)}${
+                      p.latencyMs !== null ? ` · ${duration(p.latencyMs)}` : ""
+                    }`}
                     style={{ height: `${h}%` }}
                     className={cn(
                       "flex-1 rounded-sm transition-colors",
@@ -94,38 +97,38 @@ export function HealthPanel({
             </div>
           )}
 
-          <div className="overflow-hidden rounded-xl ring-1 ring-edge">
+          <div className="overflow-x-auto rounded-xl ring-1 ring-edge">
             <table className="w-full text-xs">
               <thead className="bg-panel2 text-mist">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">Quand</th>
-                  <th className="px-3 py-2 text-left font-medium">État</th>
-                  <th className="px-3 py-2 text-right font-medium">Latence</th>
-                  <th className="px-3 py-2 text-right font-medium">HTTP</th>
+                  <th className="px-3 py-2 text-start font-medium">{ui.date}</th>
+                  <th className="px-3 py-2 text-start font-medium">{ui.status}</th>
+                  <th className="px-3 py-2 text-end font-medium">{t.latency}</th>
+                  <th className="px-3 py-2 text-end font-medium">HTTP</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-edge/70">
                 {pings.slice(0, 12).map((p) => (
                   <tr key={p.id} className="hover:bg-panel2/60">
-                    <td className="px-3 py-2 text-chalk/90" title={formatDateTime(p.createdAt)}>
-                      {timeAgo(p.createdAt)}
+                    <td className="px-3 py-2 text-chalk/90" title={formatDateTime(p.createdAt, locale)}>
+                      {formatRelativeTime(p.createdAt, locale)}
                     </td>
                     <td className="px-3 py-2">
                       {p.ok ? (
                         <span className="inline-flex items-center gap-1 text-go">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> OK
+                          <CheckCircle2 className="h-3.5 w-3.5" /> {ui.success}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-danger">
+                        <span className="inline-flex items-center gap-1 text-danger" title={p.error ? `${copy.staff.diagnostics}: ${p.error}` : undefined}>
                           <AlertTriangle className="h-3.5 w-3.5" />
-                          {p.error ?? "HS"}
+                          {ui.failed}
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-mist">
-                      {p.latencyMs !== null ? `${p.latencyMs} ms` : "—"}
+                    <td className="px-3 py-2 text-end tabular-nums text-mist">
+                      {duration(p.latencyMs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-mist">
+                    <td className="px-3 py-2 text-end tabular-nums text-mist">
                       {p.status ?? "—"}
                     </td>
                   </tr>
@@ -140,56 +143,46 @@ export function HealthPanel({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ServerCog className="h-4 w-4 text-violet-300" />
-            Configuration
+            {t.configuration}
           </CardTitle>
           <CardDescription>
-            Valeurs effectives au démarrage du process.
+            {t.configLead}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <ConfigRow label="URL publique" value={configView.appUrl} mono />
+          <ConfigRow label={t.publicUrl} value={configView.appUrl} mono />
           <ConfigRow label="Node.js" value={configView.nodeVersion} mono />
           <ConfigRow
-            label="Upload max"
-            value={`${formatBytes(configView.maxUploadBytes)} · ${formatBytes(
-              configView.maxExtractBytes,
-            )} décompressés`}
+            label={t.archiveLimits}
+            value={fill(copy.archiveLimit, { upload: formatBytes(configView.maxUploadBytes, locale), extract: formatBytes(configView.maxExtractBytes, locale) })}
           />
           <ConfigRow
-            label="Fichiers max"
-            value={configView.maxFiles.toLocaleString("fr-FR")}
+            label={t.maxFiles}
+            value={formatNumber(configView.maxFiles, locale)}
           />
           <ConfigRow
-            label="Rate-limit"
-            value={`${configView.pushesPerHour} push/h · ${configView.uploadsPerHour} uploads/h`}
+            label={t.quotas}
+            value={fill(t.quotaValues, { pushes: formatNumber(configView.pushesPerHour, locale), uploads: formatNumber(configView.uploadsPerHour, locale) })}
           />
-          <ConfigRow label="Dossier de travail" value={configView.jobsDir} mono />
+          <ConfigRow label={t.workDir} value={configView.jobsDir} mono />
           <ConfigRow
-            label="Secret de session"
-            value={configView.sessionSecretSet ? "défini" : "ABSENT"}
-            badge={configView.sessionSecretSet ? "ok" : "danger"}
+            label={t.sessionSecret}
+            value={configView.sessionSecretSet ? t.configured : t.notConfigured}
           />
           <ConfigRow
-            label="Comptes staff"
+            label={t.staffAccounts}
             value={
               configView.staffLogins.length
                 ? configView.staffLogins.join(", ")
                 : configView.devAuth
-                  ? "tous les comptes (mode dev)"
-                  : "aucun"
-            }
-            badge={
-              configView.staffLogins.length === 0 && !configView.devAuth
-                ? "danger"
-                : "ok"
+                  ? t.allDev
+                  : ui.none
             }
           />
           {configView.devAuth && (
             <p className="rounded-lg bg-amber/10 p-3 text-xs leading-relaxed text-amber ring-1 ring-amber/30">
-              <AlertTriangle className="mr-1 inline h-3.5 w-3.5" />
-              Le mode développement est actif : la connexion directe est
-              proposée et le panel staff est ouvert à tout compte connecté. À
-              désactiver en production.
+              <AlertTriangle className="me-1 inline h-3.5 w-3.5" />
+              {t.devWarning}
             </p>
           )}
         </CardContent>
@@ -211,12 +204,10 @@ function ConfigRow({
   label,
   value,
   mono,
-  badge,
 }: {
   label: string;
   value: string;
   mono?: boolean;
-  badge?: "ok" | "danger";
 }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg bg-panel2 px-3 py-2 ring-1 ring-edge">
@@ -233,11 +224,6 @@ function ConfigRow({
         >
           {value}
         </span>
-        {badge && (
-          <Badge variant={badge === "ok" ? "default" : "danger"}>
-            {badge === "ok" ? "ok" : "à corriger"}
-          </Badge>
-        )}
       </span>
     </div>
   );

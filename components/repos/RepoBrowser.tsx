@@ -38,10 +38,11 @@ import {
 } from "@/lib/repo-types";
 import { parseRepoView, serializeRepoView, type RepoView } from "@/lib/repo-view";
 
-export function RepoBrowser({ login, locale, copy, importLabel }: {
+export function RepoBrowser({ login, locale, copy, ui, importLabel }: {
   login: string;
   locale: Locale;
   copy: Dict["repos"];
+  ui: Dict["ui"];
   importLabel: string;
 }) {
   const router = useRouter();
@@ -51,10 +52,10 @@ export function RepoBrowser({ login, locale, copy, importLabel }: {
   const [repos, setRepos] = useState<RepoSummary[] | null>(null);
   const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<number | "offline" | null>(null);
+  const [loadError, setLoadError] = useState<{ status: number; message?: string } | "offline" | null>(null);
   const error = loadError === null
     ? null
-    : loadError === "offline" ? copy.offline : fill(copy.loadFailed, { status: loadError });
+    : loadError === "offline" ? copy.offline : loadError.message ?? fill(copy.loadFailed, { status: loadError.status });
 
   /**
    * Filtre, tri et dépôt consulté vivent dans l'URL (`?repo=&q=&sort=&mine=`).
@@ -93,10 +94,10 @@ export function RepoBrowser({ login, locale, copy, importLabel }: {
     setLoading(true);
     setLoadError(null);
     try {
-      const res = await fetch("/api/repos", { cache: "no-store" });
-      const data = (await res.json().catch(() => ({}))) as Partial<RepoListResponse> | undefined;
+      const res = await fetch(localize("/api/repos"), { cache: "no-store" });
+      const data = (await res.json().catch(() => ({}))) as (Partial<RepoListResponse> & { code?: string; error?: string }) | undefined;
       if (!res.ok || !data?.repos) {
-        setLoadError(res.status);
+        setLoadError({ status: res.status, message: data?.code ? data.error : undefined });
         setRepos(null);
         return;
       }
@@ -107,7 +108,7 @@ export function RepoBrowser({ login, locale, copy, importLabel }: {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [localize]);
 
   useEffect(() => {
     void load();
@@ -141,6 +142,9 @@ export function RepoBrowser({ login, locale, copy, importLabel }: {
     return (
       <RepoDetail
         fullName={selected}
+        locale={locale}
+        copy={copy}
+        ui={ui}
         view={view}
         onViewChange={handleViewChange}
         onBack={() => update({ repo: "", ref: "", path: "", file: "" })}

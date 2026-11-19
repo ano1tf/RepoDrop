@@ -6,7 +6,7 @@
  * de fichiers et le volume. Filtrable (kind / login / recherche) et paginé.
  */
 import { z } from "zod";
-import { json, jsonError } from "@/lib/http";
+import { json } from "@/lib/http";
 import { checkStaff } from "@/lib/staff";
 import {
   activityStats,
@@ -18,6 +18,10 @@ import {
   type EventKind,
 } from "@/lib/db";
 import { ensureWorkerInit } from "@/lib/jobs";
+
+import { localizeActivity } from "@/lib/i18n/activity-errors";
+import { requestLocale } from "@/lib/i18n/request";
+import { apiError } from "@/lib/i18n/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -42,15 +46,12 @@ const querySchema = z.object({
 export async function GET(req: Request): Promise<Response> {
   ensureWorkerInit();
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
 
   const url = new URL(req.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
   if (!parsed.success) {
-    return jsonError(
-      parsed.error.issues.map((i) => i.message).join(" ") || "Paramètres invalides.",
-      400,
-    );
+    return apiError(req, "INVALID_REQUEST", 400);
   }
   const q = parsed.data;
   const filters = {
@@ -59,13 +60,15 @@ export async function GET(req: Request): Promise<Response> {
     q: q.q || undefined,
   };
 
+  const locale = requestLocale(req);
   return json({
-    events: listEvents({ ...filters, limit: q.limit, offset: q.offset }),
+    generatedAt: Date.now(),
+    events: localizeActivity(listEvents({ ...filters, limit: q.limit, offset: q.offset }), locale),
     total: countEvents(filters),
     stats: activityStats(),
     logins: listEventLogins(40),
     pings: listPings(60),
     uptime: pingStats(24 * 3_600_000),
     page: { limit: q.limit, offset: q.offset },
-  });
+  }, 200, { "Content-Language": locale });
 }

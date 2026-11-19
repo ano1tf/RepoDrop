@@ -3,13 +3,15 @@
  * (pages de statut en direct). Aucune dépendance serveur ici.
  */
 
+import type { ErrorCode } from "./errors";
+
 export type JobStatus =
   | "queued" // upload accepté, en attente
   | "extracting" // extraction en cours
   | "ready" // aperçu disponible, en attente de « Pousser »
   | "pushing" // push GitHub en cours
   | "done" // poussé ✅
-  | "failed"; // échec (error contient le message FR)
+  | "failed"; // échec
 
 export type ArchiveFormat = "zip" | "rar" | "tar";
 
@@ -77,7 +79,9 @@ export interface JobRecord {
   filename: string;
   format: ArchiveFormat | null;
   status: JobStatus;
+  /** Code ou ancien message en SQLite ; message localisé dans la réponse. */
   error: string | null;
+  errorCode?: ErrorCode;
   preview: ArchivePreview | null;
   /** Options du dernier push tenté (null tant qu'aucun push n'a été lancé).
    *  Sert à proposer une relance (ex. en mode « remplacer tout ») après un

@@ -6,7 +6,7 @@
  * sous forme d'empreinte scrypt salée — jamais en clair, jamais renvoyé.
  */
 import { z } from "zod";
-import { isSecureRequest, json, jsonError } from "@/lib/http";
+import { isSecureRequest, json } from "@/lib/http";
 import { setSessionCookie } from "@/lib/session";
 import {
   checkStaff,
@@ -18,6 +18,8 @@ import { getString } from "@/lib/settings";
 import { config } from "@/lib/config";
 import { clientIp } from "@/lib/ratelimit";
 
+import { apiError } from "@/lib/i18n/api-errors";
+
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
@@ -27,9 +29,9 @@ const schema = z.object({
   password: z.string().max(200),
 });
 
-export async function GET(): Promise<Response> {
+export async function GET(req: Request): Promise<Response> {
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
 
   const fromPanel = Boolean(getString("staff.passwordHash"));
   return json({
@@ -42,16 +44,16 @@ export async function GET(): Promise<Response> {
 
 export async function POST(req: Request): Promise<Response> {
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
 
   let raw: unknown;
   try {
     raw = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return apiError(req, "INVALID_REQUEST", 400);
   }
   const parsed = schema.safeParse(raw);
-  if (!parsed.success) return jsonError("Requête invalide.", 400);
+  if (!parsed.success) return apiError(req, "INVALID_REQUEST", 400);
 
   const password = parsed.data.password;
   const current = parsed.data.current ?? "";
@@ -59,12 +61,12 @@ export async function POST(req: Request): Promise<Response> {
   // Changer (ou retirer) un mot de passe existant exige de connaître l'actuel.
   if (getString("staff.passwordHash")) {
     if (!(await verifyStaffPassword(current))) {
-      return jsonError("Mot de passe actuel incorrect.", 403);
+      return apiError(req, "WRONG_PASSWORD", 403);
     }
   }
 
   if (password !== "" && password.length < 8) {
-    return jsonError("Le mot de passe doit contenir au moins 8 caractères.", 400);
+    return apiError(req, "PASSWORD_TOO_SHORT", 400);
   }
 
   await setStaffPassword(password, {

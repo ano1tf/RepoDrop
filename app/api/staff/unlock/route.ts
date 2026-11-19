@@ -10,7 +10,7 @@
  * ne donne accès à rien d'autre qu'au claim `staffUnlocked`.
  */
 import { z } from "zod";
-import { isSecureRequest, json, jsonError } from "@/lib/http";
+import { isSecureRequest, json } from "@/lib/http";
 import { getSession, setSessionCookie } from "@/lib/session";
 import {
   isStaffAccount,
@@ -23,6 +23,8 @@ import {
 } from "@/lib/staff";
 import { logEvent } from "@/lib/db";
 import { clientIp } from "@/lib/ratelimit";
+
+import { apiError } from "@/lib/i18n/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -45,19 +47,19 @@ export async function GET(): Promise<Response> {
 
 export async function POST(req: Request): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return apiError(req, "AUTH_REQUIRED", 401);
   if (!(await isStaffAccount(session))) {
-    return jsonError("Ce compte ne fait pas partie du staff.", 403);
+    return apiError(req, "STAFF_DENIED", 403);
   }
 
   let raw: unknown;
   try {
     raw = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return apiError(req, "INVALID_REQUEST", 400);
   }
   const parsed = bodySchema.safeParse(raw);
-  if (!parsed.success) return jsonError("Requête invalide.", 400);
+  if (!parsed.success) return apiError(req, "INVALID_REQUEST", 400);
 
   const password = parsed.data.password ?? "";
   const action = parsed.data.action ?? "unlock";
@@ -86,11 +88,7 @@ export async function POST(req: Request): Promise<Response> {
   const until = unlockThrottledUntil(ip);
   if (until > 0) {
     const sec = Math.max(1, Math.ceil((until - Date.now()) / 1000));
-    return jsonError(
-      `Trop de tentatives. Réessayez dans ${Math.ceil(sec / 60)} min.`,
-      429,
-      { retryAfterSec: sec },
-    );
+    return apiError(req, "STAFF_RATE_LIMITED", 429, { retryAfterSec: sec });
   }
 
   if (!(await verifyStaffPassword(password))) {
@@ -101,13 +99,7 @@ export async function POST(req: Request): Promise<Response> {
       ip,
       detail: { scope: "staff.unlock", ok: false },
     });
-    return jsonError(
-      left > 0
-        ? "Mot de passe incorrect."
-        : "Trop de tentatives : patientez 15 minutes.",
-      401,
-      { attemptsLeft: left },
-    );
+    return apiError(req, left > 0 ? "WRONG_PASSWORD" : "STAFF_RATE_LIMITED", 401, { attemptsLeft: left });
   }
 
   resetUnlockAttempts(ip);

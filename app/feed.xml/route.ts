@@ -1,6 +1,9 @@
 import { headers } from "next/headers";
 import { buildRssFeed, resolveSiteUrl, SITE_DESCRIPTION } from "@/lib/seo";
-import { GUIDES } from "@/lib/seo-guides";
+import { getGuides } from "@/lib/seo-guides";
+import { getDictionary } from "@/lib/i18n/dictionary";
+import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
+import { localeFromUrl } from "@/lib/i18n/navigation";
 
 /**
  * Flux RSS 2.0 (`/feed.xml`).
@@ -12,23 +15,22 @@ import { GUIDES } from "@/lib/seo-guides";
  */
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const locale = localeFromUrl(new URL(request.url)) ?? DEFAULT_LOCALE;
+  const { meta, guides } = getDictionary(locale);
   const baseUrl = resolveSiteUrl({ headers: await headers() });
   const xml = buildRssFeed(
     baseUrl,
-    GUIDES.map((g) => ({
-      slug: g.slug,
-      title: g.title,
-      description: g.description,
-      dateModified: g.dateModified,
-    })),
-    SITE_DESCRIPTION,
+    getGuides(locale),
+    locale === DEFAULT_LOCALE ? SITE_DESCRIPTION : meta.description,
+    { locale, title: guides.guidesTitle },
   );
 
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
       "Cache-Control": "public, max-age=3600",
+      "Content-Language": locale,
     },
   });
 }

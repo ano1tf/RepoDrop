@@ -49,7 +49,7 @@ export default async function ReposPage() {
           </div>
         </div>
 
-        <RepoBrowser login={session.login} locale={locale} copy={t.repos} importLabel={t.nav.importArchive} />
+        <RepoBrowser login={session.login} locale={locale} copy={t.repos} ui={t.ui} importLabel={t.nav.importArchive} />
       </div>
     </main>
   );

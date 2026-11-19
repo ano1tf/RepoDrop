@@ -35,7 +35,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { cn, formatDateTime, timeAgo, timeUntil } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useLocalizedPath } from "@/components/LocaleLink";
+import { fill, formatDateTime, formatDuration, formatNumber, formatPercent, formatRelativeTime } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
+import type { Locale } from "@/lib/i18n/locales";
 import type {
   DiscordSettingsView,
   MonitorStatus,
@@ -46,9 +50,16 @@ const PRESETS = [5, 10, 15, 30, 60];
 
 export function DiscordSettings({
   initial,
+  copy,
+  locale,
 }: {
   initial: StaffSettingsResponse;
+  copy: Pick<Dict, "discord" | "staff" | "ui" | "system" | "errors">;
+  locale: Locale;
 }) {
+  const { discord: t, staff, ui, system, errors } = copy;
+  const localize = useLocalizedPath();
+  const duration = (ms: number | null) => ms === null ? "—" : formatDuration(ms, "millisecond", locale);
   const [settings, setSettings] = useState<DiscordSettingsView>(initial.settings);
   const [status, setStatus] = useState<MonitorStatus>(initial.status);
   const [token, setToken] = useState("");
@@ -96,16 +107,12 @@ export function DiscordSettings({
   //    cours ne doit pas être écrasée).
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/staff/settings", { cache: "no-store" });
+      const res = await fetch(localize("/api/staff/settings"), { cache: "no-store" });
+      const body = (await res.json().catch(() => ({}))) as Partial<StaffSettingsResponse> & { error?: string };
       if (!res.ok) {
-        setStatusError(
-          res.status === 401 || res.status === 403
-            ? "Session expirée (ou panel verrouillé) : reconnectez-vous pour suivre l'état du bot."
-            : `Actualisation impossible (HTTP ${res.status}).`,
-        );
+        setStatusError(body.error ?? fill(ui.httpError, { status: res.status }));
         return;
       }
-      const body = (await res.json()) as Partial<StaffSettingsResponse>;
       setStatusError(null);
       if (body.status) setStatus(body.status);
       if (!hydratedRef.current && body.settings) {
@@ -114,9 +121,9 @@ export function DiscordSettings({
         applySettings(body.settings);
       }
     } catch {
-      setStatusError("Actualisation impossible (serveur injoignable).");
+      setStatusError(ui.offline);
     }
-  }, [applySettings]);
+  }, [applySettings, localize, ui]);
 
   useEffect(() => {
     void refresh(); // hydration immédiate au montage (attendre 10 s laissait
@@ -127,20 +134,20 @@ export function DiscordSettings({
 
   const save = async (
     patch: Record<string, unknown>,
-    label = "Réglages enregistrés.",
+    label = ui.saved,
   ): Promise<boolean> => {
     setBusy("save");
     setMessage(null);
     try {
-      const res = await fetch("/api/staff/settings", {
+      const res = await fetch(localize("/api/staff/settings"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
-      const body = (await res.json()) as
+      const body = (await res.json().catch(() => ({}))) as
         | { settings?: DiscordSettingsView; status?: MonitorStatus; error?: string };
       if (!res.ok) {
-        setMessage({ kind: "err", text: body.error ?? `HTTP ${res.status}` });
+        setMessage({ kind: "err", text: body.error ?? fill(ui.httpError, { status: res.status }) });
         return false;
       }
       if (body.settings) {
@@ -154,7 +161,7 @@ export function DiscordSettings({
       setMessage({ kind: "ok", text: label });
       return true;
     } catch {
-      setMessage({ kind: "err", text: "Enregistrement impossible (réseau)." });
+      setMessage({ kind: "err", text: ui.offline });
       return false;
     } finally {
       setBusy(null);
@@ -165,13 +172,15 @@ export function DiscordSettings({
     setBusy(actionName);
     setMessage(null);
     try {
-      const res = await fetch("/api/staff/discord", {
+      const res = await fetch(localize("/api/staff/discord"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: actionName }),
       });
-      const body = (await res.json()) as {
+      const body = (await res.json().catch(() => ({}))) as {
         error?: string;
+        ok?: boolean;
+        mode?: "bot" | "webhook";
         status?: MonitorStatus;
         bot?: { username: string };
         channel?: { name: string } | null;
@@ -179,24 +188,26 @@ export function DiscordSettings({
         sent?: boolean;
       };
       if (!res.ok) {
-        setMessage({ kind: "err", text: body.error ?? `HTTP ${res.status}` });
+        setMessage({ kind: "err", text: body.error ?? fill(ui.httpError, { status: res.status }) });
         return;
       }
       if (body.status) setStatus(body.status);
       let text = okText;
+      if (body.mode === "webhook") text = t.testWebhook;
       if (body.bot) {
-        text = `Jeton valide — bot « ${body.bot.username} »${
-          body.channel ? `, canal « ${body.channel.name} »` : ""
-        }.`;
+        text = [t.tokenValid, body.bot.username, body.channel?.name].filter(Boolean).join(" · ");
       }
       if (body.probe) {
-        text = `Site ${body.probe.ok ? "joignable" : "INJOIGNABLE"} en ${
-          body.probe.latencyMs ?? "?"
-        } ms${body.sent ? " — message envoyé sur Discord." : " — message non envoyé."}`;
+        text = [
+          body.probe.ok ? t.reachable : t.unreachable,
+          duration(body.probe.latencyMs),
+          body.sent ? t.sent : t.notSent,
+        ].join(" · ");
       }
-      setMessage({ kind: "ok", text });
+      const failed = body.ok === false || Boolean(body.error);
+      setMessage({ kind: failed ? "err" : "ok", text: body.error ?? (failed && !body.probe ? errors.DISCORD_FAILED : text) });
     } catch {
-      setMessage({ kind: "err", text: "Action impossible (réseau)." });
+      setMessage({ kind: "err", text: ui.offline });
     } finally {
       setBusy(null);
     }
@@ -214,64 +225,63 @@ export function DiscordSettings({
       roleMention,
     };
     if (token.trim() !== "") patch.token = token.trim();
-    void save(patch, "Réglages enregistrés et bot redémarré.");
+    void save(patch);
   };
 
   const configured = settings.tokenSet;
   const webhook = settings.tokenKind === "webhook";
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
       {/* ---------------------------------------------------------- réglages */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-violet-300" />
-            Bot Discord
+            {t.title}
           </CardTitle>
           <CardDescription>
-            Collez le <strong className="text-chalk">jeton du bot</strong> (Portail
-            développeurs Discord → Bot → Reset Token) ou l'URL d'un webhook. Le
-            jeton est chiffré en base et n'est plus jamais réaffiché.
+            {t.lead}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           {!initial.persistentSecrets && (
             <p className="rounded-lg bg-amber/10 p-3 text-xs leading-relaxed text-amber ring-1 ring-amber/30">
-              <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-              Le secret de session n&apos;est pas défini : la clé de chiffrement
-              est régénérée à chaque démarrage, le jeton sera perdu au prochain
-              redémarrage. Définissez-le côté serveur pour conserver le jeton.
+              <ShieldCheck className="me-1 inline h-3.5 w-3.5" />
+              {t.secretWarning}
             </p>
           )}
 
           <Field
-            label="Jeton du bot (ou URL de webhook)"
+            id="discord-token"
+            label={t.token}
             hint={
               settings.tokenSet
-                ? `Enregistré : ${settings.tokenMasked}`
-                : "Aucun jeton enregistré."
+                ? settings.tokenMasked
+                : system.notConfigured
             }
             icon={<KeyRound className="h-4 w-4" />}
           >
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
+                  id="discord-token"
+                  dir="ltr"
                   type={showToken ? "text" : "password"}
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                   placeholder={
-                    settings.tokenSet ? "Laisser vide pour conserver" : "MTok… ou https://discord.com/api/webhooks/…"
+                    settings.tokenSet ? t.keepToken : "https://discord.com/api/webhooks/…"
                   }
                   autoComplete="off"
                   spellCheck={false}
-                  className={cn("pr-10", webhook && "font-mono text-xs")}
+                  className={cn("pe-10", webhook && "font-mono text-xs")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowToken((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-mist hover:text-chalk"
-                  aria-label={showToken ? "Masquer" : "Afficher"}
+                  className="absolute end-2 top-1/2 -translate-y-1/2 text-mist hover:text-chalk"
+                  aria-label={showToken ? t.hideToken : t.showToken}
                 >
                   {showToken ? (
                     <EyeOff className="h-4 w-4" />
@@ -285,9 +295,10 @@ export function DiscordSettings({
                   type="button"
                   variant="danger"
                   onClick={() =>
-                    void save({ token: "" }, "Jeton supprimé. Le bot est arrêté.")
+                    void save({ token: "" }, t.tokenRemoved)
                   }
-                  title="Supprimer le jeton enregistré"
+                  title={t.removeToken}
+                  aria-label={t.removeToken}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -296,14 +307,17 @@ export function DiscordSettings({
           </Field>
 
           <Field
-            label="Identifiant du canal"
+            id="discord-channel"
+            label={t.channelId}
             hint={
               webhook
-                ? "Inutile avec un webhook : l'URL contient déjà le canal."
-                : "Clic droit sur le canal → « Copier l'identifiant » (mode développeur activé)."
+                ? t.webhookHint
+                : t.channelHint
             }
           >
             <Input
+              id="discord-channel"
+              dir="ltr"
               value={channelId}
               onChange={(e) => setChannelId(e.target.value.replace(/\D/g, "").slice(0, 25))}
               placeholder="1234567890123456789"
@@ -312,9 +326,10 @@ export function DiscordSettings({
             />
           </Field>
 
-          <Field label="Période du ping" hint="Le bot sonde le site et publie l'état à cette fréquence.">
+          <Field id="discord-interval" label={t.interval}>
             <div className="flex flex-wrap items-center gap-2">
               <Input
+                id="discord-interval"
                 type="number"
                 min={1}
                 max={1440}
@@ -322,8 +337,7 @@ export function DiscordSettings({
                 onChange={(e) => setIntervalMin(e.target.value)}
                 className="w-28"
               />
-              <span className="text-sm text-mist">minutes</span>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {PRESETS.map((p) => (
                   <button
                     key={p}
@@ -336,7 +350,7 @@ export function DiscordSettings({
                         : "bg-panel2 text-mist ring-edge hover:text-chalk",
                     )}
                   >
-                    {p} min
+                    {formatDuration(p, "minute", locale)}
                   </button>
                 ))}
               </div>
@@ -345,30 +359,33 @@ export function DiscordSettings({
 
           <div className="grid gap-2 sm:grid-cols-3">
             <Toggle
-              label="Ping périodique"
-              desc="Publier l'état à chaque sonde"
+              label={t.heartbeat}
+              desc={t.heartbeatHint}
               checked={heartbeat}
               onChange={setHeartbeat}
             />
             <Toggle
-              label="Annoncer les push"
-              desc="Qui a poussé, où, quand"
+              label={t.notifyPush}
+              desc={t.notifyPushHint}
               checked={notifyPush}
               onChange={setNotifyPush}
             />
             <Toggle
-              label="Alerte si HS"
-              desc="Message + mention en cas de panne"
+              label={t.alertDown}
+              desc={t.alertHint}
               checked={alertOnDown}
               onChange={setAlertOnDown}
             />
           </div>
 
           <Field
-            label="Mention en cas de panne"
-            hint="Ex. : @here, ou <@&1234567890> pour mentionner un rôle."
+            id="discord-mention"
+            label={t.mention}
+            hint={t.mentionHint}
           >
             <Input
+              id="discord-mention"
+              dir="ltr"
               value={roleMention}
               onChange={(e) => setRoleMention(e.target.value)}
               placeholder="@here"
@@ -376,13 +393,16 @@ export function DiscordSettings({
           </Field>
 
           <Field
-            label="URL sondée (avancé)"
-            hint={`Vide = ${status.probeUrl}`}
+            id="discord-probe"
+            label={t.probeUrl}
+            hint={fill(t.defaultProbe, { url: status.probeUrl })}
           >
             <Input
+              id="discord-probe"
+              dir="ltr"
               value={probeUrl}
               onChange={(e) => setProbeUrl(e.target.value)}
-              placeholder="https://mon-site.example/api/health"
+              placeholder="https://example.com/api/health"
               className="font-mono text-xs"
             />
           </Field>
@@ -391,12 +411,12 @@ export function DiscordSettings({
             <Switch
               checked={enabled}
               onChange={setEnabled}
-              label="Activer le bot"
+              label={t.enable}
             />
             <span className="text-sm text-chalk/90">
-              {enabled ? "Bot actif" : "Bot désactivé"}
+              {enabled ? ui.active : ui.inactive}
             </span>
-            <div className="ml-auto flex flex-wrap gap-2">
+            <div className="ms-auto flex flex-wrap gap-2">
               <Button
                 type="button"
                 onClick={saveAll}
@@ -404,7 +424,7 @@ export function DiscordSettings({
                 title={
                   hydrated
                     ? undefined
-                    : "Récupération des réglages en cours… (réessayez dans un instant)"
+                    : ui.loading
                 }
               >
                 {busy === "save" ? (
@@ -412,7 +432,7 @@ export function DiscordSettings({
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                Enregistrer
+                {ui.save}
               </Button>
             </div>
           </div>
@@ -439,51 +459,51 @@ export function DiscordSettings({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Radio className="h-4 w-4 text-violet-300" />
-              État du bot
+              {t.status}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={status.running ? "default" : "muted"}>
                 {status.running ? <PlugZap className="h-3 w-3" /> : <Plug className="h-3 w-3" />}
-                {status.running ? "Moniteur actif" : "Arrêté"}
+                {status.running ? t.running : t.stopped}
               </Badge>
               <Badge variant={configured ? "sky" : "amber"}>
                 {configured
                   ? webhook
-                    ? "Mode webhook"
-                    : "Mode bot"
-                  : "Non configuré"}
+                    ? t.webhookMode
+                    : t.botMode
+                  : system.notConfigured}
               </Badge>
               {status.bot.connected && (
                 <Badge variant="default">
                   <Check className="h-3 w-3" />
-                  Gateway : {status.bot.user ?? "connecté"}
-                  {status.bot.latencyMs !== null ? ` · ${status.bot.latencyMs} ms` : ""}
+                  Gateway{status.bot.user ? `: ${status.bot.user}` : ""}
+                  {status.bot.latencyMs !== null ? ` · ${duration(status.bot.latencyMs)}` : ""}
                 </Badge>
               )}
             </div>
 
             <dl className="grid grid-cols-2 gap-2 text-sm">
-              <Row label="Prochain ping">
-                {status.nextRunAt ? timeUntil(status.nextRunAt) : "—"}
+              <Row label={t.nextPing}>
+                {status.nextRunAt ? formatRelativeTime(status.nextRunAt, locale) : "—"}
               </Row>
-              <Row label="Dernier ping">
-                {status.lastRunAt ? timeAgo(status.lastRunAt) : "—"}
+              <Row label={t.lastPing}>
+                {status.lastRunAt ? formatRelativeTime(status.lastRunAt, locale) : "—"}
               </Row>
-              <Row label="Latence">
-                {status.lastLatencyMs !== null ? `${status.lastLatencyMs} ms` : "—"}
+              <Row label={system.latency}>
+                {duration(status.lastLatencyMs)}
               </Row>
-              <Row label="Disponibilité 24 h">
+              <Row label={system.uptime24}>
                 {status.uptime24h.uptimePct !== null
-                  ? `${status.uptime24h.uptimePct} %`
+                  ? formatPercent(status.uptime24h.uptimePct, locale)
                   : "—"}
               </Row>
-              <Row label="Sondes 24 h">
-                {status.uptime24h.ok}/{status.uptime24h.total}
+              <Row label={system.probes}>
+                {formatNumber(status.uptime24h.ok, locale)} / {formatNumber(status.uptime24h.total, locale)}
               </Row>
-              <Row label="Messages envoyés">
-                {String(status.messagesSent)}
+              <Row label={t.messagesSent}>
+                {formatNumber(status.messagesSent, locale)}
               </Row>
             </dl>
 
@@ -496,13 +516,14 @@ export function DiscordSettings({
               </p>
             )}
             {status.lastError && (
-              <p className="rounded-lg bg-danger/10 p-2.5 text-xs text-danger ring-1 ring-danger/25">
-                {status.lastError}
-              </p>
+              <details className="rounded-lg bg-danger/10 p-2.5 text-xs text-danger ring-1 ring-danger/25">
+                <summary className="cursor-pointer">{staff.diagnostics}</summary>
+                <code dir="auto" className="mt-2 block break-all">{status.lastError}</code>
+              </details>
             )}
             {status.startedAt && (
               <p className="text-[11px] text-mist">
-                Démarré le {formatDateTime(status.startedAt)}
+                {fill(t.startedAt, { date: formatDateTime(status.startedAt, locale) })}
               </p>
             )}
 
@@ -510,7 +531,7 @@ export function DiscordSettings({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => void action("test", "Jeton validé.")}
+                onClick={() => void action("test", t.tokenValid)}
                 disabled={busy !== null || !configured}
               >
                 {busy === "test" ? (
@@ -518,12 +539,12 @@ export function DiscordSettings({
                 ) : (
                   <ShieldCheck className="h-3.5 w-3.5" />
                 )}
-                Tester le jeton
+                {t.testToken}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => void action("send", "Message de test envoyé.")}
+                onClick={() => void action("send", t.testSent)}
                 disabled={busy !== null || !configured}
               >
                 {busy === "send" ? (
@@ -531,12 +552,12 @@ export function DiscordSettings({
                 ) : (
                   <Send className="h-3.5 w-3.5" />
                 )}
-                Message de test
+                {t.sendTest}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => void action("ping", "Sonde effectuée.")}
+                onClick={() => void action("ping", ui.success)}
                 disabled={busy !== null || !configured}
               >
                 {busy === "ping" ? (
@@ -544,15 +565,15 @@ export function DiscordSettings({
                 ) : (
                   <ActivityIcon className="h-3.5 w-3.5" />
                 )}
-                Ping maintenant
+                {t.pingNow}
               </Button>
               <Button
                 variant={status.running ? "danger" : "outline"}
                 size="sm"
-                onClick={() => void action(status.running ? "stop" : "start", "État mis à jour.")}
+                onClick={() => void action(status.running ? "stop" : "start", ui.success)}
                 disabled={busy !== null}
               >
-                {status.running ? "Arrêter" : "Démarrer"}
+                {status.running ? t.stop : t.start}
               </Button>
             </div>
           </CardContent>
@@ -560,27 +581,13 @@ export function DiscordSettings({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Mode d'emploi en 3 étapes</CardTitle>
+            <CardTitle className="text-sm">{t.setup}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ol className="flex flex-col gap-3 text-xs leading-relaxed text-mist">
-              <li>
-                <strong className="text-chalk">1.</strong> Créez une application
-                sur le Portail développeurs Discord, ajoutez un <strong className="text-chalk">Bot</strong>,
-                puis copiez son jeton. Aucune permission sensible n'est
-                nécessaire : <code>Send Messages</code> suffit.
-              </li>
-              <li>
-                <strong className="text-chalk">2.</strong> Invitez le bot sur
-                votre serveur (OAuth2 → <code>bot</code> → scope
-                <code> applications.commands</code> facultatif) et collez
-                l'identifiant du canal.
-              </li>
-              <li>
-                <strong className="text-chalk">3.</strong> Enregistrez, puis
-                cliquez sur « Ping maintenant » : le message d'état arrive dans
-                le canal, puis toutes les {intervalMin || 10} minutes.
-              </li>
+            <ol className="list-decimal space-y-3 ps-4 text-xs leading-relaxed text-mist">
+              <li>{t.setupBot}</li>
+              <li>{t.setupChannel}</li>
+              <li>{t.setupVerify}</li>
             </ol>
           </CardContent>
         </Card>
@@ -592,11 +599,13 @@ export function DiscordSettings({
 /* ----------------------------------------------------------------- briques */
 
 function Field({
+  id,
   label,
   hint,
   icon,
   children,
 }: {
+  id: string;
   label: string;
   hint?: string;
   icon?: React.ReactNode;
@@ -604,7 +613,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="flex items-center gap-1.5">
+      <Label htmlFor={id} className="flex items-center gap-1.5">
         {icon}
         {label}
       </Label>

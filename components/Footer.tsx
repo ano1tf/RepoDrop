@@ -87,7 +87,7 @@ export async function Footer() {
             {t.footer.copyright.replace("{year}", String(new Date().getFullYear()))}
           </span>
           {/* Le point à droite ouvre /staff (5 clics). Invisible, volontairement. */}
-          <SecretDoor />
+          <SecretDoor loadingLabel={t.ui.loading} />
         </div>
       </div>
     </footer>

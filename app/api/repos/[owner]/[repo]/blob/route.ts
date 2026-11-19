@@ -7,9 +7,11 @@
  * Le client affiche le texte tel quel : jamais d'interprétation HTML/SVG.
  */
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { json } from "@/lib/http";
 import { getBlob, safeRef, safeRepoPath } from "@/lib/github";
-import { toUserMessage, AppError } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
+
+import { apiError, apiException } from "@/lib/i18n/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +21,7 @@ interface Params {
 
 export async function GET(req: Request, { params }: Params): Promise<Response> {
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return apiError(req, "AUTH_REQUIRED", 401);
 
   const { owner, repo } = await params;
   const url = new URL(req.url);
@@ -30,9 +32,9 @@ export async function GET(req: Request, { params }: Params): Promise<Response> {
     path = safeRepoPath(url.searchParams.get("path") ?? "");
     ref = safeRef(url.searchParams.get("ref"));
   } catch (e) {
-    return jsonError(toUserMessage(e), 400);
+    return apiException(req, e, 400);
   }
-  if (!path) return jsonError("Paramètre « path » requis.", 400);
+  if (!path) return apiError(req, "BAD_PATH", 400);
 
   try {
     return json({ blob: await getBlob(session.token, owner, repo, path, ref) });
@@ -43,6 +45,6 @@ export async function GET(req: Request, { params }: Params): Promise<Response> {
         : e instanceof AppError && e.code === "RATE_LIMITED"
           ? 429
           : 500;
-    return jsonError(toUserMessage(e), status);
+    return apiException(req, e, status);
   }
 }

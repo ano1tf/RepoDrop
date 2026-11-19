@@ -30,13 +30,15 @@ import {
   SITE_SAME_AS,
   twitterHandleFields,
 } from "@/lib/seo";
-import { GUIDES, searchGuides } from "@/lib/seo-guides";
+import { LOCALES } from "@/lib/i18n/locales";
+import { getDictionary } from "@/lib/i18n/dictionary";
+import { getGuides, GUIDES, searchGuides } from "@/lib/seo-guides";
 import OpenGraphImage, {
   alt as ogAlt,
   contentType as ogContentType,
   size as ogSize,
 } from "@/app/opengraph-image";
-import manifestRoute from "@/app/manifest";
+import { GET as manifestRoute } from "@/app/manifest.webmanifest/route";
 
 function makeHeaders(entries: Record<string, string>): Headers {
   return new Headers(entries);
@@ -165,7 +167,7 @@ describe("buildRobots", () => {
 });
 
 describe("buildManifest", () => {
-  it("fournit un manifeste PWA français complet", () => {
+  it("fournit un manifeste PWA français complet", async () => {
     const m = buildManifest();
     expect(m.short_name).toBe(SITE_NAME);
     expect(m.description).toBe(SITE_DESCRIPTION);
@@ -173,7 +175,17 @@ describe("buildManifest", () => {
     expect(m.start_url).toBe("/");
     expect(m.theme_color).toBe("#080b12");
     expect(m.icons?.length).toBeGreaterThan(0);
-    expect(manifestRoute()).toEqual(m);
+    expect(await manifestRoute(new Request("https://repodrop.test/manifest.webmanifest")).json()).toEqual(m);
+  });
+
+  it.each(LOCALES)("localise le manifeste en $code sans changer l’identité de l’application", async ({ code, dir }) => {
+    const response = manifestRoute(new Request(`https://repodrop.test/manifest.webmanifest?lang=${code}`));
+    expect(response.headers.get("content-language")).toBe(code);
+    const manifest = await response.json();
+    expect(manifest).toMatchObject({ id: "/", lang: code, start_url: code === "fr" ? "/" : `/?lang=${code}` });
+    if (code !== "fr") {
+      expect(manifest).toMatchObject({ dir, description: getDictionary(code).meta.description });
+    }
   });
 });
 
@@ -755,6 +767,49 @@ describe("contenu des guides (lib/seo-guides)", () => {
     expect(searchGuides("")).toEqual([]);
     expect(searchGuides("   ")).toEqual([]);
     expect(searchGuides("zzzz-inexistant")).toEqual([]);
+  });
+});
+
+describe("éditions localisées des guides", () => {
+  it.each(LOCALES)("couvre chaque guide en $code sans modifier les slugs", ({ code }) => {
+    const guides = getGuides(code);
+    expect(guides.map((guide) => guide.slug)).toEqual(GUIDES.map((guide) => guide.slug));
+    for (const [i, guide] of guides.entries()) {
+      const source = GUIDES[i];
+      expect(guide.related).toEqual(source.related);
+      expect(guide.datePublished).toBe(source.datePublished);
+      expect(guide.steps).toHaveLength(3);
+      expect(guide.sections.length).toBeGreaterThan(0);
+      expect(guide.faq.length).toBeGreaterThan(0);
+      expect(JSON.stringify(guide)).not.toMatch(/\{\w+\}/);
+      if (code !== "fr") {
+        expect(guide.title).not.toBe(source.title);
+        expect(guide.intro).not.toBe(source.intro);
+        expect(guide.steps).not.toEqual(source.steps);
+        expect(guide.sections).not.toEqual(source.sections);
+        expect(guide.faq).not.toEqual(source.faq);
+      }
+      expect(searchGuides(guide.title, code).map((result) => result.slug)).toContain(guide.slug);
+    }
+  });
+
+  it("recherche le contenu traduit et conserve les accents facultatifs", () => {
+    expect(searchGuides("NUMERO DE ARCHIVOS", "es").map((guide) => guide.slug)).toContain("importer-rar-sur-github");
+    expect(searchGuides("github sans git", "en")).toEqual([]);
+  });
+
+  it("annonce le flux traduit avec des liens qui conservent la langue et des GUID stables", () => {
+    const guides = getGuides("ja");
+    const copy = getDictionary("ja");
+    const xml = buildRssFeed("https://repodrop.fr", guides, copy.meta.description, {
+      locale: "ja", title: copy.guides.guidesTitle,
+    });
+    expect(xml).toContain(`<title>RepoDrop — ${copy.guides.guidesTitle}</title>`);
+    expect(xml).toContain(`<description>${copy.meta.description}</description>`);
+    expect(xml).toContain("<language>ja</language>");
+    const canonical = `https://repodrop.fr/guides/${guides[0].slug}`;
+    expect(xml).toContain(`<link>${canonical}?lang=ja</link>`);
+    expect(xml).toContain(`<guid isPermaLink="true">${canonical}</guid>`);
   });
 });
 

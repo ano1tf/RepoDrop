@@ -5,7 +5,6 @@
 import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
-import { frMessage } from "./errors";
 import type { ArchiveFormat, ArchivePreview, JobRecord, JobStatus, PushOptions } from "./types";
 
 export interface JobRow {
@@ -212,7 +211,7 @@ export function failStaleJobs(): number {
       `UPDATE jobs SET status = 'failed', error = ?, updated_at = ?
        WHERE status IN ('queued', 'extracting', 'pushing')`,
     )
-    .run(frMessage("INTERRUPTED"), Date.now());
+    .run("INTERRUPTED", Date.now());
   return Number(res.changes ?? 0);
 }
 

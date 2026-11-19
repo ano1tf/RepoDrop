@@ -21,7 +21,7 @@ import { Uploader } from "@/components/Uploader";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
 import { demoCopyFrom } from "@/components/workflow-demo/copy";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
-import { formatBytes } from "@/lib/i18n/format";
+import { formatBytes, formatPercent } from "@/lib/i18n/format";
 
 /** Relais IndexedDB : espionné (et sans effet) dans ces tests. */
 const pending = vi.hoisted(() => ({
@@ -179,6 +179,7 @@ function renderUploader(maxBytes = MAX_UPLOAD) {
         maxLabel: formatBytes(maxBytes, "fr"),
         extractLabel: "500 Mo",
         maxBytes,
+        locale: "fr",
         t: DICTIONARIES.fr.uploader,
       }),
     );
@@ -234,7 +235,7 @@ describe("Uploader — annulation", () => {
       xhr.upload.onprogress?.({ lengthComputable: true, loaded: 40, total: 100 });
     });
     await flush();
-    expect(container.textContent).toContain("40%");
+    expect(container.textContent).toContain(formatPercent(40, "fr"));
 
     const cancel = [...container.querySelectorAll("button")].find((b) =>
       b.textContent?.includes(DICTIONARIES.fr.uploader.cancel),
@@ -248,7 +249,7 @@ describe("Uploader — annulation", () => {
 
     expect(xhr.aborted).toBe(true);
     // Retour à la zone de dépôt : plus de progression, pas d'erreur affichée.
-    expect(container.textContent).not.toContain("40%");
+    expect(container.textContent).not.toContain(formatPercent(40, "fr"));
     expect(container.querySelector('[role="alert"]')).toBeNull();
     expect(container.textContent).toContain(DICTIONARIES.fr.uploader.dropHint);
   });

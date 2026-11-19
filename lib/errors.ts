@@ -1,38 +1,36 @@
-/**
- * Erreurs métier traduites en messages utilisateur FR.
- * Les lib/ lancent des AppError avec un `code` ; jobs.ts les traduit.
- */
+import { fr } from "./i18n/dictionaries/fr";
 
-export type ErrorCode =
-  | "ENCRYPTED"
-  | "TOO_MANY_FILES"
-  | "TOO_BIG"
-  | "EMPTY"
-  | "CORRUPT"
-  | "UNSUPPORTED"
-  | "VOLUME"
-  | "UNSAFE_PATHS"
-  | "PATH_LIMITS"
-  | "TIMEOUT"
-  | "RATE_LIMITED"
-  | "NOT_FOUND"
-  | "FORBIDDEN"
-  /**
-   * Jeton GitHub expiré ou révoqué (HTTP 401). Distinct de FORBIDDEN : la
-   * seule issue est de se reconnecter, pas de demander des droits.
-   */
-  | "UNAUTHORIZED"
-  | "REPO_EXISTS"
-  | "NAME_INVALID"
-  | "NO_CHANGES"
-  | "CONFLICT"
-  | "SCOPE_MISSING"
-  | "GIT_FAILED"
-  | "INTERRUPTED"
-  | "BAD_PATH"
-  | "CONFIRM_MISMATCH"
-  | "ARCHIVE_TOO_BIG"
-  | "INTERNAL";
+const ERROR_CODES = [
+  "ENCRYPTED",
+  "TOO_MANY_FILES",
+  "TOO_BIG",
+  "EMPTY",
+  "CORRUPT",
+  "UNSUPPORTED",
+  "VOLUME",
+  "UNSAFE_PATHS",
+  "PATH_LIMITS",
+  "TIMEOUT",
+  "RATE_LIMITED",
+  "NOT_FOUND",
+  "FORBIDDEN",
+  "UNAUTHORIZED",
+  "REPO_EXISTS",
+  "NAME_INVALID",
+  "NO_CHANGES",
+  "CONFLICT",
+  "SCOPE_MISSING",
+  "GIT_FAILED",
+  "INTERRUPTED",
+  "BAD_PATH",
+  "CONFIRM_MISMATCH",
+  "ARCHIVE_TOO_BIG",
+  "INTERNAL",
+  "BRANCH_EXISTS",
+  "DELETE_SCOPE_MISSING",
+] as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[number];
 
 export class AppError extends Error {
   code: ErrorCode;
@@ -46,65 +44,34 @@ export class AppError extends Error {
   }
 }
 
-const FR: Record<ErrorCode, string> = {
-  ENCRYPTED:
-    "Cette archive est protégée par un mot de passe, ce qui n'est pas supporté pour l'instant.",
-  TOO_MANY_FILES: "Trop de fichiers dans l'archive (limite atteinte).",
-  TOO_BIG:
-    "Le contenu décompressé dépasse la taille autorisée. Réduisez l'archive (node_modules ?).",
-  EMPTY: "Cette archive ne contient aucun fichier exploitable.",
-  CORRUPT: "Archive illisible ou corrompue. Vérifiez le fichier puis réessayez.",
-  UNSUPPORTED:
-    "Format non pris en charge (méthode de compression ou variante d'archive inconnue).",
-  VOLUME: "Les archives RAR multi-volumes (.part1.rar, .part2.rar…) ne sont pas supportées.",
-  UNSAFE_PATHS:
-    "L'archive contient des chemins de fichiers dangereux (traversal) et a été refusée.",
-  PATH_LIMITS:
-    "Un chemin de fichier dépasse les limites autorisées (profondeur ou longueur).",
-  TIMEOUT: "L'extraction a pris trop de temps et a été interrompue.",
-  RATE_LIMITED: "Trop de requêtes. Patientez un instant puis réessayez.",
-  NOT_FOUND: "Ressource introuvable.",
-  FORBIDDEN:
-    "Vous n'avez pas les droits d'écriture sur ce dépôt (ou le jeton GitHub n'a pas le bon scope).",
-  UNAUTHORIZED:
-    "Votre session GitHub a expiré ou a été révoquée. Déconnectez-vous puis reconnectez-vous pour continuer.",
-  REPO_EXISTS: "Un dépôt porte déjà ce nom sur votre compte.",
-  NAME_INVALID: "Nom de dépôt ou de branche invalide.",
-  NO_CHANGES: "Rien à pousser : les fichiers correspondent déjà au dépôt destination.",
-  CONFLICT:
-    "Le dépôt destination a changé entre-temps. Réessayez, poussez sur une branche dédiée, ou relancez en mode « Remplacer tout le code » pour écraser la branche avec le contenu de l'archive.",
-  SCOPE_MISSING:
-    "GitHub refuse la modification des fichiers de workflow (.github/workflows/…) : le jeton n'a pas le scope « workflow ». Déconnectez-vous puis reconnectez-vous pour l'accorder.",
-  GIT_FAILED: "Le push vers GitHub a échoué.",
-  INTERRUPTED: "Le traitement a été interrompu (redémarrage du serveur).",
-  BAD_PATH: "Chemin de fichier invalide.",
-  CONFIRM_MISMATCH:
-    "La confirmation ne correspond pas au nom du dépôt : rien n'a été supprimé.",
-  ARCHIVE_TOO_BIG:
-    "Ce dépôt est trop volumineux pour être téléchargé en une archive.",
-  INTERNAL: "Erreur interne inattendue. Réessayez dans un instant.",
-};
-
 export function frMessage(code: ErrorCode): string {
-  return FR[code] ?? FR.INTERNAL;
+  return fr.errors[code] ?? fr.errors.INTERNAL;
 }
 
-/**
- * Vrai si un message d'erreur **déjà traduit** désigne une session GitHub
- * expirée ou révoquée.
- *
- * Pourquoi reconnaître le message et pas le code ? Seul le texte est persisté
- * avec le job (`JobRecord.error`) : `JobView` ne reçoit jamais l'`ErrorCode`.
- * On reconnaît donc la phrase de `UNAUTHORIZED`, ou un `401` explicite — les
- * jobs enregistrés avant ce correctif portent encore « (401 token invalide) »
- * et doivent eux aussi proposer la reconnexion.
- */
+export function errorCodeOf(err: unknown): ErrorCode {
+  return err instanceof AppError ? err.code : "INTERNAL";
+}
+
 export function isUnauthorizedError(message: string | null | undefined): boolean {
-  if (!message) return false;
-  return message.includes(frMessage("UNAUTHORIZED")) || /\b401\b/.test(message);
+  return Boolean(message && (message.includes(frMessage("UNAUTHORIZED")) || /\b401\b/.test(message)));
 }
 
-/** Traduit une erreur inconnue en message FR sûr (jamais de détail technique/token). */
+/** Compatibility with pre-i18n job rows. New failures store the code itself.
+ * Legacy patterns are only consulted for those rows, never on translated UI text. */
+export function legacyErrorCode(value: string | null | undefined): ErrorCode | null {
+  if (!value) return null;
+  const code = ERROR_CODES.find((candidate) => candidate === value);
+  if (code) return code;
+  if (isUnauthorizedError(value)) return "UNAUTHORIZED";
+  if (/changé entre-temps|non-fast-forward|\[rejected\]|fetch first/i.test(value)) return "CONFLICT";
+  if (value.includes("la branche existe déjà")) return "BRANCH_EXISTS";
+  return ERROR_CODES.find((candidate) => {
+    const text = frMessage(candidate);
+    return value === text || value.startsWith(`${text} (`);
+  }) ?? null;
+}
+
+/** Message FR destiné aux notifications et journaux historiques, avec détail éventuel. */
 export function toUserMessage(err: unknown): string {
   if (err instanceof AppError) {
     const base = frMessage(err.code);
@@ -116,5 +83,5 @@ export function toUserMessage(err: unknown): string {
     }
     return base;
   }
-  return FR.INTERNAL;
+  return fr.errors.INTERNAL;
 }

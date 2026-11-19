@@ -8,6 +8,8 @@ import { getViewer } from "@/lib/github";
 import { setSessionCookie } from "@/lib/session";
 import { isSecureRequest, redirectTo } from "@/lib/http";
 import { clientIp } from "@/lib/ratelimit";
+import { parseLocale } from "@/lib/i18n/locales";
+import { localizePath } from "@/lib/i18n/navigation";
 import { logEvent } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -22,12 +24,15 @@ export async function GET(req: Request): Promise<Response> {
   // Redirections RELATIVES : le navigateur les résout sur l'origine courante
   // (compatible proxy de preview) ; seul redirect_uri (envoyé à GitHub) doit
   // correspondre à APP_URL.
-  const fail = (reason: string) => redirectTo(`/login?error=${reason}`);
-
-  if (!code || !state || !expected || state !== expected) {
-    return fail("state");
+  if (!state || !expected || state !== expected) {
+    return redirectTo("/login?error=state");
   }
   jar.delete("rd_oauth");
+  // Only the nonce that matched our HttpOnly cookie can carry a preference.
+  // States issued before this change remain valid (they have no suffix).
+  const locale = parseLocale(state.split(".")[1]);
+  const fail = (reason: string) => redirectTo(localizePath(`/login?error=${reason}`, locale));
+  if (!code) return fail("state");
 
   if (!config.github.configured) return fail("config");
 
@@ -88,5 +93,5 @@ export async function GET(req: Request): Promise<Response> {
     ip: clientIp(req.headers),
     detail: { via: "oauth" },
   });
-  return redirectTo("/import");
+  return redirectTo(localizePath("/import", locale));
 }

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import LocaleLink from "@/components/LocaleLink";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
-import { DEFAULT_LOCALE, ogLocaleOf } from "@/lib/i18n/locales";
+import { ogLocaleOf } from "@/lib/i18n/locales";
 import {
   buildGuidesIndexStructuredData,
   buildPageMetadata,
   resolveSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
-import { GUIDES } from "@/lib/seo-guides";
+import { getGuides } from "@/lib/seo-guides";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { headers } from "next/headers";
@@ -36,14 +36,16 @@ export default async function GuidesPage() {
   const [reqHeaders, { locale, t }] = await Promise.all([headers(), getT()]);
   const baseUrl = resolveSiteUrl({ headers: reqHeaders });
 
+  const guides = getGuides(locale);
   const jsonLd = serializeJsonLd(
     buildGuidesIndexStructuredData(
       baseUrl,
-      GUIDES.map((g) => ({ slug: g.slug, title: g.title, description: g.description })),
+      guides,
       [
         { name: t.footer.home, path: "/" },
         { name: t.guides.guidesTitle, path: "/guides" },
       ],
+      { name: t.guides.guidesTitle, description: t.guides.guidesLead, locale },
     ),
   );
 
@@ -67,20 +69,17 @@ export default async function GuidesPage() {
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
             {t.guides.guidesLead}
           </p>
-          {locale !== DEFAULT_LOCALE && (
-            <p className="mt-3 text-sm text-mist">{t.guides.inFrench}</p>
-          )}
         </div>
 
         <ul className="mt-10 grid gap-4">
-          {GUIDES.map((guide) => (
+          {guides.map((guide) => (
             <li key={guide.slug}>
               <LocaleLink
                 href={`/guides/${guide.slug}`}
                 className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h2 lang={DEFAULT_LOCALE} dir="ltr" className="font-semibold tracking-tight text-chalk">
+                  <h2 className="font-semibold tracking-tight text-chalk">
                     {guide.title}
                   </h2>
                   <ArrowRight
@@ -88,7 +87,7 @@ export default async function GuidesPage() {
                     aria-hidden="true"
                   />
                 </div>
-                <p lang={DEFAULT_LOCALE} dir="ltr" className="line-clamp-3 text-sm leading-relaxed text-mist">
+                <p className="line-clamp-3 text-sm leading-relaxed text-mist">
                   {guide.description}
                 </p>
                 <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-go">

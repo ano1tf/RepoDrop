@@ -88,6 +88,7 @@ export default async function ImportPage() {
         {/* ----------------------------------------------- zone de dépôt */}
         <div className="mt-8">
           <Uploader
+            locale={locale}
             maxLabel={maxLabel}
             extractLabel={extractLabel}
             maxBytes={config.limits.maxUploadBytes}

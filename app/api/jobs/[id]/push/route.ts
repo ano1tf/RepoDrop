@@ -4,11 +4,13 @@
  */
 import { z } from "zod";
 import { getSession } from "@/lib/session";
-import { json, jsonError } from "@/lib/http";
+import { json } from "@/lib/http";
 import { config } from "@/lib/config";
-import { frMessage } from "@/lib/errors";
 import { countRecentPushes } from "@/lib/db";
 import { ensureWorkerInit, enqueuePush, jobOwnedBy } from "@/lib/jobs";
+
+import { requestLocale } from "@/lib/i18n/request";
+import { apiError } from "@/lib/i18n/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -41,11 +43,11 @@ export async function POST(req: Request, { params }: Params): Promise<Response> 
   ensureWorkerInit();
 
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return apiError(req, "AUTH_REQUIRED", 401);
 
   const { id } = await params;
   const job = jobOwnedBy(id, session.login);
-  if (!job) return jsonError("Job introuvable.", 404);
+  if (!job) return apiError(req, "NOT_FOUND", 404);
 
   // « ready » = premier push. Un job « failed » dont l'aperçu (et donc
   // l'extraction) existe encore peut être RELANCÉ — typiquement en mode
@@ -54,26 +56,25 @@ export async function POST(req: Request, { params }: Params): Promise<Response> 
   // runPush échouera proprement en INTERRUPTED.
   const retryable = job.status === "failed" && job.preview !== null;
   if (job.status !== "ready" && !retryable) {
-    return jsonError("Ce job n'est pas prêt à être poussé.", 409);
+    return apiError(req, "JOB_NOT_READY", 409);
   }
 
   // Rate-limit persistant : poussées réussies sur la dernière heure.
   const recent = countRecentPushes(session.login, Date.now() - 3_600_000);
   if (recent >= config.limits.pushesPerHour) {
-    return jsonError(frMessage("RATE_LIMITED"), 429, { retryAfterSec: 600 });
+    return apiError(req, "RATE_LIMITED", 429, { retryAfterSec: 600 });
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return apiError(req, "INVALID_REQUEST", 400);
   }
 
   const parsed = pushSchema.safeParse(body);
   if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => i.message).join(" ");
-    return jsonError(msg || "Options invalides.", 400);
+    return apiError(req, "INVALID_REQUEST", 400);
   }
 
   const opts = parsed.data;
@@ -89,7 +90,7 @@ export async function POST(req: Request, { params }: Params): Promise<Response> 
 
   const { updateJob } = await import("@/lib/db");
   updateJob(id, { status: "pushing", push_opts: pushOpts, error: null });
-  enqueuePush(id, pushOpts, session.token);
+  enqueuePush(id, pushOpts, session.token, requestLocale(req));
 
   return json({ id, status: "pushing" }, 202);
 }

@@ -422,9 +422,9 @@ la cible du `SearchAction` (sitelinks search box). La page `/a-propos`
 (présente l'outil, sa mission, sa sécurité) publie un JSON-LD `AboutPage` +
 `Organization` (E-E-A-T) et figure dans le sitemap et le pied de page. L'accueil
 ajoute un nœud `HowTo` (3 étapes) à son `@graph`. Les pages de guide émettent
-`og:type=article` avec `article:*` (dates, section, tags). Le contenu
-éditorial est en français (langue d'indexation par défaut du site — voir
-`lib/i18n/locales.ts`).
+`og:type=article` avec `article:*` (dates, section, tags). Les huit guides
+ont une édition dans chacune des 16 langues. Le français reste la langue de
+repli et les URL canoniques ne changent pas.
 
 Quatre décisions qui évitent des pièges classiques :
 
@@ -471,7 +471,7 @@ curl -s localhost:3000/ | grep -o '<script type="application/ld+json">'
 
 ### Langues (16)
 
-L'interface principale est disponible en **16 langues** : français, anglais, espagnol,
+L'interface publique et connectée est disponible en **16 langues** : français, anglais, espagnol,
 allemand, italien, portugais, néerlandais, polonais, russe, ukrainien, turc,
 **arabe (RTL)**, hindi, chinois, japonais et coréen. Un sélecteur à recherche
 vit dans l'en-tête ; le choix survit à la navigation et au redémarrage.
@@ -501,8 +501,10 @@ Trois décisions et ce qu'elles évitent :
   placeholders divergents, phrases restées en français).
 - **Une seule URL canonique par page.** Pas de préfixe `/fr/`, `/en/`…
   Le français est la langue de repli. Les liens de langue ne changent ni les
-  URL canoniques ni le sitemap. Les articles des guides restent rédigés en
-  français, avec une indication traduite et `lang="fr"` sur leur contenu.
+  URL canoniques ni le sitemap. L’accueil, les guides, la recherche et les
+  écrans d’import, de dépôts et du panel staff suivent la même préférence.
+  Le flux RSS et le manifeste ont des variantes à `?lang=` ; les visuels
+  de partage n’ont pas de texte propre à une langue.
 - **RTL pris au sérieux.** `<html lang dir>` suivent la langue (`dir="rtl"` en
   arabe) ; la maquette et les puces utilisent `padding-inline-start` et
   `rtl:rotate-180` au lieu de `left`/`right`.
@@ -526,7 +528,12 @@ Sans choix explicite, le middleware sélectionne la langue prise en charge la
 mieux pondérée par `Accept-Language`, puis le français. `POST /api/locale`
 (`{ locale }`) permet d'enregistrer le même choix sans redirection. Le test
 `npm run test:i18n:production`, à lancer après `npm run build`, vérifie le
-rendu réel avec et sans cookie.
+rendu réel avec et sans cookie. Il vérifie également les parcours connectés
+contre l’API GitHub de test, sans compte réel. Les erreurs des API de
+l’interface ont un `code` stable et un message traduit ; les anciens échecs
+d’import sont retraduits à la lecture. Les noms de dépôts, le contenu des
+fichiers et les diagnostics bruts ne sont pas traduits. Les notifications
+Discord sortantes restent indépendantes de la langue du navigateur.
 
 Ajouter une langue :
 

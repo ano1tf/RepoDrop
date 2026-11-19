@@ -17,6 +17,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
 import { AppError, frMessage } from "@/lib/errors";
+import { localizeJob } from "@/lib/i18n/job-errors";
 import type { JobRecord } from "@/lib/types";
 
 /* --------------------------------------------------------------- mocks --- */
@@ -79,8 +80,8 @@ async function renderFailed(error: string): Promise<string> {
   const { JobView } = await import("@/components/JobView");
   return renderToStaticMarkup(
     createElement(JobView, {
-      initialJob: failedJob(error),
-      copy: DICTIONARIES.fr.job,
+      initialJob: localizeJob(failedJob(error), "fr"),
+      strings: DICTIONARIES.fr,
       locale: "fr",
     }) as Parameters<typeof renderToStaticMarkup>[0],
   );

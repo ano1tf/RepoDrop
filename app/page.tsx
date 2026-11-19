@@ -30,11 +30,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
-import { DEFAULT_LOCALE, LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
+import { LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
 import type { Dict } from "@/lib/i18n/types";
 import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { config } from "@/lib/config";
-import { GUIDES } from "@/lib/seo-guides";
+import { getGuides } from "@/lib/seo-guides";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getT();
@@ -87,6 +87,7 @@ export default async function Home() {
       faq: faqItems,
       // HowTo : les étapes « Comment ça marche » de l'accueil.
       steps: [t.home.step1Title, t.home.step2Title, t.home.step3Title],
+      features: [t.home.feature1Body, t.home.feature2Body, t.home.feature3Body, t.home.feature4Body, t.home.feature5Body],
     }),
   );
   // Un visiteur doit se connecter avant de pouvoir importer ; un utilisateur
@@ -325,21 +326,18 @@ export default async function Home() {
             {t.guides.guidesTitle}
           </h2>
           <p className="mt-3 text-mist">{t.guides.guidesLead}</p>
-          {locale !== DEFAULT_LOCALE && (
-            <p className="mt-2 text-sm text-mist">{t.guides.inFrench}</p>
-          )}
         </div>
         <ul className="grid gap-4 sm:grid-cols-2">
-          {GUIDES.map((guide) => (
+          {getGuides(locale).map((guide) => (
             <li key={guide.slug}>
               <LocaleLink
                 href={`/guides/${guide.slug}`}
                 className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
-                <h3 lang={DEFAULT_LOCALE} dir="ltr" className="font-semibold tracking-tight text-chalk">
+                <h3 className="font-semibold tracking-tight text-chalk">
                   {guide.title}
                 </h3>
-                <p lang={DEFAULT_LOCALE} dir="ltr" className="line-clamp-2 text-sm leading-relaxed text-mist">
+                <p className="line-clamp-2 text-sm leading-relaxed text-mist">
                   {guide.description}
                 </p>
                 <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-go">
@@ -484,7 +482,7 @@ function GitHubRepoMock({ t, locale }: { t: Dict; locale: string }) {
             you/<span className="font-semibold">{repoName}</span>
           </span>
           <Badge variant="muted" className="ms-auto font-mono text-[10px]">
-            Public
+            {t.ui.public}
           </Badge>
         </div>
 

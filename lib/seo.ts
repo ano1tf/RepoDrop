@@ -17,6 +17,8 @@
  */
 import type { Metadata, MetadataRoute } from "next";
 import { config } from "./config";
+import { DEFAULT_LOCALE, type Locale } from "./i18n/locales";
+import { localizePath } from "./i18n/navigation";
 
 export const SITE_NAME = "RepoDrop";
 
@@ -31,7 +33,7 @@ export const SITE_OG_IMAGE = {
   width: 1200,
   height: 630,
   type: "image/png",
-  alt: "RepoDrop — Importez vos archives .rar, .zip et .tar directement sur GitHub",
+  alt: "RepoDrop · .rar / .zip / .tar → GitHub",
 } as const;
 
 /**
@@ -541,17 +543,19 @@ export function buildRobots(baseUrl: string): MetadataRoute.Robots {
  * en `purpose: "any maskable"` sur la même entrée) pour que le rognage Android
  * s'applique à la version déjà margée.
  */
-export function buildManifest(): MetadataRoute.Manifest {
+export function buildManifest(copy?: Pick<MetadataRoute.Manifest, "name" | "description" | "lang" | "dir" | "start_url">): MetadataRoute.Manifest {
   return {
     name: SITE_DEFAULT_TITLE,
     short_name: SITE_NAME,
     description: SITE_DESCRIPTION,
     start_url: "/",
+    id: "/",
     scope: "/",
     display: "standalone",
     background_color: "#080b12",
     theme_color: "#080b12",
-    lang: "fr",
+    lang: DEFAULT_LOCALE,
+    ...copy,
     categories: ["developer tools", "productivity", "utilities"],
     icons: [
       {
@@ -612,6 +616,7 @@ export function buildStructuredData(
     faq?: readonly FaqItem[];
     /** Étapes pas à pas (alimente le JSON-LD `HowTo` de la page). */
     steps?: readonly string[];
+    features?: readonly string[];
   } = {},
 ) {
   const origin = baseUrl.replace(/\/+$/, "");
@@ -696,7 +701,7 @@ export function buildStructuredData(
       url: `${origin}/`,
       applicationCategory: "DeveloperApplication",
       operatingSystem: "All",
-      browserRequirements: "Requires JavaScript",
+      browserRequirements: "JavaScript",
       inLanguage: lang,
       description,
       image: `${origin}${SITE_OG_IMAGE.url}`,
@@ -720,7 +725,7 @@ export function buildStructuredData(
         // parfois considérée comme incertaine par les moteurs.
         availability: "https://schema.org/InStock",
       },
-      featureList: [
+      featureList: content.features ?? [
         "Import d'archives .rar (RAR4/RAR5), .zip, .tar et .tar.gz vers GitHub",
         "Extraction sandboxée anti zip-slip et anti bombes de décompression",
         "Aperçu complet de l'arborescence avant le push",
@@ -741,7 +746,7 @@ export function buildStructuredData(
             step: content.steps.map((text, i) => ({
               "@type": "HowToStep",
               position: i + 1,
-              name: `Étape ${i + 1}`,
+              name: lang === DEFAULT_LOCALE ? `Étape ${i + 1}` : text,
               text,
             })),
           },
@@ -955,7 +960,7 @@ export function buildArticleStructuredData(opts: {
       step: opts.steps.map((text, i) => ({
         "@type": "HowToStep",
         position: i + 1,
-        name: `Étape ${i + 1}`,
+        name: lang === DEFAULT_LOCALE ? `Étape ${i + 1}` : text,
         text,
       })),
     });
@@ -999,6 +1004,7 @@ export function buildGuidesIndexStructuredData(
   origin: string,
   guides: readonly { title: string; slug: string; description: string }[],
   breadcrumbs: readonly BreadcrumbItem[],
+  copy?: { name: string; description: string; locale: string },
 ): Record<string, unknown> {
   const originClean = origin.replace(/\/+$/, "");
   return {
@@ -1007,8 +1013,9 @@ export function buildGuidesIndexStructuredData(
       {
         "@type": "ItemList",
         "@id": `${originClean}/#guides`,
-        name: "Guides RepoDrop",
-        description:
+        name: copy?.name ?? "Guides RepoDrop",
+        inLanguage: copy?.locale ?? "fr",
+        description: copy?.description ??
           "Tutoriels pas à pas pour importer vos archives .rar, .zip et .tar sur GitHub.",
         numberOfItems: guides.length,
         itemListElement: guides.map((g, i) => ({
@@ -1053,6 +1060,7 @@ export function buildRssFeed(
     dateModified: string;
   }[],
   siteDescription: string,
+  copy?: { locale: Locale; title: string },
 ): string {
   const originClean = origin.replace(/\/+$/, "");
   const escape = (s: string) =>
@@ -1062,13 +1070,16 @@ export function buildRssFeed(
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
 
+  const locale = copy?.locale ?? DEFAULT_LOCALE;
+  const pathLocale = locale === DEFAULT_LOCALE ? null : locale;
   const items = guides
     .map((g) => {
-      const link = `${originClean}/guides/${g.slug}`;
+      const canonical = `${originClean}/guides/${g.slug}`;
+      const link = `${originClean}${localizePath(`/guides/${g.slug}`, pathLocale)}`;
       return `    <item>
       <title>${escape(g.title)}</title>
       <link>${link}</link>
-      <guid isPermaLink="true">${link}</guid>
+      <guid isPermaLink="true">${canonical}</guid>
       <description>${escape(g.description)}</description>
       <pubDate>${new Date(`${g.dateModified}T00:00:00Z`).toUTCString()}</pubDate>
     </item>`;
@@ -1078,10 +1089,10 @@ export function buildRssFeed(
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>${escape(SITE_NAME)} — Guides</title>
-    <link>${originClean}</link>
+    <title>${escape(`${SITE_NAME} — ${copy?.title ?? "Guides"}`)}</title>
+    <link>${originClean}${pathLocale ? localizePath("/", pathLocale) : ""}</link>
     <description>${escape(siteDescription)}</description>
-    <language>fr</language>
+    <language>${locale}</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items}
   </channel>

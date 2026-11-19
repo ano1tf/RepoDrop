@@ -3,7 +3,7 @@
  *
  * Les dictionnaires ne contiennent **pas** de fonctions (elles ne sont pas
  * sérialisables, et un test ne peut pas les comparer clé à clé). À la place,
- * quelques chaînes portent des accolades : `"Envoi… {progress}%"`. Ce module
+ * quelques chaînes portent des accolades : `"Envoi… {progress}"`. Ce module
  * les remplit, en refusant silencieusement de produire un `{placeholder}` visible.
  */
 
@@ -98,5 +98,28 @@ export function formatRelativeTime(timestamp: number, locale: string, now = Date
   if (abs < 3600) return intl.format(Math.round(seconds / 60), "minute");
   if (abs < 86_400) return intl.format(Math.round(seconds / 3600), "hour");
   if (abs < 30 * 86_400) return intl.format(Math.round(seconds / 86_400), "day");
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(timestamp);
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(timestamp);
+}
+
+// UTC and a 24-hour clock keep server/client rendering consistent. Some ICU
+// versions otherwise disagree on day periods (e.g. "AM" vs "오전" in Korean).
+const UTC_CLOCK = { timeZone: "UTC", hourCycle: "h23" } as const;
+
+export function formatTime(timestamp: number, locale: string): string {
+  if (!Number.isFinite(timestamp)) return "—";
+  return new Intl.DateTimeFormat(locale, { timeStyle: "short", ...UTC_CLOCK }).format(timestamp);
+}
+
+export function formatDateTime(timestamp: number | string, locale: string): string {
+  const date = new Date(timestamp);
+  if (!Number.isFinite(date.getTime())) return "—";
+  return new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "long", ...UTC_CLOCK }).format(date);
+}
+
+export function formatPercent(percent: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(percent / 100);
+}
+
+export function formatDuration(value: number, unit: "minute" | "millisecond", locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "unit", unit, maximumFractionDigits: 0 }).format(value);
 }
