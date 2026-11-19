@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { buttonVariants } from "@/components/ui/button";
 import { getT } from "@/lib/i18n/server";
 
@@ -21,9 +21,9 @@ export default async function NotFound() {
         <h1 className="text-xl font-semibold">{t.notFound.title}</h1>
         <p className="mt-2 text-sm text-mist">{t.notFound.body}</p>
       </div>
-      <Link href="/" className={buttonVariants({})}>
+      <LocaleLink href="/" className={buttonVariants({})}>
         {t.notFound.back}
-      </Link>
+      </LocaleLink>
     </main>
   );
 }

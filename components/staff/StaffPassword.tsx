@@ -13,6 +13,10 @@ import { Check, KeyRound, Loader2, Lock, ShieldCheck, Trash2 } from "lucide-reac
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLocalizedPath } from "@/components/LocaleLink";
+import { fill, formatDateTime } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
+import type { Locale } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
 
 export type StaffSecurityView = {
@@ -21,7 +25,9 @@ export type StaffSecurityView = {
   updatedAt: string | null;
 };
 
-export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
+export function StaffPassword({ initial, locale, copy }: { initial: StaffSecurityView; locale: Locale; copy: Pick<Dict, "staff" | "errors" | "ui"> }) {
+  const { staff: t, ui, errors } = copy;
+  const localize = useLocalizedPath();
   const router = useRouter();
   const [view, setView] = useState(initial);
   const [current, setCurrent] = useState("");
@@ -38,7 +44,7 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
     setBusy(true);
     setFeedback(null);
     try {
-      const res = await fetch("/api/staff/security", {
+      const res = await fetch(localize("/api/staff/security"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ current, password }),
@@ -50,7 +56,7 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
         updatedAt?: string | null;
       };
       if (!res.ok || !data.ok) {
-        setFeedback({ ok: false, text: data.error ?? "Enregistrement refusé." });
+        setFeedback({ ok: false, text: data.error ?? fill(ui.httpError, { status: res.status }) });
         return;
       }
       setView((v) => ({
@@ -65,11 +71,11 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
       setFeedback({
         ok: true,
         text: password
-          ? "Mot de passe enregistré."
-          : "Mot de passe supprimé : la liste des comptes autorisés suffit désormais.",
+          ? ui.saved
+          : t.passwordRemoved,
       });
     } catch {
-      setFeedback({ ok: false, text: "Impossible de joindre le serveur." });
+      setFeedback({ ok: false, text: ui.offline });
     } finally {
       setBusy(false);
     }
@@ -79,13 +85,13 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
     e.preventDefault();
     if (busy) return;
     if (next !== confirm) {
-      setFeedback({ ok: false, text: "La confirmation ne correspond pas." });
+      setFeedback({ ok: false, text: t.passwordMismatch });
       return;
     }
     if (next.length < 8) {
       setFeedback({
         ok: false,
-        text: "Le mot de passe doit contenir au moins 8 caractères.",
+        text: errors.PASSWORD_TOO_SHORT,
       });
       return;
     }
@@ -95,55 +101,60 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
   async function lockNow() {
     setBusy(true);
     try {
-      await fetch("/api/staff/unlock", {
+      const res = await fetch(localize("/api/staff/unlock"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "lock" }),
       });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setFeedback({ ok: false, text: data.error ?? fill(ui.httpError, { status: res.status }) });
+        return;
+      }
       // Le claim est retiré du cookie : /staff redemande le mot de passe.
       router.refresh();
+    } catch {
+      setFeedback({ ok: false, text: ui.offline });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {/* ------------------------------------------------- état + changement */}
       <section className="rounded-2xl bg-panel p-5 shadow-panel ring-1 ring-edge">
         <header className="flex items-start justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <KeyRound className="h-4 w-4 text-violet-300" />
-              Mot de passe du panel
+              {t.panelPassword}
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-mist">
-              Second verrou, cumulatif avec la liste des comptes autorisés. Il
-              est demandé à chaque nouvelle session et n&apos;est jamais stocké
-              en clair.
+              {t.passwordLead}
             </p>
           </div>
           <Badge variant={view.passwordSet ? "default" : "amber"}>
-            {view.passwordSet ? "actif" : "inactif"}
+            {view.passwordSet ? ui.active : ui.inactive}
           </Badge>
         </header>
 
         <dl className="mt-4 grid gap-2 text-xs">
           <div className="flex justify-between gap-3">
-            <dt className="text-mist">Origine</dt>
+            <dt className="text-mist">{t.source}</dt>
             <dd className="text-chalk">
               {view.source === "panel"
-                ? "défini depuis ce panel"
+                ? t.sourcePanel
                 : view.source === "env"
-                  ? "variable d'environnement"
-                  : "aucun"}
+                  ? t.sourceEnv
+                  : ui.none}
             </dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-mist">Dernier changement</dt>
+            <dt className="text-mist">{t.updated}</dt>
             <dd className="text-chalk">
               {view.updatedAt
-                ? new Date(view.updatedAt).toLocaleString("fr-FR")
+                ? formatDateTime(view.updatedAt, locale)
                 : "—"}
             </dd>
           </div>
@@ -153,7 +164,7 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
           {needsCurrent && (
             <Field
               id="sec-current"
-              label="Mot de passe actuel"
+              label={t.currentPassword}
               value={current}
               onChange={setCurrent}
               autoComplete="current-password"
@@ -161,14 +172,14 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
           )}
           <Field
             id="sec-next"
-            label={view.passwordSet ? "Nouveau mot de passe" : "Mot de passe"}
+            label={view.passwordSet ? t.newPassword : t.panelPassword}
             value={next}
             onChange={setNext}
             autoComplete="new-password"
           />
           <Field
             id="sec-confirm"
-            label="Confirmation"
+            label={ui.confirmation}
             value={confirm}
             onChange={setConfirm}
             autoComplete="new-password"
@@ -199,7 +210,7 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
               ) : (
                 <KeyRound className="h-4 w-4" />
               )}
-              Enregistrer
+              {ui.save}
             </Button>
 
             {view.passwordSet && view.source === "panel" && (
@@ -213,15 +224,13 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
                 )}
               >
                 <Trash2 className="h-4 w-4" />
-                Supprimer le mot de passe
+                {t.removePassword}
               </button>
             )}
           </div>
 
           <p className="text-xs leading-relaxed text-mist/80">
-            8 caractères minimum. Le mot de passe est haché (scrypt, sel
-            aléatoire) avant d'être écrit en base : personne ne peut le relire,
-            pas même depuis ce panel.
+            {errors.PASSWORD_TOO_SHORT}
           </p>
         </form>
       </section>
@@ -230,22 +239,18 @@ export function StaffPassword({ initial }: { initial: StaffSecurityView }) {
       <section className="rounded-2xl bg-panel p-5 shadow-panel ring-1 ring-edge">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <Lock className="h-4 w-4 text-violet-300" />
-          Session courante
+          {t.session}
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-mist">
-          Le déverrouillage est valable pour cette session uniquement (cookie
-          chiffré, 7 jours maximum). Se déconnecter ou verrouiller ici remet le
-          mot de passe en place — utile sur un poste partagé.
+          {t.sessionLead}
         </p>
         <Button variant="outline" className="mt-4" onClick={() => void lockNow()} disabled={busy}>
           <Lock className="h-4 w-4" />
-          Verrouiller maintenant
+          {t.lock}
         </Button>
         {!view.passwordSet && (
           <p className="mt-4 rounded-lg bg-amber/10 px-3 py-2 text-xs text-amber ring-1 ring-amber/30">
-            Aucun mot de passe n&apos;est défini : le verrouillage n&apos;a
-            aucun effet tant que seule la liste des comptes autorisés protège le
-            panel.
+            {t.noLock}
           </p>
         )}
       </section>

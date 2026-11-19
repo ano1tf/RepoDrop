@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { ArrowRight, Check, Languages } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
-import { LOCALES } from "@/lib/i18n/locales";
+import { LOCALES, dirOf, localeDefinition, ogLocaleOf } from "@/lib/i18n/locales";
+import { localeSwitchPath } from "@/lib/i18n/navigation";
+import { fill, formatNumber } from "@/lib/i18n/format";
+import { languageLabeler } from "@/lib/i18n/search";
 import { buildPageMetadata, serializeJsonLd } from "@/lib/seo";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,12 +30,13 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t.meta.description,
     path: "/langues",
     noIndex: true,
-    ogLocale: LOCALES.find((l) => l.code === locale)?.ogLocale,
+    ogLocale: ogLocaleOf(locale),
   });
 }
 
 export default async function LanguagesPage() {
   const { locale, t } = await getT();
+  const languageName = languageLabeler(locale);
 
   const jsonLd = serializeJsonLd({
     "@context": "https://schema.org",
@@ -70,7 +74,7 @@ export default async function LanguagesPage() {
             {t.home.statLanguagesSub}
           </p>
           <p className="mt-2 font-mono text-xs text-go">
-            {LOCALES.length} · {t.nav.languageCurrent.replace("{name}", locale.toUpperCase())}
+            {formatNumber(LOCALES.length, locale)} · {fill(t.nav.languageCurrent, { name: localeDefinition(locale).nativeName })}
           </p>
         </div>
 
@@ -80,8 +84,9 @@ export default async function LanguagesPage() {
             const active = l.code === locale;
             return (
               <li key={l.code}>
-                <Link
-                  href={`/api/locale?to=${l.code}&next=/langues`}
+                <a
+                  href={localeSwitchPath(l.code, "/langues")}
+                  rel="nofollow"
                   lang={l.code}
                   dir={l.dir}
                   aria-current={active ? "true" : undefined}
@@ -105,11 +110,11 @@ export default async function LanguagesPage() {
                     {active && <Check className="h-4 w-4 shrink-0 text-go" />}
                   </div>
 
-                  <p className="flex items-center gap-2 text-xs text-mist/70">
-                    <span className="line-clamp-1">{l.englishName}</span>
+                  <p lang={locale} dir={dirOf(locale)} className="flex flex-wrap items-center gap-2 text-xs text-mist/70">
+                    <span>{languageName(l)}</span>
                     {l.dir === "rtl" && (
-                      <span className="rounded bg-panel2 px-1.5 py-0.5 font-mono text-[10px] text-sky">
-                        RTL
+                      <span className="rounded bg-panel2 px-1.5 py-0.5 text-[10px] text-sky">
+                        {t.nav.rightToLeft}
                       </span>
                     )}
                   </p>
@@ -123,19 +128,19 @@ export default async function LanguagesPage() {
                   </p>
 
                   <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-go opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                    {dict.nav.start}
+                    {dict.nav.languageChange}
                     <ArrowRight className="h-3 w-3 rtl:rotate-180" />
                   </span>
-                </Link>
+                </a>
               </li>
             );
           })}
         </ul>
 
         <div className="mt-10">
-          <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
+          <LocaleLink href="/" className={cn(buttonVariants({ variant: "outline" }))}>
             {t.notFound.back}
-          </Link>
+          </LocaleLink>
         </div>
       </div>
     </main>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import {
   Archive,
   ArrowRight,
@@ -32,9 +32,10 @@ import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
 import type { Dict } from "@/lib/i18n/types";
+import { demoRepository } from "@/lib/demo-repo";
 import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { config } from "@/lib/config";
-import { GUIDES } from "@/lib/seo-guides";
+import { getGuides } from "@/lib/seo-guides";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getT();
@@ -69,6 +70,8 @@ export default async function Home() {
     upload: formatBytes(config.limits.maxUploadBytes, locale),
     extract: formatBytes(config.limits.maxExtractBytes, locale),
     files: formatNumber(config.limits.maxFiles, locale),
+    uploads: formatNumber(config.limits.uploadsPerHour, locale),
+    pushes: formatNumber(config.limits.pushesPerHour, locale),
   };
 
   const faqItems = [
@@ -87,6 +90,7 @@ export default async function Home() {
       faq: faqItems,
       // HowTo : les étapes « Comment ça marche » de l'accueil.
       steps: [t.home.step1Title, t.home.step2Title, t.home.step3Title],
+      features: [t.home.feature1Body, t.home.feature2Body, t.home.feature3Body, t.home.feature4Body, t.home.feature5Body],
     }),
   );
   // Un visiteur doit se connecter avant de pouvoir importer ; un utilisateur
@@ -137,14 +141,14 @@ export default async function Home() {
             />
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Link
+              <LocaleLink
                 href={ctaHref}
                 className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto px-8")}
               >
                 <FolderArchive className="h-4 w-4" />
                 {ctaLabel}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </Link>
+              </LocaleLink>
               <a
                 href="#comment"
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
@@ -156,11 +160,11 @@ export default async function Home() {
             <ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-mist">
               <CheckItem>{t.home.checkSandboxed}</CheckItem>
               <CheckItem>{t.home.checkToken}</CheckItem>
-              <CheckItem>{t.home.checkFrench}</CheckItem>
+              <CheckItem>{fill(t.home.checkLanguages, { count: formatNumber(LOCALES.length, locale) })}</CheckItem>
             </ul>
           </div>
 
-          <GitHubRepoMock t={t} />
+          <GitHubRepoMock t={t} locale={locale} />
         </div>
       </section>
 
@@ -171,7 +175,7 @@ export default async function Home() {
           <Stat value="0" label={t.home.statCommands} sub={t.home.statCommandsSub} />
           <Stat value="2 min" label={t.home.statDuration} sub={t.home.statDurationSub} />
           <Stat
-            value={String(LOCALES.length)}
+            value={formatNumber(LOCALES.length, locale)}
             label={t.home.statLanguages}
             sub={t.home.statLanguagesSub}
           />
@@ -292,7 +296,7 @@ export default async function Home() {
               { icon: ShieldCheck, title: t.home.guard1Title, body: t.home.guard1Body },
               { icon: FileWarning, title: t.home.guard2Title, body: fill(t.home.guard2Body, limitValues) },
               { icon: Lock, title: t.home.guard3Title, body: t.home.guard3Body },
-              { icon: Gauge, title: t.home.guard4Title, body: t.home.guard4Body },
+              { icon: Gauge, title: t.home.guard4Title, body: fill(t.home.guard4Body, limitValues) },
             ].map((g) => (
               <div key={g.title} className="panel flex gap-4 p-5">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-go/10 text-go ring-1 ring-go/20">
@@ -327,9 +331,9 @@ export default async function Home() {
           <p className="mt-3 text-mist">{t.guides.guidesLead}</p>
         </div>
         <ul className="grid gap-4 sm:grid-cols-2">
-          {GUIDES.map((guide) => (
+          {getGuides(locale).map((guide) => (
             <li key={guide.slug}>
-              <Link
+              <LocaleLink
                 href={`/guides/${guide.slug}`}
                 className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
@@ -346,7 +350,7 @@ export default async function Home() {
                     aria-hidden="true"
                   />
                 </span>
-              </Link>
+              </LocaleLink>
             </li>
           ))}
         </ul>
@@ -402,10 +406,10 @@ export default async function Home() {
             {t.home.ctaLead}
           </p>
           <div className="relative mt-7">
-            <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
+            <LocaleLink href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
               {ctaLabel}
               <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
+            </LocaleLink>
           </div>
         </div>
       </section>
@@ -452,9 +456,9 @@ function Stat({
  *
  * 100 % décoratif : aucun appel réseau, aucun état.
  */
-function GitHubRepoMock({ t }: { t: Dict }) {
+function GitHubRepoMock({ t, locale }: { t: Dict; locale: string }) {
   const fileName = t.home.mockFile;
-  const repoName = fileName.replace(/\.[^.]+$/, "");
+  const repo = demoRepository(fileName);
 
   return (
     <div aria-hidden="true" className="relative mx-auto w-full max-w-md lg:max-w-none">
@@ -466,22 +470,22 @@ function GitHubRepoMock({ t }: { t: Dict }) {
           <span className="h-2.5 w-2.5 rounded-full bg-danger/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-go/60" />
-          <span className="ml-2 flex min-w-0 items-center gap-1.5 rounded-md bg-ink/70 px-2 py-1 font-mono text-[11px] text-mist ring-1 ring-edge">
+          <span className="ms-2 flex min-w-0 items-center gap-1.5 rounded-md bg-ink/70 px-2 py-1 font-mono text-[11px] text-mist ring-1 ring-edge">
             <Lock className="h-2.5 w-2.5 shrink-0 text-go" />
-            <span className="truncate">
-              github.com/you/<span className="text-chalk">{repoName}</span>
-            </span>
+            <bdi dir="ltr" className="truncate">
+              {`github.com/${repo.owner}/`}<span className="text-chalk">{repo.name}</span>
+            </bdi>
           </span>
         </div>
 
         {/* en-tête de dépôt */}
         <div className="flex flex-wrap items-center gap-2 px-4 pt-3.5">
           <FolderArchive className="h-4 w-4 shrink-0 text-mist" />
-          <span className="font-mono text-sm text-chalk">
-            you/<span className="font-semibold">{repoName}</span>
-          </span>
+          <bdi dir="ltr" className="font-mono text-sm text-chalk">
+            {`${repo.owner}/`}<span className="font-semibold">{repo.name}</span>
+          </bdi>
           <Badge variant="muted" className="ms-auto font-mono text-[10px]">
-            Public
+            {t.ui.public}
           </Badge>
         </div>
 
@@ -489,7 +493,7 @@ function GitHubRepoMock({ t }: { t: Dict }) {
         <div className="mx-4 mt-3 flex items-center gap-2 rounded-lg bg-go/10 px-3 py-2 ring-1 ring-go/25">
           <Check className="h-4 w-4 shrink-0 text-go" strokeWidth={3} />
           <span className="truncate text-xs font-medium text-go">
-            {t.home.mockPushed}
+            {t.home.demoPushed}
           </span>
         </div>
 
@@ -498,7 +502,7 @@ function GitHubRepoMock({ t }: { t: Dict }) {
           <div className="flex items-center justify-between gap-2 px-4 py-2 font-mono text-[11px] text-mist">
             <span className="inline-flex items-center gap-1.5">
               <GitBranch className="h-3 w-3 text-sky" />
-              main
+              <bdi dir="ltr">main</bdi>
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Archive className="h-3 w-3" />
@@ -507,10 +511,10 @@ function GitHubRepoMock({ t }: { t: Dict }) {
           </div>
           <ul className="font-mono text-[11px]">
             {[
-              { name: "src", dir: true, meta: "6 files" },
-              { name: "package.json", meta: "1.1 KB" },
-              { name: "README.md", meta: "2.4 KB" },
-              { name: ".gitignore", meta: "312 B" },
+              { name: "src", dir: true, meta: "" },
+              { name: "package.json", meta: formatBytes(1126, locale) },
+              { name: "README.md", meta: formatBytes(2458, locale) },
+              { name: ".gitignore", meta: formatBytes(312, locale) },
             ].map((row) => (
               <li
                 key={row.name}
@@ -536,7 +540,7 @@ function GitHubRepoMock({ t }: { t: Dict }) {
             <GitBranch className="h-3 w-3" />
           </span>
           <span className="truncate font-mono text-[11px] text-mist">
-            chore: import {fileName}
+            {fill(t.job.commitDefault, { name: fileName })}
           </span>
           <span className="ms-auto shrink-0 rounded bg-panel2 px-1.5 py-0.5 font-mono text-[10px] text-mist ring-1 ring-edge">
             main

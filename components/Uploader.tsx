@@ -6,9 +6,10 @@
  */
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useLocalizedPath } from "@/components/LocaleLink";
 import { Archive, AlertTriangle, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fill } from "@/lib/i18n/format";
+import { fill, formatPercent } from "@/lib/i18n/format";
 import { takePendingFile } from "@/lib/pending-import";
 import type { Dict } from "@/lib/i18n/types";
 
@@ -21,14 +22,16 @@ interface Props {
    * un 413 après plusieurs minutes de transfert.
    */
   maxBytes: number;
+  locale: string;
   /** Chaînes de la section `uploader` du dictionnaire courant. */
   t: Dict["uploader"];
 }
 
 const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
-export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props) {
+export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings }: Props) {
   const router = useRouter();
+  const localize = useLocalizedPath();
   /*
    * Les chaînes viennent d'un objet recréé à chaque rendu serveur : on les
    * fige dans une ref pour que `send` garde une identité stable (sinon le
@@ -48,6 +51,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
 
   const send = useCallback(
     (file: File) => {
+      if (xhrRef.current) return;
       setError(null);
       if (!OK_EXT.test(file.name)) {
         setError(tRef.current.errorFormat);
@@ -72,16 +76,16 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
 
       const xhr = new XMLHttpRequest();
       xhrRef.current = xhr;
-      xhr.open("POST", "/api/upload");
+      xhr.open("POST", localize("/api/upload"));
       xhr.responseType = "json";
       xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+        if (e.lengthComputable && e.total > 0) setProgress(Math.round((e.loaded / e.total) * 100));
       };
       xhr.onload = () => {
         xhrRef.current = null;
         setProgress(null);
         if (xhr.status === 202 && xhr.response?.id) {
-          router.push(`/jobs/${xhr.response.id}`);
+          router.push(localize(`/jobs/${xhr.response.id}`));
           return;
         }
         setError(
@@ -104,9 +108,10 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
         xhrRef.current = null;
         setProgress(null);
       };
+      setProgress(0);
       xhr.send(form);
     },
-    [maxBytes, maxLabel, router],
+    [maxBytes, maxLabel, router, localize],
   );
 
   /** Interrompt l'envoi en cours et revient à la zone de dépôt. */
@@ -148,12 +153,15 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
   return (
     <div className="animate-fade-up">
       <div
-        role="button"
-        tabIndex={0}
-        aria-label={strings.dropLabel}
+        role={uploading ? undefined : "button"}
+        tabIndex={uploading ? undefined : 0}
+        aria-label={uploading ? undefined : strings.dropLabel}
         onClick={() => !uploading && inputRef.current?.click()}
         onKeyDown={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && !uploading) inputRef.current?.click();
+          if ((e.key === "Enter" || e.key === " ") && !uploading) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
         }}
         onDragOver={(e) => {
           e.preventDefault();
@@ -183,13 +191,21 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
         {uploading ? (
           <div className="w-full max-w-sm">
             <div className="mb-3 flex items-center justify-center gap-2 text-sm text-chalk">
-              <UploadCloud className="h-5 w-5 text-go" />
-              {fill(strings.uploading, { progress: progress ?? 0 })}
+              <UploadCloud className="h-5 w-5 text-go" aria-hidden="true" />
+              {fill(strings.uploading, { progress: formatPercent(progress, locale) })}
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
+            <div
+              role="progressbar"
+              aria-label={strings.progressLabel}
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuetext={formatPercent(progress, locale)}
+              className="h-2 w-full overflow-hidden rounded-full bg-panel2"
+            >
               <div
-                className="h-full w-full origin-left rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-200 ease-out"
-                style={{ transform: `scaleX(${(progress ?? 0) / 100})` }}
+                className="h-full w-full origin-left rtl:origin-right rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-200 ease-out"
+                style={{ transform: `scaleX(${progress / 100})` }}
               />
             </div>
             <p className="mt-3 text-xs text-mist">{strings.keepOpen}</p>

@@ -8,7 +8,10 @@
  */
 import path from "node:path";
 import fs from "node:fs";
-import { AppError, toUserMessage } from "./errors";
+import { AppError, errorCodeOf, toUserMessage } from "./errors";
+import { getDictionary } from "./i18n/dictionary";
+import { fill, formatNumber } from "./i18n/format";
+import { DEFAULT_LOCALE, type Locale } from "./i18n/locales";
 import { config } from "./config";
 import {
   getJob,
@@ -99,7 +102,7 @@ export function enqueueExtraction(jobId: string): void {
     void runExtraction(jobId).catch((err) => {
       console.error(`[job ${jobId}] extraction error:`, err);
       try {
-        updateJob(jobId, { status: "failed", error: toUserMessage(err) });
+        updateJob(jobId, { status: "failed", error: errorCodeOf(err) });
       } catch {
         /* base indisponible : rien de plus à faire */
       }
@@ -132,13 +135,13 @@ async function runExtraction(jobId: string): Promise<void> {
 
 // -------------------------------------------------------------------- push
 
-export function enqueuePush(jobId: string, opts: PushOptions, token: string): void {
+export function enqueuePush(jobId: string, opts: PushOptions, token: string, locale: Locale = DEFAULT_LOCALE): void {
   setImmediate(() => {
-    void runPush(jobId, opts, token).catch((err) => {
+    void runPush(jobId, opts, token, locale).catch((err) => {
       // Ne devrait pas arriver : runPush attrape déjà. Filet de sécurité.
       console.error(`[job ${jobId}] push error:`, err);
       try {
-        updateJob(jobId, { status: "failed", error: toUserMessage(err) });
+        updateJob(jobId, { status: "failed", error: errorCodeOf(err) });
       } catch {
         /* ignore */
       }
@@ -189,6 +192,7 @@ async function runPush(
   jobId: string,
   opts: PushOptions,
   token: string,
+  locale: Locale,
 ): Promise<void> {
   const job = getJob(jobId);
   if (!job || job.status !== "pushing") return;
@@ -246,16 +250,18 @@ async function runPush(
         !target.isEmpty &&
         (await branchExists(token, target.fullName, branch))
       ) {
-        throw new AppError("NAME_INVALID", undefined, "la branche existe déjà");
+        throw new AppError("BRANCH_EXISTS");
       }
     } else {
       branch = target.defaultBranch;
     }
 
     // --- message de commit ---
-    const commitMessage =
-      opts.commitMessage?.trim() ||
-      `Import de ${job.filename} via RepoDrop (${job.preview?.fileCount ?? "?"} fichiers)`;
+    const copy = getDictionary(locale);
+    const defaultMessage = fill(copy.job.commitDefault, { name: job.filename });
+    const fileCount = job.preview ? formatNumber(job.preview.fileCount, locale) : "?";
+    const commitMessage = opts.commitMessage?.trim() ||
+      `${defaultMessage} (${fill(copy.ui.filesCount, { count: fileCount })})`;
 
     // --- exécution ---
     const result = await runGitPush({
@@ -319,8 +325,9 @@ async function runPush(
   } catch (err) {
     // Log serveur sans token (le token n'apparaît jamais dans les erreurs).
     console.error(`[job ${jobId}] push failed:`, err);
+    const errorCode = errorCodeOf(err);
     const message = toUserMessage(err);
-    updateJob(jobId, { status: "failed", error: message });
+    updateJob(jobId, { status: "failed", error: errorCode });
     logEvent({
       kind: "push",
       login: job.login,
@@ -328,6 +335,7 @@ async function runPush(
         ok: false,
         jobId,
         filename: job.filename,
+        errorCode,
         error: message.slice(0, 300),
       },
     });

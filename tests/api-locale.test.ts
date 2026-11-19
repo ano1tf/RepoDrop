@@ -1,20 +1,9 @@
-/**
- * Tests de la route `/api/locale` — la bascule de langue.
- *
- * Le contrat vérifié :
- *   1. GET `?to=xx&next=/chemin` pose le cookie `rd_lang` **sur la réponse
- *      de redirection** et renvoie vers `next` ;
- *   2. `next` est cantonné aux chemins internes (pas de redirection ouverte) ;
- *   3. une langue inconnue ne pose pas de cookie ;
- *   4. POST `{ locale }` répond en JSON avec le même cookie ;
- *   5. une langue inconnue en POST est un 400 explicite.
- */
 import { describe, expect, it } from "vitest";
 import { GET, POST } from "@/app/api/locale/route";
-import { LOCALE_COOKIE } from "@/lib/i18n/locales";
+import { EMBEDDED_LOCALE_COOKIE, LOCALE_COOKIE } from "@/lib/i18n/locales";
 
-function getReq(query: string): Request {
-  return new Request(`http://localhost/api/locale${query}`);
+function getReq(query: string, headers?: HeadersInit): Request {
+  return new Request(`http://localhost/api/locale${query}`, { headers });
 }
 
 function postReq(body: string): Request {
@@ -26,18 +15,47 @@ function postReq(body: string): Request {
 }
 
 describe("GET /api/locale", () => {
-  /** Cookie `rd_lang` lu dans l'en-tête `set-cookie` (réponse plain). */
-  function sentLocale(res: Response): string | null {
-    const raw = res.headers.get("set-cookie");
-    const m = raw?.match(new RegExp(`${LOCALE_COOKIE}=([^;]+)`));
-    return m?.[1] ?? null;
+  function sentLocale(res: Awaited<ReturnType<typeof GET>>): string | null {
+    return res.cookies.get(LOCALE_COOKIE)?.value ?? null;
   }
 
   it("pose le cookie puis redirige vers `next` (Location relatif)", async () => {
     const res = await GET(getReq("?to=ja&next=/langues"));
     expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toBe("/langues");
+    expect(res.headers.get("location")).toBe("/langues?lang=ja");
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.cookies.get(EMBEDDED_LOCALE_COOKIE)).toBeUndefined();
     expect(sentLocale(res)).toBe("ja");
+  });
+
+  it("remplace la langue précédente et conserve la requête et le fragment", async () => {
+    const next = encodeURIComponent("/recherche?q=projet%20zip&lang=fr#resultats");
+    const res = await GET(getReq(`?to=nl&next=${next}`));
+    expect(res.headers.get("location")).toBe("/recherche?q=projet+zip&lang=nl#resultats");
+    expect(sentLocale(res)).toBe("nl");
+  });
+
+  it("permet de mémoriser le choix en iframe derrière un proxy HTTPS", async () => {
+    const res = await GET(getReq("?to=ar", {
+      "x-forwarded-host": "preview.e2b.app",
+      "x-forwarded-proto": "https",
+    }));
+    expect(res.cookies.get(LOCALE_COOKIE)).toMatchObject({ value: "ar", secure: true, sameSite: "lax" });
+    expect(res.cookies.get(EMBEDDED_LOCALE_COOKIE)).toMatchObject({
+      value: "ar", secure: true, sameSite: "none", partitioned: true,
+    });
+    expect(res.headers.get("location")).toBe("/?lang=ar");
+  });
+
+  it.each([
+    { rsc: "1" },
+    { "next-router-prefetch": "1" },
+    { "next-router-segment-prefetch": "/_tree" },
+    { "sec-purpose": "prefetch;prerender" },
+  ])("ne modifie pas la langue lors d'un préchargement (%j)", async (headers) => {
+    const res = await GET(getReq("?to=fr&next=/langues", new Headers(Object.entries(headers))));
+    expect(res.status).toBe(204);
+    expect(res.headers.has("set-cookie")).toBe(false);
   });
 
   it("normalise les variantes régionales (de-AT → de)", async () => {
@@ -48,7 +66,7 @@ describe("GET /api/locale", () => {
   it("redirige vers / quand `next` vise l'extérieur (open redirect)", async () => {
     for (const evil of ["//evil.com", "https://evil.com", "/\\evil.com"]) {
       const res = await GET(getReq(`?to=en&next=${encodeURIComponent(evil)}`));
-      expect(res.headers.get("location")).toBe("/");
+      expect(res.headers.get("location")).toBe("/?lang=en");
       expect(sentLocale(res)).toBe("en");
     }
   });

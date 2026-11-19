@@ -3,9 +3,9 @@
 > **Vos archives de code, sur GitHub, en un glisser-déposer.**
 > Un `.rar`, un `.zip` ou un `.tar` → un dépôt GitHub. Sans terminal, sans clone, sans configuration git.
 
-RepoDrop est un outil web (interface 100 % française) qui :
+RepoDrop est un outil web français à interface multilingue qui :
 
-1. se connecte à **votre** GitHub (OAuth, scopes `repo` + `workflow`) ;
+1. se connecte à **votre** GitHub (OAuth, scopes `repo`, `workflow` et `delete_repo`) ;
 2. reçoit votre **archive `.rar` / `.zip` / `.tar[.gz]`** ;
 3. l'extrait dans un **espace sandboxé** (chemins vérifiés, anti-bombes) ;
 4. vous montre un **aperçu complet** avant tout envoi ;
@@ -43,7 +43,7 @@ Variables importantes :
 
 | Variable | Rôle | Défaut |
 |---|---|---|
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | OAuth App GitHub. **Important :** déclarer les scopes `repo` et `workflow` dans l'OAuth App (sans `workflow`, GitHub rejette les push qui touchent à `/.github/workflows/`). | — |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | OAuth App GitHub. L’écran de connexion explique les scopes demandés. Sans `workflow`, GitHub refuse les push qui modifient `/.github/workflows/`. | — |
 | `APP_URL` | URL publique (callback OAuth + sonde de disponibilité) | `http://localhost:3000` |
 | `SESSION_SECRET` | Chiffrement du cookie de session **et du jeton Discord** | — |
 | `DEV_AUTH=1` | Bouton « connexion directe » via `GH_TOKEN` du serveur (**dev uniquement**) | off |
@@ -93,7 +93,7 @@ npx next dev -H 0.0.0.0 -p 10000
 
 ## Utilisation
 
-1. **Connexion** avec GitHub (scopes `repo` et `workflow`). L'écran de connexion liste ces scopes et leur raison.
+1. **Connexion** avec GitHub (scopes `repo`, `workflow` et `delete_repo`). L'écran de connexion liste ces scopes et leur raison.
 2. **Importer** → glisser-déposer du `.rar`, `.zip`, `.tar` ou `.tar.gz`.
 3. **Aperçu** : fichiers, poids, dossier racine, `node_modules`, filtres.
 4. **Destination** :
@@ -412,7 +412,7 @@ traîne** (« importer rar sur github », « importer zip sur github », « impo
 tar sur github », « envoyer du code sur github sans git », « créer un dépôt
 github depuis une archive », « téléverser du code sur github », « importer du
 code sur github », « publier du code sur github »), rendus sous `/guides`
-(index `ItemList`) et `/guides/<slug>` (pré-rendu statique). Chaque guide a
+(index `ItemList`) et `/guides/<slug>` (navigation dans la langue choisie). Chaque guide a
 un titre H1, une métadescription unique, des mots-clés, des étapes (`HowTo`),
 une FAQ (`FAQPage`), des breadcrumbs et des balises `rel="prev"/"next"` vers
 le guide précédent/suivant — couvrent donc les résultats enrichis, les
@@ -422,9 +422,12 @@ la cible du `SearchAction` (sitelinks search box). La page `/a-propos`
 (présente l'outil, sa mission, sa sécurité) publie un JSON-LD `AboutPage` +
 `Organization` (E-E-A-T) et figure dans le sitemap et le pied de page. L'accueil
 ajoute un nœud `HowTo` (3 étapes) à son `@graph`. Les pages de guide émettent
-`og:type=article` avec `article:*` (dates, section, tags). Le contenu
-éditorial est en français (langue d'indexation par défaut du site — voir
-`lib/i18n/locales.ts`).
+`og:type=article` avec `article:*` (dates, section, tags). Les huit guides
+ont une édition dans chacune des 16 langues, avec un conseil propre au format
+ou au scénario. Ils affichent les limites configurées sur le serveur. La
+recherche accepte plusieurs mots dans n’importe quel ordre et privilégie les
+titres pertinents. Le français reste la langue de repli ; les URL canoniques
+ne changent pas.
 
 Quatre décisions qui évitent des pièges classiques :
 
@@ -471,23 +474,26 @@ curl -s localhost:3000/ | grep -o '<script type="application/ld+json">'
 
 ### Langues (16)
 
-L'interface est traduite en **16 langues** : français, anglais, espagnol,
+L'interface publique et connectée est disponible en **16 langues** : français, anglais, espagnol,
 allemand, italien, portugais, néerlandais, polonais, russe, ukrainien, turc,
 **arabe (RTL)**, hindi, chinois, japonais et coréen. Un sélecteur à recherche
 vit dans l'en-tête ; le choix survit à la navigation et au redémarrage.
 
 ```
-middleware.ts           # résout la langue à chaque requête (cookie → Accept-Language)
+middleware.ts           # résolution : URL → cookie → Accept-Language → français
 lib/i18n/
   locales.ts            # catalogue (code, nom natif, drapeau, dir, og:locale)
   types.ts              # Dict = DeepStringify<typeof fr> → complétude garantie
   dictionaries/*.ts     # 16 dictionnaires, fr = source de vérité des clés
   dictionary.ts         # Record<Locale, Dict> + accès (getDictionary, section)
-  server.ts             # getLocale() / getT() : cookie → x-rd-lang → Accept-Language
-  format.ts             # fill("{upload} Mo") , placeholdersOf, formatNumber
-app/api/locale/route.ts  # GET/POST : validation stricte + cookie rd_lang (1 an)
+  server.ts             # getLocaleState() / getT() : lecture de la langue résolue
+  format.ts             # gabarits, nombres, tailles et dates localisés
+  navigation.ts         # liens de bascule et repli ?lang=
+  search.ts             # recherche accentuée, multilingue, sans altérer le texte
+app/api/locale/route.ts  # GET/POST : validation stricte + cookies de préférence (1 an)
 app/langues/page.tsx     # /langues : galerie de démo, 16 cartes cliquables
 components/LanguageSwitcher.tsx
+components/LocaleLink.tsx
 ```
 
 Trois décisions et ce qu'elles évitent :
@@ -495,48 +501,55 @@ Trois décisions et ce qu'elles évitent :
 - **Typage plutôt que convention.** `Dict = DeepStringify<typeof fr>` rend
   impossible la compilation d'un dictionnaire incomplet : ajouter une clé en
   français casse les quinze autres fichiers jusqu'à traduction. Le test
-  `tests/i18n.test.ts` complète ce que TypeScript ne voit pas (chaînes vides,
-  placeholders divergents, phrases restées en français).
-- **Cookie, pas préfixe d'URL.** La langue vit dans `rd_lang`, pas dans `/fr/`,
-  `/en/`… RepoDrop n'a qu'une poignée de pages publiques : multiplier les URL
-  canoniques et le sitemap pour du contenu non éditorialisé par langue
-  n'apporterait rien, et casserait les liens déjà partagés. Conséquence
-  assumée : l'indexation reste sur le français (voir plus haut).
+  `tests/i18n.test.ts` complète ce que TypeScript ne voit pas : chaînes vides,
+  variables divergentes et libellés recopiés du français, hors vocabulaire
+  réellement partagé. `tests/ui-copy.test.ts` repère les textes JSX et les
+  attributs d’accessibilité laissés en dur.
+- **Une seule URL canonique par page.** Pas de préfixe `/fr/`, `/en/`…
+  Le français est la langue de repli. Les liens de langue ne changent ni les
+  URL canoniques ni le sitemap. L’accueil, les guides, la recherche et les
+  écrans d’import, de dépôts et du panel staff suivent la même préférence.
+  Le flux RSS et le manifeste ont des variantes à `?lang=` ; les visuels
+  de partage n’ont pas de texte propre à une langue.
 - **RTL pris au sérieux.** `<html lang dir>` suivent la langue (`dir="rtl"` en
   arabe) ; la maquette et les puces utilisent `padding-inline-start` et
   `rtl:rotate-180` au lieu de `left`/`right`.
 
-#### La langue ne lâche pas (le bug « ça revient en français »)
+#### Changer de langue, même dans un aperçu embarqué
 
-Next.js **réutilise pendant 5 minutes** les segments RSC préchargés par les
-`<Link>` (`prefetchCache`). Ces segments ayant été rendus dans l'ancienne
-langue, un simple `router.refresh()` ne suffisait pas : revenir sur une page
-préchargée réaffichait l'ancienne langue. La correction tient en trois
-pièces :
+Le sélecteur et les cartes de `/langues` utilisent des liens natifs vers
+`/api/locale?to=xx&next=<chemin>`. La bascule recharge le document : ni les
+segments Next mis en cache ni un ancien choix dans `localStorage` ne peuvent
+réappliquer la langue précédente. Un préchargement ne pose aucun cookie. Le
+sélecteur accepte les flèches pour parcourir les choix, Entrée pour activer le
+choix et Échap pour revenir au bouton. Sans JavaScript, les liens restent
+utilisables.
 
-1. **`middleware.ts`** résout la langue à **chaque requête** — cookie
-   `rd_lang`, sinon `Accept-Language` —, la transmet au rendu via l'en-tête
-   `x-rd-lang`, et la pose dans le cookie dès la première visite (la langue
-   détectée devient explicite et stable).
-2. **`app/api/locale/route.ts`** pose le cookie sur la réponse à chaque
-   bascule, et le changement de langue est un **aller-retour document
-   complet** (`GET /api/locale?to=xx&next=/chemin`) : la page suivante est
-   rendue par le serveur déjà dans la nouvelle langue. Aucun segment RSC
-   préchargé dans l'ancienne langue ne peut resservir — le problème ne se
-   pose plus, par construction.
-3. **`localStorage`** (`rd_lang`) n'est qu'un **miroir** du cookie : si le
-   cookie a été effacé ou bloqué, le sélecteur le rétablit au chargement
-   (une seule tentative par session, pour ne pas boucler si le cookie est
-   bloqué).
+La route GET valide la langue, filtre le chemin de retour (`safeNextPath`),
+pose le cookie `rd_lang` et renvoie une redirection relative avec `?lang=xx`,
+query et ancre conservées. En HTTPS elle pose également un cookie partitionné
+`rd_lang_embed` pour les aperçus en iframe. Si la préférence n'arrive pas via
+un cookie, `LocaleLink` et les formulaires conservent `lang` pendant la
+navigation. Les pages de l'interface, dont `/a-propos`, sont rendues à la
+requête plutôt que compilées dans une seule langue.
 
-Deux façons de changer de langue : le sélecteur de l'en-tête, qui navigue
-vers `/api/locale?to=xx&next=<chemin courant>`, et des liens partageables du
-même type. La route GET pose le cookie puis redirige en 307 ; `next` est
-filtré par `safeNextPath` (chemins internes uniquement, sinon `/`) pour ne
-pas devenir une redirection ouverte. `POST /api/locale` (`{ locale }`) offre
-le même cookie en JSON pour les appels programmatiques.
-`/langues` sert de galerie de contrôle — les 16 cartes affichent le titre réel
-et un aperçu du héros dans chaque langue.
+Sans choix explicite, le middleware sélectionne la langue prise en charge la
+mieux pondérée par `Accept-Language`, puis le français. `POST /api/locale`
+(`{ locale }`) permet d'enregistrer le même choix sans redirection. Le test
+`npm run test:i18n:production`, à lancer après `npm run build`, vérifie le
+rendu réel avec et sans cookie dans les 16 langues, y compris les huit guides
+et les écrans connectés avec une API GitHub de test. Les guides partagent le
+même plan dans chaque langue, avec une introduction et des conseils propres
+à chaque sujet. Les erreurs des API gardent un `code` stable et un message
+traduit ; les anciens échecs d’import sont retraduits à la lecture. La démo
+ZIP affiche un aperçu local, puis l’import connecté demande confirmation
+avant l’envoi à GitHub.
+
+Les noms de dépôts, les branches et le contenu des fichiers ne sont pas
+traduits. Le panel d’administration traduit les résumés d’erreurs et conserve
+le détail technique à part pour le support. Les colonnes de l’export CSV et
+les notifications envoyées au canal Discord ne suivent pas la langue du
+navigateur.
 
 Ajouter une langue :
 

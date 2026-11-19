@@ -12,7 +12,7 @@
  * `/staff`, qui renvoie son écran « accès restreint » à qui n'est pas staff.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useLocalizedPath } from "@/components/LocaleLink";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +33,8 @@ const CLICKS_NEEDED = 5;
 const CLICK_WINDOW_MS = 3_000;
 const KEY_WINDOW_MS = 2_500;
 
-export function SecretDoor() {
-  const router = useRouter();
+export function SecretDoor({ loadingLabel }: { loadingLabel: string }) {
+  const localize = useLocalizedPath();
   const [unlocked, setUnlocked] = useState(false);
   const keys = useRef<string[]>([]);
   const keyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,10 +43,9 @@ export function SecretDoor() {
 
   const open = useCallback(() => {
     setUnlocked(true);
-    // Navigation immédiate : aucun délai imposé (le voile se dessine pendant
-    // que la page arrive).
-    router.push("/staff");
-  }, [router]);
+    // A document navigation also clears the overlay in the persistent footer.
+    window.location.assign(localize("/staff"));
+  }, [localize]);
 
   // ---------------------------------------------------------- séquence Konami
   useEffect(() => {
@@ -120,7 +119,7 @@ export function SecretDoor() {
             <span className="grid h-16 w-16 place-items-center rounded-2xl bg-violet-500/20 text-violet-200 ring-1 ring-violet-400/40 animate-fade-up">
               <ShieldCheck className="h-8 w-8" />
             </span>
-            <p className="text-sm font-medium text-chalk">Accès staff…</p>
+            <p className="text-sm font-medium text-chalk">{loadingLabel}</p>
           </div>
         </div>
       )}

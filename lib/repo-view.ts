@@ -38,7 +38,7 @@ export const DEFAULT_REPO_VIEW: RepoView = {
 };
 
 const SEGMENT_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
-const SORT_IDS = new Set<string>(REPO_SORTS.map((s) => s.id));
+const SORT_IDS = new Set<string>(REPO_SORTS);
 
 /**
  * Un `full_name` GitHub est `owner/repo`. Chaque segment commence par un

@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { ensureWorkerInit, jobOwnedBy } from "@/lib/jobs";
 import { JobView } from "@/components/JobView";
+import { localizeJob } from "@/lib/i18n/job-errors";
 import { getT } from "@/lib/i18n/server";
+import { localizePath } from "@/lib/i18n/navigation";
 import { buildPageMetadata } from "@/lib/seo";
 import { ogLocaleOf } from "@/lib/i18n/locales";
 
@@ -28,21 +30,17 @@ export default async function JobPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/login");
+  const [session, { locale, urlLocale, t }] = await Promise.all([getSession(), getT()]);
+  if (!session) redirect(localizePath("/login", urlLocale));
 
   ensureWorkerInit();
   const { id } = await params;
   const job = jobOwnedBy(id, session.login);
   if (!job) notFound();
 
-  // La page de suivi suit la langue choisie : on passe les textes (section
-  // `job` du dictionnaire) et la locale au composant client.
-  const { locale, t } = await getT();
-
   return (
     <main>
-      <JobView initialJob={job} copy={t.job} locale={locale} />
+      <JobView initialJob={localizeJob(job, locale)} strings={{ job: t.job, ui: t.ui, repos: t.repos, notFound: t.notFound }} locale={locale} />
     </main>
   );
 }

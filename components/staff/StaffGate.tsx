@@ -9,15 +9,18 @@
  * session chiffré — rien n'est stocké côté client.
  */
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
+import LocaleLink, { useLocalizedPath } from "@/components/LocaleLink";
 import { useRouter } from "next/navigation";
 import { KeyRound, Loader2, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { fill } from "@/lib/i18n/format";
+import type { Dict } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 
-export function StaffGate({ login }: { login: string }) {
+export function StaffGate({ login, copy }: { login: string; copy: Pick<Dict, "staff" | "ui" | "notFound"> }) {
+  const localize = useLocalizedPath();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -29,7 +32,7 @@ export function StaffGate({ login }: { login: string }) {
     setBusy(true);
     setError("");
     try {
-      const res = await fetch("/api/staff/unlock", {
+      const res = await fetch(localize("/api/staff/unlock"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
@@ -37,11 +40,10 @@ export function StaffGate({ login }: { login: string }) {
       const data = (await res.json().catch(() => ({}))) as {
         ok?: boolean;
         error?: string;
-        attemptsLeft?: number;
       };
       if (!res.ok || !data.ok) {
         setError(
-          data.error ?? "Mot de passe incorrect.",
+          data.error ?? fill(copy.ui.httpError, { status: res.status }),
         );
         setPassword("");
         setBusy(false);
@@ -50,36 +52,35 @@ export function StaffGate({ login }: { login: string }) {
       // Le cookie est posé : on redemande le rendu serveur de /staff.
       router.refresh();
     } catch {
-      setError("Impossible de joindre le serveur. Réessayez.");
+      setError(copy.ui.offline);
       setBusy(false);
     }
   }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col items-center gap-6 px-4 py-24">
+    <main className="mx-auto flex w-full max-w-md flex-col items-center gap-6 px-4 py-24">
       <div className="w-full animate-fade-up rounded-2xl bg-panel p-6 text-center shadow-panel ring-1 ring-edge sm:p-8">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-violet-500/15 text-violet-200 ring-1 ring-violet-400/30">
           <Lock className="h-6 w-6" />
         </span>
 
         <h1 className="mt-4 text-xl font-semibold tracking-tight">
-          Panel verrouillé
+          {copy.staff.locked}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-mist">
-          Ce panel est réservé au staff. Saisissez le mot de passe pour y
-          accéder.
+          {copy.staff.lockedLead}
         </p>
 
         <Badge variant="sky" className="mt-3">
-          {login}
+          <bdi>{login}</bdi>
         </Badge>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-3 text-left">
+        <form onSubmit={onSubmit} className="mt-6 space-y-3 text-start">
           <label
             htmlFor="staff-password"
             className="text-xs font-medium uppercase tracking-wider text-mist"
           >
-            Mot de passe du panel
+            {copy.staff.panelPassword}
           </label>
           <Input
             id="staff-password"
@@ -113,21 +114,21 @@ export function StaffGate({ login }: { login: string }) {
             ) : (
               <KeyRound className="h-4 w-4" />
             )}
-            {busy ? "Vérification…" : "Déverrouiller"}
+            {busy ? copy.ui.loading : copy.staff.unlock}
           </button>
         </form>
 
         <p className="mt-4 text-xs leading-relaxed text-mist/80">
-          Après 6 essais, l&apos;accès est suspendu 15 minutes.
+          {copy.staff.attemptLimit}
         </p>
       </div>
 
-      <Link
+      <LocaleLink
         href="/"
         className={buttonVariants({ variant: "ghost", size: "sm" })}
       >
-        Retour à l'accueil
-      </Link>
+        {copy.notFound.back}
+      </LocaleLink>
     </main>
   );
 }

@@ -7,8 +7,8 @@
  *   1. déposer un `.zip` réel est accepté ;
  *   2. l'archive est indexée **dans le navigateur** (les noms de fichiers
  *      s'affichent) — aucune requête réseau n'est émise ;
- *   3. une extraction simulée s'anime (barre de progression) ;
- *   4. l'interface bascule dans l'état « prêt à pousser » ;
+ *   3. la préparation de l’aperçu s’anime (barre de progression) ;
+ *   4. l’interface affiche l’aperçu ;
  *   5. le clic sur « Pousser sur GitHub » ouvre une modale qui invite à
  *      connecter GitHub — et **rien n'est envoyé**.
  */
@@ -19,6 +19,7 @@ import yazl from "yazl";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
 import { demoCopyFrom } from "@/components/workflow-demo/copy";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
+import { fill, formatBytes, formatNumber, formatPercent } from "@/lib/i18n/format";
 
 /** React 19 exige ce drapeau pour `act` hors de React Testing Library. */
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT =
@@ -112,7 +113,10 @@ afterEach(() => {
 });
 
 describe("démo interactive de la landing", () => {
-  it("accepte un .zip déposé, l'indexe localement et atteint l'état « prêt »", async () => {
+  it("indexe un ZIP localement et annonce sa progression et son résultat en arabe", async () => {
+    const locale = "ar";
+    const copy = demoCopyFrom(DICTIONARIES[locale].home);
+    act(() => root.render(createElement(WorkflowDemo, { copy, locale })));
     const card = container.querySelector('[data-wd="archive-card"]');
     expect(card, "zone de dépôt absente").not.toBeNull();
 
@@ -130,13 +134,18 @@ describe("démo interactive de la landing", () => {
     expect(container.textContent).toContain("mon-projet/src/index.ts");
     expect(container.textContent).toContain("mon-projet/package.json");
 
-    // 2. L'extraction simulée s'anime.
-    expect(container.querySelector('[role="progressbar"]')).not.toBeNull();
+    // 2. Le lecteur d’écran reçoit la même progression localisée.
+    const bar = container.querySelector('[role="progressbar"]');
+    expect(bar?.getAttribute("aria-label")).toBe(copy.preparing);
+    expect(bar?.getAttribute("aria-valuetext")).toBe(formatPercent(Number(bar?.getAttribute("aria-valuenow")), locale));
 
-    // 3. L'état final : « Prêt à pousser ».
+    // 3. L’état final : métadonnées remplies, chemins inchangés.
     await flush(2500);
-    expect(container.textContent).toContain(COPY.ready);
-    expect(container.textContent).toContain("2");
+    expect(container.textContent).toContain(copy.ready);
+    const count = formatNumber(2, locale);
+    const meta = fill(copy.archiveMeta, { count, size: formatBytes(file.size, locale) });
+    expect(container.querySelector('[data-wd="archive-meta"]')?.textContent).toBe(meta);
+    expect(container.textContent).toContain(fill(copy.readyMeta, { count }));
 
     // 4. Rien n'a été envoyé.
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -161,7 +170,8 @@ describe("démo interactive de la landing", () => {
     const dialog = document.querySelector('[role="dialog"]');
     expect(dialog, "modale absente").not.toBeNull();
     expect(dialog!.textContent).toContain(COPY.connectTitle);
-    expect(dialog!.textContent).toContain(COPY.connectBody);
+    const description = dialog!.getAttribute("aria-describedby");
+    expect(document.getElementById(description ?? "")?.textContent).toBe(COPY.connectBody);
 
     const cta = dialog!.querySelector("a");
     expect(cta?.getAttribute("href")).toBe("/login");
@@ -188,7 +198,7 @@ describe("démo interactive de la landing", () => {
 
     const alert = container.querySelector('[role="alert"]');
     expect(alert, "message d'erreur absent").not.toBeNull();
-    expect(alert!.textContent).toContain(COPY.dropError);
+    expect(alert!.textContent).toContain(COPY.readError);
   });
 });
 

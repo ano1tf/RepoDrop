@@ -10,7 +10,7 @@
  *   "stop"      l'arrête
  */
 import { z } from "zod";
-import { json, jsonError } from "@/lib/http";
+import { json } from "@/lib/http";
 import { checkStaff } from "@/lib/staff";
 import { clientIp } from "@/lib/ratelimit";
 import { logEvent } from "@/lib/db";
@@ -29,33 +29,39 @@ import {
 } from "@/lib/discord/monitor";
 import { ensureWorkerInit } from "@/lib/jobs";
 
+import { getDictionary } from "@/lib/i18n/dictionary";
+import { requestLocale } from "@/lib/i18n/request";
+import { apiError } from "@/lib/i18n/api-errors";
+
 export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   action: z.enum(["test", "send", "ping", "start", "stop"]),
 });
 
-export async function GET(): Promise<Response> {
+export async function GET(req: Request): Promise<Response> {
   ensureWorkerInit();
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
   return json({ status: getMonitorStatus() });
 }
 
 export async function POST(req: Request): Promise<Response> {
   ensureWorkerInit();
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return apiError(req, "INVALID_REQUEST", 400);
   }
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) return jsonError("Action invalide.", 400);
+  if (!parsed.success) return apiError(req, "INVALID_REQUEST", 400);
   const { action } = parsed.data;
+  const locale = requestLocale(req);
+  const copy = getDictionary(locale);
 
   const settings = getDiscordSettings();
 
@@ -64,7 +70,7 @@ export async function POST(req: Request): Promise<Response> {
       /* ---------------------------------------------------- valider le jeton */
       case "test": {
         if (!settings.token) {
-          return jsonError("Aucun jeton (ou webhook) enregistré.", 400);
+          return apiError(req, "DISCORD_UNCONFIGURED", 400);
         }
         if (isWebhookUrl(settings.token)) {
           // Un webhook ne se « valide » qu'en écrivant : on laisse le bouton
@@ -72,10 +78,9 @@ export async function POST(req: Request): Promise<Response> {
           return json({
             ok: true,
             mode: "webhook",
-            message:
-              "URL de webhook reconnue. Utilisez « Envoyer un message de test » pour la valider.",
+            message: copy.discord.testWebhook,
             status: getMonitorStatus(),
-          });
+          }, 200, { "Content-Language": locale });
         }
         const me = await fetchBotUser(settings.token);
         const channel = settings.channelId
@@ -126,9 +131,9 @@ export async function POST(req: Request): Promise<Response> {
           ok: outcome.probe.ok,
           probe: outcome.probe,
           sent: outcome.sent,
-          error: outcome.error ?? null,
+          error: outcome.error ? copy.errors.DISCORD_FAILED : null,
           status: getMonitorStatus(),
-        });
+        }, 200, { "Content-Language": locale });
       }
 
       /* ---------------------------------------------------------- démarrage */
@@ -169,8 +174,8 @@ export async function POST(req: Request): Promise<Response> {
       detail: { action, ok: false, error: message.slice(0, 300) },
     });
     const status = e instanceof DiscordApiError && e.status === 401 ? 401 : 502;
-    return jsonError(message, status);
+    return apiError(req, "DISCORD_FAILED", status);
   }
 
-  return jsonError("Action inconnue.", 400);
+  return apiError(req, "INVALID_REQUEST", 400);
 }

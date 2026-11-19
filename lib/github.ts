@@ -613,11 +613,7 @@ export async function deleteRepo(
     // Sans le scope `delete_repo`, GitHub répond 404 (et non 403) pour ne pas
     // révéler l'existence du dépôt : on explique donc les deux causes.
     if (e instanceof AppError && e.code === "NOT_FOUND") {
-      throw new AppError(
-        "FORBIDDEN",
-        undefined,
-        "dépôt introuvable, ou jeton sans le scope « delete_repo » — reconnectez-vous",
-      );
+      throw new AppError("DELETE_SCOPE_MISSING");
     }
     throw e;
   }

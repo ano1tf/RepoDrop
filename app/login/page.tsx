@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { AlertTriangle, Lock, ShieldCheck } from "lucide-react";
+import { GITHUB_OAUTH_SCOPES } from "@/lib/github-scopes";
 import { config } from "@/lib/config";
 import { Wordmark, GitHubIcon } from "@/components/Brand";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { buildPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { ogLocaleOf } from "@/lib/i18n/locales";
+import { localizePath } from "@/lib/i18n/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getT();
@@ -24,9 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string | string[] }>;
 }) {
-  const [{ error }, { t }] = await Promise.all([searchParams, getT()]);
+  const [{ error }, { urlLocale, t }] = await Promise.all([searchParams, getT()]);
 
   const ERRORS: Record<string, string> = {
     state: t.login.errorState,
@@ -34,7 +36,10 @@ export default async function LoginPage({
     config: t.login.errorConfig,
     devauth: t.login.errorDevauth,
   };
-  const message = error ? (ERRORS[error] ?? t.login.errorGeneric) : null;
+  const reason = Array.isArray(error) ? error[0] : error;
+  const message = reason
+    ? (Object.hasOwn(ERRORS, reason) ? ERRORS[reason] : t.login.errorGeneric)
+    : null;
 
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-16 sm:px-6">
@@ -47,9 +52,9 @@ export default async function LoginPage({
 
       <div className="w-full max-w-md animate-fade-up">
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-block">
+          <LocaleLink href="/" className="inline-block">
             <Wordmark className="justify-center text-lg" />
-          </Link>
+          </LocaleLink>
         </div>
 
         <Card className="overflow-hidden">
@@ -73,7 +78,7 @@ export default async function LoginPage({
             )}
 
             <a
-              href="/api/auth/login"
+              href={localizePath("/api/auth/login", urlLocale)}
               rel="nofollow"
               className={cn(buttonVariants({ size: "lg" }), "w-full")}
             >
@@ -81,15 +86,20 @@ export default async function LoginPage({
               {t.login.continueWithGithub}
             </a>
 
-            <p className="flex flex-wrap items-start gap-1.5 text-xs leading-relaxed text-mist">
-              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-go" />
-              <span>
-                {t.login.scopesLead}{" "}
-                <code className="text-chalk">repo</code> {t.login.scopesAnd}{" "}
-                <code className="text-chalk">workflow</code>
-                {t.login.scopesTail}
-              </span>
-            </p>
+            <div className="rounded-xl border border-edge/60 bg-panel2/40 p-3 text-xs leading-relaxed text-mist">
+              <h2 className="flex items-center gap-1.5 font-medium text-chalk">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-go" aria-hidden="true" />
+                {t.login.scopesLead}
+              </h2>
+              <dl className="mt-2 space-y-2">
+                {GITHUB_OAUTH_SCOPES.map((scope) => (
+                  <div key={scope} className="grid grid-cols-[5.75rem_minmax(0,1fr)] items-start gap-2">
+                    <dt><code dir="ltr" className="rounded bg-panel2 px-1 py-0.5 text-chalk">{scope}</code></dt>
+                    <dd>{t.login.scopes[scope]}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
 
             <ul className="grid gap-1.5 text-[11px] text-mist">
               <li className="flex items-center gap-1.5">
@@ -106,7 +116,7 @@ export default async function LoginPage({
                   {t.login.devMode}
                 </p>
                 <a
-                  href="/api/auth/dev-login"
+                  href={localizePath("/api/auth/dev-login", urlLocale)}
                   rel="nofollow"
                   className={cn(buttonVariants({ variant: "secondary" }), "w-full")}
                 >

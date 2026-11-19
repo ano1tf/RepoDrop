@@ -13,8 +13,8 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import Busboy from "busboy";
 import { config } from "@/lib/config";
-import { json, jsonError } from "@/lib/http";
-import { frMessage } from "@/lib/errors";
+import { json } from "@/lib/http";
+import { apiError, type ApiErrorCode } from "@/lib/i18n/api-errors";
 import { getSession } from "@/lib/session";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { insertJob, logEvent } from "@/lib/db";
@@ -33,21 +33,21 @@ export async function POST(req: Request): Promise<Response> {
   ensureWorkerInit();
 
   const session = await getSession();
-  if (!session) return jsonError("Authentification requise.", 401);
+  if (!session) return apiError(req, "AUTH_REQUIRED", 401);
 
   const ip = clientIp(req.headers);
   const rl = rateLimit(`upload:${ip}`, config.limits.uploadsPerHour, 3_600_000);
   if (!rl.ok) {
-    return jsonError(frMessage("RATE_LIMITED"), 429, {
+    return apiError(req, "RATE_LIMITED", 429, {
       retryAfterSec: rl.retryAfterSec,
     });
   }
 
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().includes("multipart/form-data")) {
-    return jsonError("Requête invalide (multipart/form-data attendu).", 415);
+    return apiError(req, "INVALID_REQUEST", 415);
   }
-  if (!req.body) return jsonError("Corps de requête vide.", 400);
+  if (!req.body) return apiError(req, "MISSING_FILE", 400);
 
   const id = crypto.randomUUID();
   const jobPath = path.join(config.jobsDir, id);
@@ -57,7 +57,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     const result = await receiveArchive(req, contentType, jobPath);
     if ("error" in result) {
-      return jsonError(result.error, result.status, result.extra);
+      return apiError(req, result.error, result.status);
     }
 
     // Validation des magic bytes APRÈS réception (fichier déjà sur disque).
@@ -72,13 +72,10 @@ export async function POST(req: Request): Promise<Response> {
       result.filename,
     );
     if (!format) {
-      return jsonError(
-        "Ce fichier n'est pas une archive .zip, .rar ou .tar valide.",
-        415,
-      );
+      return apiError(req, "UNSUPPORTED", 415);
     }
     if (result.size === 0) {
-      return jsonError("L'archive est vide.", 400);
+      return apiError(req, "EMPTY", 400);
     }
 
     // Nom final attendu par le worker : upload.<format>
@@ -112,13 +109,10 @@ export async function POST(req: Request): Promise<Response> {
     // Limites busboy / erreurs d'E/S.
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("size limit")) {
-      return jsonError(
-        `Archive trop volumineuse (max ${Math.round(config.limits.maxUploadBytes / 1024 / 1024)} Mo).`,
-        413,
-      );
+      return apiError(req, "UPLOAD_TOO_BIG", 413);
     }
     console.error("[upload] erreur:", msg);
-    return jsonError("Réception du fichier impossible. Réessayez.", 500);
+    return apiError(req, "INTERNAL", 500);
   } finally {
     if (cleanup) {
       fs.rmSync(jobPath, { recursive: true, force: true });
@@ -132,9 +126,8 @@ interface ReceiveOk {
   size: number;
 }
 type ReceiveErr = {
-  error: string;
+  error: ApiErrorCode;
   status: number;
-  extra?: Record<string, unknown>;
 };
 
 async function receiveArchive(
@@ -175,14 +168,14 @@ async function receiveArchive(
         .then(() => {
           if (tooLarge) {
             done({
-              error: `Archive trop volumineuse (max ${Math.round(config.limits.maxUploadBytes / 1024 / 1024)} Mo).`,
+              error: "UPLOAD_TOO_BIG",
               status: 413,
             });
             return;
           }
           const size = fs.statSync(target).size;
           if (size === 0) {
-            done({ error: "L'archive est vide.", status: 400 });
+            done({ error: "EMPTY", status: 400 });
             return;
           }
           const displayName = safeDisplayName(fieldName);
@@ -205,13 +198,13 @@ async function receiveArchive(
 
     bb.on("close", () => {
       if (!settled && !fileSeen) {
-        done({ error: "Aucun fichier reçu.", status: 400 });
+        done({ error: "MISSING_FILE", status: 400 });
       }
     });
 
     const body = req.body;
     if (!body) {
-      done({ error: "Corps de requête vide.", status: 400 });
+      done({ error: "MISSING_FILE", status: 400 });
       return;
     }
     Readable.fromWeb(body as Parameters<typeof Readable.fromWeb>[0]).pipe(bb);

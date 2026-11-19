@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { ArrowUpRight, FolderSearch } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { GitHubIcon, Wordmark } from "@/components/Brand";
@@ -6,10 +6,13 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { localeDefinition } from "@/lib/i18n/locales";
+import { fill } from "@/lib/i18n/format";
+import { localizePath } from "@/lib/i18n/navigation";
 
 /** En-tête global (server component) — reflète la session et la langue. */
 export async function Header() {
-  const [session, { locale, t }] = await Promise.all([getSession(), getT()]);
+  const [session, { locale, urlLocale, t }] = await Promise.all([getSession(), getT()]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-edge/70 glass pt-[env(safe-area-inset-top)]">
@@ -19,53 +22,53 @@ export async function Header() {
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-go/45 to-transparent"
       />
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link
+        <LocaleLink
           href="/"
           className="group flex items-center text-chalk transition-opacity hover:opacity-90"
         >
           <Wordmark />
-        </Link>
+        </LocaleLink>
 
         <nav
           aria-label={t.nav.howItWorks}
           className="flex items-center gap-1.5 sm:gap-2"
         >
-          <Link
+          <LocaleLink
             href="/#comment"
             className="hidden rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-panel2 hover:text-chalk lg:inline-block"
           >
             {t.nav.howItWorks}
-          </Link>
+          </LocaleLink>
 
           <LanguageSwitcher
             locale={locale}
-            label={t.nav.language}
             changeLabel={t.nav.languageChange}
             searchLabel={t.nav.languageSearch}
-            currentLabel={t.nav.languageCurrent.replace("{name}", locale.toUpperCase())}
+            currentLabel={fill(t.nav.languageCurrent, { name: localeDefinition(locale).nativeName })}
+            emptyLabel={t.nav.languageEmpty}
           />
 
           {session ? (
             <>
-              <Link
+              <LocaleLink
                 href="/repos"
                 className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-mist transition-colors hover:bg-panel2 hover:text-chalk md:inline-flex"
               >
                 <FolderSearch className="h-4 w-4" />
                 {t.nav.myRepos}
-              </Link>
-              <Link
+              </LocaleLink>
+              <LocaleLink
                 href="/import"
                 className={cn(buttonVariants({ size: "sm" }), "hidden xl:inline-flex")}
               >
                 {t.nav.importArchive}
-              </Link>
-              <Link
+              </LocaleLink>
+              <LocaleLink
                 href="/import"
                 className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "xl:hidden")}
               >
                 {t.nav.importShort}
-              </Link>
+              </LocaleLink>
               <span className="hidden items-center gap-2 rounded-full bg-panel2 py-1 pl-1 pr-3 ring-1 ring-edge sm:flex">
                 {session.avatar ? (
                   <img
@@ -84,7 +87,7 @@ export async function Header() {
                 </span>
               </span>
               <a
-                href="/api/auth/logout"
+                href={localizePath("/api/auth/logout", urlLocale)}
                 rel="nofollow"
                 className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}
               >
@@ -93,17 +96,17 @@ export async function Header() {
             </>
           ) : (
             <>
-              <Link
+              <LocaleLink
                 href="/login"
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden md:inline-flex")}
               >
                 {t.nav.login}
-              </Link>
-              <Link href="/login" className={cn(buttonVariants({ size: "sm" }))}>
+              </LocaleLink>
+              <LocaleLink href="/login" className={buttonVariants({ size: "sm" })}>
                 <GitHubIcon />
-                <span className="hidden sm:inline">{t.nav.start}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 sm:hidden" />
-              </Link>
+                <span className="sr-only sm:not-sr-only">{t.nav.start}</span>
+                <ArrowUpRight className="h-3.5 w-3.5 sm:hidden" aria-hidden="true" />
+              </LocaleLink>
             </>
           )}
         </nav>

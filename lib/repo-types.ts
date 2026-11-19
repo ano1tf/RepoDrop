@@ -67,11 +67,6 @@ export interface TreeResponse {
   empty: boolean;
 }
 
-/** Ordres de tri proposés dans la liste des dépôts. */
-export type RepoSort = "pushed" | "name" | "size";
-
-export const REPO_SORTS: { id: RepoSort; label: string }[] = [
-  { id: "pushed", label: "Activité récente" },
-  { id: "name", label: "Nom (A→Z)" },
-  { id: "size", label: "Taille" },
-];
+/** Ordres de tri proposés dans la liste des dépôts (indépendants de la langue). */
+export const REPO_SORTS = ["pushed", "name", "size"] as const;
+export type RepoSort = (typeof REPO_SORTS)[number];

@@ -1,21 +1,23 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { FolderSearch, UploadCloud } from "lucide-react";
 import { getSession } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { localizePath } from "@/lib/i18n/navigation";
 import { RepoBrowser } from "@/components/repos/RepoBrowser";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const metadata = {
-  title: "Mes dépôts",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t.nav.myRepos, robots: { index: false, follow: false } };
+}
 
 export const dynamic = "force-dynamic";
 
 export default async function ReposPage() {
-  const session = await getSession();
-  if (!session) redirect("/login");
+  const [session, { locale, urlLocale, t }] = await Promise.all([getSession(), getT()]);
+  if (!session) redirect(localizePath("/login", urlLocale));
 
   return (
     <main className="relative flex-1 overflow-hidden">
@@ -31,27 +33,23 @@ export default async function ReposPage() {
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky/10 text-sky ring-1 ring-sky/25">
                   <FolderSearch className="h-5 w-5" />
                 </span>
-                Mes dépôts
+                {t.nav.myRepos}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
-                Parcourez le contenu de vos dépôts avant d'importer quoi que ce
-                soit : arborescence, aperçu des fichiers, branche de votre choix.
-                Renommage, visibilité et suppression sont disponibles depuis
-                l'onglet <strong className="text-chalk">Actions</strong> d'un
-                dépôt.
+                {t.repos.lead}
               </p>
             </div>
-            <Link
+            <LocaleLink
               href="/import"
               className={cn(buttonVariants({ variant: "secondary" }))}
             >
               <UploadCloud className="h-4 w-4" />
-              Importer une archive
-            </Link>
+              {t.nav.importArchive}
+            </LocaleLink>
           </div>
         </div>
 
-        <RepoBrowser login={session.login} />
+        <RepoBrowser login={session.login} locale={locale} copy={t.repos} ui={t.ui} importLabel={t.nav.importArchive} />
       </div>
     </main>
   );

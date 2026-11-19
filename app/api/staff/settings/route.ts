@@ -7,7 +7,7 @@
  * la nouvelle configuration prenne effet immédiatement.
  */
 import { z } from "zod";
-import { json, jsonError } from "@/lib/http";
+import { json } from "@/lib/http";
 import { checkStaff, staffConfigured } from "@/lib/staff";
 import { logEvent } from "@/lib/db";
 import {
@@ -18,6 +18,8 @@ import {
 } from "@/lib/settings";
 import { getMonitorStatus, restartMonitor } from "@/lib/discord/monitor";
 import { clientIp } from "@/lib/ratelimit";
+
+import { apiError } from "@/lib/i18n/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -53,9 +55,9 @@ const patchSchema = z
   })
   .refine((d) => Object.keys(d).length > 0, { message: "Aucun réglage fourni." });
 
-export async function GET(): Promise<Response> {
+export async function GET(req: Request): Promise<Response> {
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
 
   return json({
     settings: discordSettingsView(getDiscordSettings()),
@@ -68,19 +70,20 @@ export async function GET(): Promise<Response> {
 
 export async function PUT(req: Request): Promise<Response> {
   const gate = await checkStaff();
-  if (!gate.ok) return jsonError(gate.message, gate.status);
+  if (!gate.ok) return apiError(req, gate.code, gate.status);
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return apiError(req, "INVALID_REQUEST", 400);
   }
 
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(
-      parsed.error.issues.map((i) => i.message).join(" ") || "Réglages invalides.",
+    const field = parsed.error.issues[0]?.path[0];
+    return apiError(req,
+      field === "channelId" ? "INVALID_CHANNEL" : field === "probeUrl" ? "INVALID_PROBE" : "INVALID_REQUEST",
       400,
     );
   }
@@ -102,7 +105,7 @@ export async function PUT(req: Request): Promise<Response> {
       changed,
       enabled: next.enabled,
       intervalMin: next.intervalMin,
-      mode: next.token ? "configuré" : "vide",
+      mode: next.token ? "configured" : "empty",
       wasEnabled: before.enabled,
     },
   });

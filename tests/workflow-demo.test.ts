@@ -22,12 +22,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
 import { demoCopyFrom } from "@/components/workflow-demo/copy";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
-import { LOCALES } from "@/lib/i18n/locales";
+import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
+import { LOCALES, type Locale } from "@/lib/i18n/locales";
 import type { Dict } from "@/lib/i18n/types";
 
-function render(t: Dict): string {
+function render(t: Dict, locale: Locale = "fr"): string {
   return renderToStaticMarkup(
-    createElement(WorkflowDemo, { copy: demoCopyFrom(t.home), locale: "fr" }),
+    createElement(WorkflowDemo, { copy: demoCopyFrom(t.home), locale }),
   );
 }
 
@@ -47,7 +48,7 @@ describe("WorkflowDemo", () => {
 
   it("part d'une archive locale et aboutit sur un dépôt GitHub", () => {
     expect(frHtml).toContain("mon-projet.zip");
-    expect(frHtml).toContain("github.com/you/");
+    expect(frHtml).toContain("github.com/octocat/");
     // Le nom du dépôt est dérivé du fichier, sans son extension.
     expect(frHtml).toContain(">mon-projet<");
   });
@@ -114,7 +115,7 @@ describe("WorkflowDemo", () => {
 
   it("ne laisse jamais un gabarit {placeholder} visible", () => {
     for (const l of LOCALES) {
-      expect(render(DICTIONARIES[l.code]), `${l.code} : gabarit non rempli`).not.toMatch(
+      expect(render(DICTIONARIES[l.code], l.code), `${l.code} : gabarit non rempli`).not.toMatch(
         /\{\w+\}/,
       );
     }
@@ -128,10 +129,17 @@ describe("WorkflowDemo", () => {
 
   it("rend les 16 langues sans dépendre du sens d'écriture", () => {
     for (const l of LOCALES) {
-      const html = render(DICTIONARIES[l.code]);
+      const html = render(DICTIONARIES[l.code], l.code);
       const file = DICTIONARIES[l.code].home.mockFile;
       expect(html, `${l.code} : nom d'archive absent`).toContain(escapeHtml(file));
       expect(html).toContain(escapeHtml(file.replace(/\.[^.]+$/, "")));
+      expect(file).toMatch(/^[a-z0-9][a-z0-9-]+\.zip$/);
+      const { demoPushed, demoFileMeta } = DICTIONARIES[l.code].home;
+      expect(html).toContain(escapeHtml(demoPushed));
+      expect(html).toContain(escapeHtml(fill(demoFileMeta, {
+        size: formatBytes(Math.round(18.4 * 1024 ** 2), l.code),
+        count: formatNumber(1284, l.code),
+      })));
       // Aucune classe physique de marge/padding/alignement : le RTL vient de
       // <html dir>, seules les utilitaires logiques (ms-/me-/text-start) sont
       // permises. Les décalages décoratifs (left-X) restent assumés.
@@ -156,18 +164,18 @@ describe("copie de la démo (WorkflowDemo)", () => {
     demoStep1: 26,
     demoStep2: 26,
     demoStep3: 22,
-    demoFileMeta: 28,
+    demoFileMeta: 36,
     demoScan: 26,
     demoPushed: 30,
-    demoBranches: 12,
     demoNoAccount: 38,
     demoLocalBadge: 12,
     demoDropHint: 30,
     demoDropBrowse: 30,
     demoDropCta: 26,
     demoDropError: 60,
+    demoReadError: 78,
     demoReading: 30,
-    demoExtracting: 20,
+    demoPreparing: 30,
     demoReady: 24,
     demoReadyMeta: 72,
     demoPushCta: 24,

@@ -7,6 +7,7 @@
  * `{…}` divergents, doublons de code, et traductions restées en français.
  */
 import { describe, expect, it } from "vitest";
+import { GITHUB_OAUTH_SCOPES } from "@/lib/github-scopes";
 import {
   DEFAULT_LOCALE,
   dirOf,
@@ -20,7 +21,9 @@ import {
   safeNextPath,
 } from "@/lib/i18n/locales";
 import { DICTIONARIES, getDictionary, section } from "@/lib/i18n/dictionary";
-import { fill, formatNumber, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
+import { fill, formatDateTime, formatNumber, formatRelativeTime, formatTime, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
+import { localizePath, localeSwitchPath } from "@/lib/i18n/navigation";
+import { findLanguages, searchKey } from "@/lib/i18n/search";
 
 /** Aplatit un dictionnaire en `section.clé` → valeur. */
 function flatten(obj: Record<string, unknown>, prefix = ""): Map<string, string> {
@@ -76,6 +79,12 @@ describe("catalogue de langues", () => {
 describe("dictionnaires", () => {
   const reference = flatten(DICTIONARIES[DEFAULT_LOCALE]);
 
+  it("décrit chacune des autorisations OAuth demandées, dans les 16 langues", () => {
+    for (const { code } of LOCALES) {
+      expect(Object.keys(DICTIONARIES[code].login.scopes).sort()).toEqual([...GITHUB_OAUTH_SCOPES].sort());
+    }
+  });
+
   it("couvre exactement les mêmes clés que le français", () => {
     for (const l of LOCALES) {
       const dict = flatten(DICTIONARIES[l.code]);
@@ -98,7 +107,6 @@ describe("dictionnaires", () => {
     for (const l of LOCALES) {
       const dict = flatten(DICTIONARIES[l.code]);
       for (const [key, frValue] of reference) {
-        if (!hasPlaceholders(frValue)) continue;
         expect(
           placeholdersOf(dict.get(key) ?? ""),
           `${l.code} → ${key} : placeholders divergents`,
@@ -107,27 +115,51 @@ describe("dictionnaires", () => {
     }
   });
 
-  it("traduit réellement les chaînes d'interface (hors noms propres)", () => {
-    // Les marques et codes techniques peuvent rester identiques ; une phrase
-    // entière qui reste en français signale une traduction oubliée.
-    const isBrandish = (s: string) =>
-      /^(RepoDrop|GitHub|\.rar.*|RepoDrop — .*GitHub)$/.test(s);
-    for (const l of LOCALES) {
-      if (l.code === "fr") continue;
-      const dict = flatten(DICTIONARIES[l.code]);
-      const untranslated = [...reference.entries()].filter(
-        ([key, frValue]) =>
-          dict.get(key) === frValue &&
-          frValue.length > 40 &&
-          !isBrandish(frValue) &&
-          // `meta.title` et le slogan gardent la marque : tolérés.
-          !key.startsWith("meta."),
-      );
-      expect(
-        untranslated.map(([k]) => k),
-        `chaînes non traduites en ${l.code}`,
-      ).toEqual([]);
+  it("ne reprend pas le français, sauf vocabulaire partagé vérifié", () => {
+    // Ne pas ignorer les libellés courts : un bouton recopié est aussi visible
+    // qu'un paragraphe recopié. Chaque égalité doit être intentionnelle.
+    const shared: Partial<Record<(typeof LOCALES)[number]["code"], readonly string[]>> = {
+      en: ["home.guard4Title", "home.demoLocalBadge", "guides.guidesTitle", "job.destination", "job.doneCommit",
+        "ui.description", "ui.public", "ui.actions", "ui.date", "ui.confirmation", "activity.push", "system.configuration"],
+      es: ["nav.avatarAlt", "home.demoLocalBadge", "job.doneCommit"],
+      de: ["activity.push"],
+      it: ["job.doneCommit", "staff.source", "activity.push", "discord.title"],
+      pt: ["nav.avatarAlt", "home.guard4Title", "home.demoLocalBadge", "job.doneCommit"],
+      nl: ["footer.guaranteesTitle", "job.doneCommit", "ui.private", "activity.push"],
+      pl: ["job.doneCommit", "discord.title"],
+      tr: ["job.doneCommit"],
+      ar: ["job.doneCommit"],
+    };
+    const compact = (s: string) => s.normalize("NFC").trim().replace(/\s+/g, " ");
+    for (const { code } of LOCALES) {
+      if (code === DEFAULT_LOCALE) continue;
+      const dict = flatten(DICTIONARIES[code]);
+      const same = [...reference.keys()].filter((key) => compact(dict.get(key) ?? "") === compact(reference.get(key)!));
+      expect(same.sort(), `${code} : égalités avec le français`).toEqual(["home.statFormatsSub", ...(shared[code] ?? [])].sort());
     }
+  });
+});
+
+describe("recherche multilingue", () => {
+  it("compare les accents, la casse, la largeur et les lettres latines voisines", () => {
+    expect(searchKey("  ＧｉｔＨｕｂ ÖFFENTLICH  ", "de")).toBe("github offentlich");
+    expect(searchKey("İNGİLİZCE", "tr")).toBe(searchKey("INGILIZCE", "tr"));
+    expect(searchKey("œuvre et Łódź", "fr")).toBe("oeuvre et lodz");
+  });
+
+  it("ignore les signes vocaliques arabes mais conserve les voyelles du hindi", () => {
+    expect(searchKey("العَرَبِيَّة", "ar")).toBe("العربية");
+    expect(searchKey("हिन्दी", "hi")).toBe("हिन्दी");
+    expect(searchKey("कि", "hi")).not.toBe(searchKey("का", "hi"));
+  });
+
+  it("trouve les langues par leur nom natif, leur nom traduit ou leur code", () => {
+    const codes = (...args: Parameters<typeof findLanguages>) => findLanguages(...args).map((l) => l.code);
+    expect(codes("anglàis", "fr")).toEqual(["en"]);
+    expect(codes("日本語", "fr")).toEqual(["ja"]);
+    expect(codes("КО", "uk")).toContain("ko");
+    expect(codes("zzzz", "en")).toEqual([]);
+    expect(codes("", "en")).toHaveLength(16);
   });
 });
 
@@ -143,6 +175,13 @@ describe("normalizeLocale", () => {
     expect(normalizeLocale("zh_CN")).toBe("zh");
     expect(normalizeLocale("en-US,en;q=0.9,fr;q=0.8")).toBe("en");
     expect(normalizeLocale("AR")).toBe("ar");
+  });
+
+  it("sélectionne la langue prise en charge la mieux pondérée", () => {
+    expect(normalizeLocale("sv-SE, fr;q=0.4, pt-BR;q=0.9")).toBe("pt");
+    expect(normalizeLocale("ja;q=0, ko;q=0.7, ar;q=0.7")).toBe("ko");
+    expect(normalizeLocale("ja;q=0, *;q=0.6")).toBe(DEFAULT_LOCALE);
+    expect(normalizeLocale("en;q=abc, es;q=0.5")).toBe("es");
   });
 
   it("retombe sur le français pour une valeur inconnue ou vide", () => {
@@ -168,6 +207,9 @@ describe("parseLocale (validation stricte)", () => {
     expect(parseLocale("")).toBeNull();
     expect(parseLocale(null)).toBeNull();
     expect(parseLocale("xx-YY")).toBeNull();
+    expect(parseLocale("en,fr")).toBeNull();
+    expect(parseLocale("en;q=0")).toBeNull();
+    expect(parseLocale("en-../etc")).toBeNull();
     // Une tentative d'injection ne doit jamais ressortir comme une langue.
     expect(parseLocale("../../etc/passwd")).toBeNull();
   });
@@ -193,6 +235,20 @@ describe("formatage", () => {
   it("détecte et liste les placeholders", () => {
     expect(hasPlaceholders("aucun")).toBe(false);
     expect(placeholdersOf("{b} puis {a}")).toEqual(["a", "b"]);
+  });
+
+  it("localise les dates relatives", () => {
+    const now = Date.UTC(2026, 10, 18);
+    expect(formatRelativeTime(now - 120_000, "en", now)).toBe("2 minutes ago");
+    expect(formatRelativeTime(now - 120_000, "fr", now)).toBe("il y a 2 minutes");
+    expect(formatRelativeTime(NaN, "fr", now)).toBe("—");
+  });
+
+  it("rend les horodatages UTC sans périodes du jour ambiguës entre versions ICU", () => {
+    const ts = Date.UTC(2026, 10, 18, 23, 12);
+    expect(formatTime(ts, "ko")).toBe("23:12");
+    expect(formatDateTime(ts, "ko")).toContain("23시");
+    expect(formatDateTime("invalid", "fr")).toBe("—");
   });
 
   it("localise les nombres et survit à une locale invalide", () => {
@@ -234,5 +290,29 @@ describe("safeNextPath (bascule par lien direct)", () => {
     expect(safeNextPath("//evil.com")).toBe("/");
     expect(safeNextPath("/\\evil.com")).toBe("/");
     expect(safeNextPath("/\tlangues")).toBe("/");
+  });
+});
+
+
+describe("liens avec repli URL", () => {
+  it("préserve tous les paramètres de navigation, hors langue remplacée", () => {
+    expect(localizePath("/repos?repo=a%2Fb&lang=en&ref=main#file", "ar"))
+      .toBe("/repos?repo=a%2Fb&lang=ar&ref=main#file");
+    expect(localizePath("/#faq", "ja")).toBe("/?lang=ja#faq");
+    expect(localizePath("/faq", null)).toBe("/faq");
+  });
+
+  it("ne modifie pas les liens externes ni les ancres relatives", () => {
+    expect(localizePath("#faq", "ja")).toBe("#faq");
+    expect(localizePath("https://github.com/RepoDrop", "ja")).toBe("https://github.com/RepoDrop");
+    expect(localizePath("//github.com/RepoDrop", "ja")).toBe("//github.com/RepoDrop");
+  });
+
+  it("construit un lien document correctement encodé", () => {
+    const target = "/recherche?q=caf%C3%A9#resultats";
+    const url = new URL(localeSwitchPath("ja", target), "https://example.test");
+    expect(url.pathname).toBe("/api/locale");
+    expect(url.searchParams.get("to")).toBe("ja");
+    expect(url.searchParams.get("next")).toBe(target);
   });
 });

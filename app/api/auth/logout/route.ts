@@ -1,6 +1,7 @@
 /** GET /api/auth/logout — purge le cookie de session puis redirection. */
 import { clearSessionCookie, getSession } from "@/lib/session";
 import { redirectTo } from "@/lib/http";
+import { localeFromUrl, localizePath } from "@/lib/i18n/navigation";
 import { clientIp } from "@/lib/ratelimit";
 import { logEvent } from "@/lib/db";
 
@@ -14,5 +15,5 @@ export async function GET(req: Request): Promise<Response> {
     login: session?.login ?? null,
     ip: clientIp(req.headers),
   });
-  return redirectTo("/");
+  return redirectTo(localizePath("/", localeFromUrl(new URL(req.url))));
 }

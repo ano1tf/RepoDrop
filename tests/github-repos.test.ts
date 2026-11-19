@@ -396,7 +396,7 @@ describe("suppression d'un dépôt", () => {
     const fetchImpl = fakeFetch({ "/repos/o/r": json({ message: "Not Found" }, 404) });
     const err = await deleteRepo(TOKEN, "o", "r", "o/r", fetchImpl).catch((e) => e);
     expect(err).toBeInstanceOf(AppError);
-    expect((err as AppError).code).toBe("FORBIDDEN");
+    expect((err as AppError).code).toBe("DELETE_SCOPE_MISSING");
     expect(toUserMessage(err)).toContain("delete_repo");
   });
 

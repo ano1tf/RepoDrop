@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, BookOpen } from "lucide-react";
+import LocaleLink from "@/components/LocaleLink";
+import { ArrowRight, BookOpen, Search } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 import { ogLocaleOf } from "@/lib/i18n/locales";
 import {
@@ -9,7 +9,7 @@ import {
   resolveSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
-import { GUIDES } from "@/lib/seo-guides";
+import { getGuides } from "@/lib/seo-guides";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { headers } from "next/headers";
@@ -36,14 +36,16 @@ export default async function GuidesPage() {
   const [reqHeaders, { locale, t }] = await Promise.all([headers(), getT()]);
   const baseUrl = resolveSiteUrl({ headers: reqHeaders });
 
+  const guides = getGuides(locale);
   const jsonLd = serializeJsonLd(
     buildGuidesIndexStructuredData(
       baseUrl,
-      GUIDES.map((g) => ({ slug: g.slug, title: g.title, description: g.description })),
+      guides,
       [
         { name: t.footer.home, path: "/" },
         { name: t.guides.guidesTitle, path: "/guides" },
       ],
+      { name: t.guides.guidesTitle, description: t.guides.guidesLead, locale },
     ),
   );
 
@@ -67,12 +69,16 @@ export default async function GuidesPage() {
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
             {t.guides.guidesLead}
           </p>
+          <LocaleLink href="/recherche" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-5")}>
+            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            {t.guides.searchTitle}
+          </LocaleLink>
         </div>
 
-        <ul className="mt-10 grid gap-4">
-          {GUIDES.map((guide) => (
+        <ul className="mt-8 grid gap-4">
+          {guides.map((guide) => (
             <li key={guide.slug}>
-              <Link
+              <LocaleLink
                 href={`/guides/${guide.slug}`}
                 className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
@@ -91,18 +97,18 @@ export default async function GuidesPage() {
                 <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-go">
                   {t.guides.readMore}
                 </span>
-              </Link>
+              </LocaleLink>
             </li>
           ))}
         </ul>
 
         <div className="mt-10">
-          <Link
-            href={`/api/locale?to=${locale}&next=/guides`}
+          <LocaleLink
+            href="/"
             className={cn(buttonVariants({ variant: "outline" }))}
           >
             {t.notFound.back}
-          </Link>
+          </LocaleLink>
         </div>
       </div>
     </main>

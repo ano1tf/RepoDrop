@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { SITE_NAME } from "@/lib/seo";
+import { SITE_NAME, SITE_OG_IMAGE } from "@/lib/seo";
 
 /**
  * Image sociale OpenGraph (1200×630).
@@ -12,8 +12,7 @@ import { SITE_NAME } from "@/lib/seo";
  */
 export const dynamic = "force-static";
 
-export const alt =
-  "RepoDrop — Importez vos archives .rar, .zip et .tar directement sur GitHub";
+export const alt = SITE_OG_IMAGE.alt;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -23,13 +22,6 @@ export const contentType = "image/png";
  */
 export default function OpenGraphImage() {
   const formats = [".rar", ".zip", ".tar", ".tar.gz", ".tgz"];
-  const badges = [
-    "Sans terminal ni clone",
-    "Extraction sandboxée",
-    "Jeton GitHub chiffré",
-    "100 % français",
-  ];
-
   return new ImageResponse(
     (
       <div
@@ -130,79 +122,19 @@ export default function OpenGraphImage() {
           </div>
         </div>
 
-        {/* Accroche centrale */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "22px",
-            maxWidth: "980px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              fontSize: "64px",
-              fontWeight: 700,
-              lineHeight: 1.08,
-              letterSpacing: "-0.03em",
-            }}
-          >
-            <span style={{ color: "#e7ecf5" }}>Vos archives de code,</span>
-            <span style={{ color: "#34d399" }}>
-              sur GitHub en un glisser-déposer.
-            </span>
-          </div>
-          <div
-            style={{
-              fontSize: "27px",
-              lineHeight: 1.4,
-              color: "#93a0b4",
-              maxWidth: "900px",
-            }}
-          >
-            Connectez GitHub, déposez votre archive, prévisualisez et poussez
-            vers un dépôt neuf ou existant en deux minutes.
-          </div>
-        </div>
-
-        {/* Bandeau de garanties */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            flexWrap: "wrap",
-          }}
-        >
-          {badges.map((label) => (
-            <div
-              key={label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "10px 20px",
-                borderRadius: "999px",
-                backgroundColor: "#10141f",
-                border: "1px solid #232a3b",
-                fontSize: "20px",
-                color: "#e7ecf5",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  width: "9px",
-                  height: "9px",
-                  borderRadius: "999px",
-                  backgroundColor: "#34d399",
-                }}
-              />
-              <span>{label}</span>
-            </div>
-          ))}
+        {/* Formats and brands only: the surrounding OG title/description
+            provide the localized copy, while the image stays cacheable. */}
+        <div style={{ display: "flex", alignItems: "center", gap: "40px", flex: 1 }}>
+          <svg width="208" height="208" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.3">
+            <path d="M3 7h18v13H3z" />
+            <path d="m3 7 3-4h12l3 4M9 11h6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.5">
+            <path d="M4 12h16m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{ fontSize: "120px", color: "#e7ecf5", letterSpacing: "-0.05em", fontWeight: 700 }}>
+            GitHub
+          </span>
         </div>
       </div>
     ),

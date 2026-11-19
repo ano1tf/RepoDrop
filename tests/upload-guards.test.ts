@@ -21,7 +21,8 @@ import { Uploader } from "@/components/Uploader";
 import { WorkflowDemo } from "@/components/WorkflowDemo";
 import { demoCopyFrom } from "@/components/workflow-demo/copy";
 import { DICTIONARIES } from "@/lib/i18n/dictionary";
-import { formatBytes } from "@/lib/i18n/format";
+import { fill, formatBytes, formatPercent } from "@/lib/i18n/format";
+import type { Locale } from "@/lib/i18n/locales";
 
 /** Relais IndexedDB : espionné (et sans effet) dans ces tests. */
 const pending = vi.hoisted(() => ({
@@ -172,14 +173,15 @@ afterEach(() => {
 
 const MAX_UPLOAD = 200 * 1024 * 1024;
 
-function renderUploader(maxBytes = MAX_UPLOAD) {
+function renderUploader(maxBytes = MAX_UPLOAD, locale: Locale = "fr") {
   act(() => {
     root.render(
       createElement(Uploader, {
-        maxLabel: formatBytes(maxBytes, "fr"),
-        extractLabel: "500 Mo",
+        maxLabel: formatBytes(maxBytes, locale),
+        extractLabel: formatBytes(500 * 1024 ** 2, locale),
         maxBytes,
-        t: DICTIONARIES.fr.uploader,
+        locale,
+        t: DICTIONARIES[locale].uploader,
       }),
     );
   });
@@ -234,7 +236,7 @@ describe("Uploader — annulation", () => {
       xhr.upload.onprogress?.({ lengthComputable: true, loaded: 40, total: 100 });
     });
     await flush();
-    expect(container.textContent).toContain("40%");
+    expect(container.textContent).toContain(formatPercent(40, "fr"));
 
     const cancel = [...container.querySelectorAll("button")].find((b) =>
       b.textContent?.includes(DICTIONARIES.fr.uploader.cancel),
@@ -248,9 +250,27 @@ describe("Uploader — annulation", () => {
 
     expect(xhr.aborted).toBe(true);
     // Retour à la zone de dépôt : plus de progression, pas d'erreur affichée.
-    expect(container.textContent).not.toContain("40%");
+    expect(container.textContent).not.toContain(formatPercent(40, "fr"));
     expect(container.querySelector('[role="alert"]')).toBeNull();
     expect(container.textContent).toContain(DICTIONARIES.fr.uploader.dropHint);
+  });
+
+  it("annonce l’envoi et le pourcentage dans la langue de la page dès le début", async () => {
+    const locale = "ar";
+    const t = DICTIONARIES[locale].uploader;
+    const zone = renderUploader(MAX_UPLOAD, locale);
+    expect(zone.getAttribute("aria-label")).toBe(t.dropLabel);
+    dropFile(zone, fileOfSize("projet.zip", 1024));
+    await flush();
+    const progress = container.querySelector('[role="progressbar"]');
+    expect(progress?.getAttribute("aria-label")).toBe(t.progressLabel);
+    expect(progress?.getAttribute("aria-valuenow")).toBe("0");
+    expect(progress?.closest('[role="button"]')).toBeNull();
+    act(() => FakeXHR.instances[0].upload.onprogress?.({ lengthComputable: true, loaded: 23, total: 100 }));
+    const percent = formatPercent(23, locale);
+    expect(progress?.getAttribute("aria-valuetext")).toBe(percent);
+    expect(container.textContent).toContain(fill(t.uploading, { progress: percent }));
+    expect(container.querySelector('button')?.textContent).toBe(t.cancel);
   });
 
   it("ne montre pas « Annuler » au repos", () => {
@@ -281,7 +301,7 @@ describe("WorkflowDemo — relais IndexedDB", () => {
     await flush(20);
 
     expect(pending.savePendingFile).not.toHaveBeenCalled();
-    expect(container.textContent).toContain(COPY.dropError);
+    expect(container.textContent).toContain(COPY.readError);
   });
 
   it("ne range pas une archive au-delà de la limite", async () => {

@@ -3,14 +3,14 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { getLocale } from "@/lib/i18n/server";
-import { dirOf } from "@/lib/i18n/locales";
+import { LocaleNavigation } from "@/components/LocaleLink";
+import { getT } from "@/lib/i18n/server";
+import { DEFAULT_LOCALE, dirOf, ogLocaleOf } from "@/lib/i18n/locales";
+import { localizePath } from "@/lib/i18n/navigation";
 import {
   buildIcons,
   buildVerification,
   resolveSiteUrl,
-  SITE_DEFAULT_TITLE,
-  SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
   SITE_OG_IMAGE,
@@ -19,17 +19,19 @@ import {
 } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = resolveSiteUrl({ headers: await headers() });
+  const [requestHeaders, { locale, t }] = await Promise.all([headers(), getT()]);
+  const baseUrl = resolveSiteUrl({ headers: requestHeaders });
 
   return {
     metadataBase: new URL(baseUrl),
     applicationName: SITE_NAME,
     title: {
-      default: SITE_DEFAULT_TITLE,
+      default: t.meta.title,
       template: `%s · ${SITE_NAME}`,
     },
-    description: SITE_DESCRIPTION,
-    keywords: SITE_KEYWORDS,
+    description: t.meta.description,
+    keywords: locale === DEFAULT_LOCALE ? SITE_KEYWORDS : [SITE_NAME, "GitHub", ".rar", ".zip", ".tar.gz"],
+    manifest: localizePath("/manifest.webmanifest", locale === DEFAULT_LOCALE ? null : locale),
     authors: [{ name: SITE_NAME }],
     creator: SITE_NAME,
     publisher: SITE_NAME,
@@ -64,17 +66,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      locale: "fr_FR",
+      locale: ogLocaleOf(locale),
       siteName: SITE_NAME,
       url: "/",
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: t.meta.title,
+      description: t.meta.description,
       images: [SITE_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: t.meta.title,
+      description: t.meta.description,
       images: [SITE_TWITTER_IMAGE],
       ...twitterHandleFields(),
     },
@@ -92,20 +94,22 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getLocale();
+  const { locale, urlLocale, t } = await getT();
 
   // `lang`/`dir` reflètent la langue réellement rendue : indispensable pour la
   // synthèse vocale, la césure et le rendu droite-à-gauche (arabe).
   return (
     <html lang={locale} dir={dirOf(locale)}>
       {/* Découverte de contenu : lien RSS pour les agrégateurs et les moteurs. */}
-      <link rel="alternate" type="application/rss+xml" title="RepoDrop — Guides" href="/feed.xml" />
+      <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} — ${t.guides.guidesTitle}`} href={localizePath("/feed.xml", locale === DEFAULT_LOCALE ? null : locale)} />
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />
-        <Header />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <Footer />
+        <LocaleNavigation urlLocale={urlLocale} errorCopy={{ ...t.errorPage, home: t.notFound.back }}>
+          <Header />
+          <div className="flex flex-1 flex-col">{children}</div>
+          <Footer />
+        </LocaleNavigation>
       </body>
     </html>
   );
