@@ -26,6 +26,7 @@ export const it: Dict = {
     language: "Lingua",
     languageChange: "Cambia lingua",
     languageSearch: "Cerca una lingua…",
+    languageEmpty: "Nessuna lingua corrisponde alla ricerca.",
     languageCurrent: "Lingua attuale: {name}",
   },
 
@@ -40,7 +41,7 @@ export const it: Dict = {
     ctaHow: "Come funziona",
     checkSandboxed: "Estrazione in sandbox",
     checkToken: "Token GitHub mai salvato",
-    checkFrench: "Flusso di lavoro aperto",
+    checkLanguages: "Interfaccia disponibile in {count} lingue",
 
     statFormats: "formati di archivio",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -226,6 +227,9 @@ export const it: Dict = {
     aboutFaqBody: "RepoDrop non sostituisce git: elimina la frizione. Quando devi inviare codice su GitHub rapidamente, senza configurazione, RepoDrop fa il lavoro — e tu conserva la libertà di continuare con git quando vuoi.",
   },
   guides: {
+    inFrench: "Gli articoli delle guide sono scritti in francese.",
+    prev: "Guida precedente",
+    next: "Guida successiva",
     guidesTitle: "Guide",
     guidesLead: "Tutorial passo-passo per importare i tuoi archivi .rar, .zip e .tar su GitHub, senza git e senza terminale.",
     readMore: "Leggi la guida",
@@ -254,6 +258,28 @@ export const it: Dict = {
     guarantee3: "Anteprima completa prima di ogni invio",
     copyright: "© {year} RepoDrop — i tuoi archivi, il tuo GitHub.",
     reserved: "Area riservata",
+  },
+
+  repos: {
+    lead: "Esplora i tuoi repository, visualizza i file e cambia branch prima di importare.",
+    filter: "Filtra per nome, descrizione o linguaggio…",
+    sort: "Ordina i repository",
+    pushed: "Attività recente",
+    name: "Nome (dalla A alla Z)",
+    size: "Dimensione",
+    onlyMine: "Solo i miei repository",
+    refresh: "Aggiorna",
+    loadFailed: "Impossibile caricare i repository (HTTP {status}).",
+    offline: "Impossibile raggiungere il server.",
+    truncated: "Sono stati caricati solo i repository più recenti. Usa il filtro per restringere l’elenco.",
+    loading: "Caricamento dei tuoi repository…",
+    emptyFilter: "Nessun repository corrisponde a questo filtro.",
+    empty: "Non ci sono repository accessibili con questo account GitHub.",
+    shown: "{count} repository su {total} visualizzati",
+    noDescription: "Nessuna descrizione",
+    lastPush: "Ultimo push: {time}",
+    issues: "Issue aperte: {count}",
+    readOnly: "Sola lettura",
   },
 
   job: {

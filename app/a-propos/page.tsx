@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 
 import {
   buildAboutStructuredData,
@@ -8,6 +8,7 @@ import {
   SITE_NAME,
 } from "@/lib/seo";
 import { getT } from "@/lib/i18n/server";
+import { ogLocaleOf } from "@/lib/i18n/locales";
 
 /**
  * Page « À propos » indexable (`/a-propos`).
@@ -17,15 +18,17 @@ import { getT } from "@/lib/i18n/server";
  * sitemap et le pied de page, pour renforcer l'entité RepoDrop auprès des
  * moteurs au-delà des mots-clés transactionnels.
  */
-export const dynamic = "force-static";
+// Ne pas figer le dictionnaire français à la compilation : le rendu dépend de la requête.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getT();
+  const { locale, t } = await getT();
   return buildPageMetadata({
     title: t.about.aboutTitle,
     description: t.about.aboutLead,
     keywords: ["RepoDrop", "à propos RepoDrop", "outil import GitHub", "import archive GitHub outil", "pourquoi RepoDrop"],
     path: "/a-propos",
+    ogLocale: ogLocaleOf(locale),
   });
 }
 
@@ -55,15 +58,15 @@ export default async function AboutPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }} />
       <main className="mx-auto w-full max-w-4xl px-4 py-16 sm:py-24">
-        <nav aria-label="breadcrumb" className="mb-8">
+        <nav aria-label={t.about.aboutTitle} className="mb-8">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {breadcrumbs.map((crumb, index) => (
               <li key={crumb.name} className="flex items-center gap-2">
                 {index > 0 && <span aria-hidden="true">/</span>}
                 {crumb.path === "/" ? (
-                  <Link href={crumb.path} className="font-medium text-foreground hover:underline">
+                  <LocaleLink href={crumb.path} className="font-medium text-foreground hover:underline">
                     {crumb.name}
-                  </Link>
+                  </LocaleLink>
                 ) : (
                   <span className="font-medium text-foreground">{crumb.name}</span>
                 )}
@@ -92,9 +95,9 @@ export default async function AboutPage() {
         </div>
 
         <div className="mt-16 border-t pt-8">
-          <Link href="/" className="font-medium text-primary underline-offset-4 hover:underline">
-            ← {t.footer.home}
-          </Link>
+          <LocaleLink href="/" className="font-medium text-primary underline-offset-4 hover:underline">
+            <span aria-hidden="true" className="inline-block rtl:rotate-180">←</span> {t.footer.home}
+          </LocaleLink>
         </div>
       </main>
     </>

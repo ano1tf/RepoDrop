@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { AlertTriangle, Lock, ShieldCheck } from "lucide-react";
 import { config } from "@/lib/config";
 import { Wordmark, GitHubIcon } from "@/components/Brand";
@@ -9,6 +9,7 @@ import { buildPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { ogLocaleOf } from "@/lib/i18n/locales";
+import { localizePath } from "@/lib/i18n/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getT();
@@ -26,7 +27,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const [{ error }, { t }] = await Promise.all([searchParams, getT()]);
+  const [{ error }, { urlLocale, t }] = await Promise.all([searchParams, getT()]);
 
   const ERRORS: Record<string, string> = {
     state: t.login.errorState,
@@ -47,9 +48,9 @@ export default async function LoginPage({
 
       <div className="w-full max-w-md animate-fade-up">
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-block">
+          <LocaleLink href="/" className="inline-block">
             <Wordmark className="justify-center text-lg" />
-          </Link>
+          </LocaleLink>
         </div>
 
         <Card className="overflow-hidden">
@@ -73,7 +74,7 @@ export default async function LoginPage({
             )}
 
             <a
-              href="/api/auth/login"
+              href={localizePath("/api/auth/login", urlLocale)}
               rel="nofollow"
               className={cn(buttonVariants({ size: "lg" }), "w-full")}
             >
@@ -106,7 +107,7 @@ export default async function LoginPage({
                   {t.login.devMode}
                 </p>
                 <a
-                  href="/api/auth/dev-login"
+                  href={localizePath("/api/auth/dev-login", urlLocale)}
                   rel="nofollow"
                   className={cn(buttonVariants({ variant: "secondary" }), "w-full")}
                 >

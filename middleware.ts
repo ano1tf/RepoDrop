@@ -1,87 +1,45 @@
-/**
- * Middleware i18n — résout la langue **à chaque requête**.
- *
- * Pourquoi un middleware ?
- * -----------------------
- * La langue vit dans un cookie (`rd_lang`). Sans middleware, chaque page
- * devait retrouver elle-même le cookie et se rabattre sur
- * `Accept-Language` : une logique dupliquée, et facile à oublier sur une
- * nouvelle route. Le middleware centralise la règle :
- *
- *   1. le cookie `rd_lang` — choix explicite de l'utilisateur ;
- *   2. l'en-tête `Accept-Language` — langue du navigateur ;
- *   3. le français.
- *
- * Il fait deux choses :
- *
- *   - il **pose le cookie** dès la première visite, pour que la langue
- *     détectée reste stable d'une page à l'autre (et d'une visite à l'autre) ;
- *   - il transmet la langue résolue au rendu via l'en-tête `x-rd-lang`,
- *     que `lib/i18n/server.ts` relit. Le rendu serveur et le middleware
- *     voient ainsi **exactement** la même langue.
- *
- * Le changement de langue lui-même est assuré par `/api/locale` (route GET
- * avec redirection) : c'est un aller-retour document classique, donc aucune
- * course avec le cache de navigation côté client.
- */
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  EMBEDDED_LOCALE_COOKIE,
   LOCALE_COOKIE,
-  LOCALE_COOKIE_MAX_AGE,
+  LOCALE_COOKIE_OPTIONS,
   LOCALE_HEADER,
+  URL_LOCALE_HEADER,
   resolveLocale,
+  savedLocale,
 } from "@/lib/i18n/locales";
+import { isPrefetch, localeFromUrl } from "@/lib/i18n/navigation";
 
 export const config = {
-  /**
-   * On laisse de côté :
-   * - `api` : les routes API ne sont pas localisées, et `/api/locale` pose
-   *   elle-même le cookie — elle ne doit pas entrer en conflit avec le
-   *   middleware ;
-   * - `_next/*` : les assets sont servis tels quels ;
-   * - les fichiers statiques (images, icônes, `robots.txt`, `sitemap.xml`).
-   */
+  // Les API, les fichiers et les visuels de partage ont leur propre rendu.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest|txt|xml)$).*)",
+    "/((?!api|_next/static|_next/image|opengraph-image|twitter-image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest|txt|xml)$).*)",
   ],
 };
 
 export function middleware(request: NextRequest): NextResponse {
-  const cookieValue = request.cookies.get(LOCALE_COOKIE)?.value;
-  const locale = resolveLocale(cookieValue, request.headers.get("accept-language"));
+  const cookieLocale = savedLocale(
+    request.cookies.get(LOCALE_COOKIE)?.value,
+    request.cookies.get(EMBEDDED_LOCALE_COOKIE)?.value,
+  );
+  const urlLocale = localeFromUrl(request.nextUrl);
+  const locale = urlLocale ?? resolveLocale(cookieLocale, request.headers.get("accept-language"));
 
-  // La langue résolue est transmise au rendu serveur.
+  // La préférence dans l'URL prime : au retour de /api/locale, le navigateur
+  // peut avoir bloqué le nouveau cookie. Les liens gardent `lang` tant que le
+  // serveur ne reçoit pas un cookie qui confirme le choix.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(LOCALE_HEADER, locale);
+  requestHeaders.delete(URL_LOCALE_HEADER);
+  if (urlLocale && urlLocale !== cookieLocale) requestHeaders.set(URL_LOCALE_HEADER, urlLocale);
 
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-
-  /*
-   * En-tête `Content-Language` sur la réponse : les moteurs l'utilisent pour
-   * comprendre la langue de la page sans dépendre uniquement de l'attribut
-   * `lang` du HTML (qu'ils lisent aussi, mais l'en-tête est une source
-   * indépendante, utile aux crawlers qui n'analysent pas le DOM).
-   */
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Language", locale);
 
-  /*
-   * On (re)pose le cookie s'il est absent ou invalide : la langue détectée
-   * devient alors explicite et survit aux navigations comme aux sessions.
-   * Une bascule de langue passe toujours par `/api/locale`, qui écrit le
-   * cookie lui-même et redirige — le middleware ne fait que rattraper les
-   * visites sans préférence.
-   */
-  if (cookieValue !== locale) {
-    response.cookies.set(LOCALE_COOKIE, locale, {
-      path: "/",
-      maxAge: LOCALE_COOKIE_MAX_AGE,
-      sameSite: "lax",
-      // Lisible par le client : le sélecteur de langue met en évidence la
-      // langue active sans attendre un aller-retour serveur.
-      httpOnly: false,
-    });
+  // Seule la route de bascule écrit une préférence explicite. On peut mémoriser
+  // la négociation initiale, mais jamais depuis un prefetch ni un rendu de repli.
+  if (!cookieLocale && !urlLocale && !isPrefetch(request.headers) && !request.headers.has("rsc")) {
+    response.cookies.set(LOCALE_COOKIE, locale, LOCALE_COOKIE_OPTIONS);
   }
 
   return response;

@@ -26,6 +26,7 @@ export const ko: Dict = {
     language: "언어",
     languageChange: "언어 변경",
     languageSearch: "언어 검색…",
+    languageEmpty: "검색 조건에 맞는 언어가 없습니다.",
     languageCurrent: "현재 언어: {name}",
   },
 
@@ -40,7 +41,7 @@ export const ko: Dict = {
     ctaHow: "사용 방법",
     checkSandboxed: "샌드박스 압축 해제",
     checkToken: "GitHub 토큰은 저장되지 않음",
-    checkFrench: "열린 워크플로",
+    checkLanguages: "인터페이스는 {count}개 언어를 지원합니다",
 
     statFormats: "가지 압축 형식",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -225,6 +226,9 @@ export const ko: Dict = {
     aboutFaqBody: "RepoDrop는 git을 대체하지 않습니다. 마찰을 없애는 것입니다. 설정 없이 코드를 빠르게 GitHub에 푸시해야 할 때, RepoDrop가 작업을 해줍니다. 그리고 당신은 언제든 git로 계속할 자유를 유지합니다.",
   },
   guides: {
+    inFrench: "가이드 문서는 프랑스어로 작성되어 있습니다.",
+    prev: "이전 가이드",
+    next: "다음 가이드",
     guidesTitle: "가이드",
     guidesLead: "git 없이, 터미널 없이 .rar, .zip, .tar 아카이브를 GitHub로 가져오는 단계별 가이드.",
     readMore: "가이드 읽기",
@@ -253,6 +257,28 @@ export const ko: Dict = {
     guarantee3: "어떤 전송 전에도 전체 미리보기",
     copyright: "© {year} RepoDrop — 당신의 압축 파일, 당신의 GitHub.",
     reserved: "관계자 전용",
+  },
+
+  repos: {
+    lead: "가져오기 전에 저장소를 둘러보고 파일을 미리 보거나 브랜치를 전환할 수 있습니다.",
+    filter: "이름, 설명 또는 프로그래밍 언어로 필터링…",
+    sort: "저장소 정렬",
+    pushed: "최근 활동",
+    name: "이름 (A~Z)",
+    size: "크기",
+    onlyMine: "내 저장소만",
+    refresh: "새로 고침",
+    loadFailed: "저장소를 불러오지 못했습니다 (HTTP {status}).",
+    offline: "서버에 연결하지 못했습니다.",
+    truncated: "최근 저장소만 불러왔습니다. 필터로 목록의 범위를 좁히세요.",
+    loading: "저장소를 불러오는 중…",
+    emptyFilter: "이 필터와 일치하는 저장소가 없습니다.",
+    empty: "이 GitHub 계정으로 접근할 수 있는 저장소가 없습니다.",
+    shown: "전체 {total}개 중 {count}개 저장소 표시",
+    noDescription: "설명 없음",
+    lastPush: "마지막 푸시: {time}",
+    issues: "열린 이슈: {count}",
+    readOnly: "읽기 전용",
   },
 
   job: {

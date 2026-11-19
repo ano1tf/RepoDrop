@@ -6,7 +6,7 @@
  * fait que de la présentation, aucune donnée n'est exposée ici.
  */
 import { useState } from "react";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { Activity, ArrowLeft, Bot, Gauge, KeyRound, ShieldCheck } from "lucide-react";
 import { ActivityFeed } from "./ActivityFeed";
 import { DiscordSettings } from "./DiscordSettings";
@@ -64,13 +64,13 @@ export function StaffPanel({
             <ShieldCheck className="h-3 w-3" />
             {login}
           </Badge>
-          <Link
+          <LocaleLink
             href="/"
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-mist ring-1 ring-edge transition-colors hover:text-chalk"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Quitter
-          </Link>
+          </LocaleLink>
         </div>
       </div>
 

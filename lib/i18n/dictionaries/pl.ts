@@ -26,6 +26,7 @@ export const pl: Dict = {
     language: "Język",
     languageChange: "Zmień język",
     languageSearch: "Szukaj języka…",
+    languageEmpty: "Nie znaleziono języków pasujących do wyszukiwania.",
     languageCurrent: "Aktualny język: {name}",
   },
 
@@ -40,7 +41,7 @@ export const pl: Dict = {
     ctaHow: "Jak to działa",
     checkSandboxed: "Rozpakowywanie w sandboxie",
     checkToken: "Token GitHub nigdy nie zapisywany",
-    checkFrench: "Otwarty przepływ pracy",
+    checkLanguages: "Interfejs dostępny w {count} językach",
 
     statFormats: "formaty archiwów",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -226,6 +227,9 @@ export const pl: Dict = {
     aboutFaqBody: "RepoDrop nie zastępuje git: usuwa tarcie. Gdy musisz szybko przesłać kod do GitHub, bez konfiguracji, RepoDrop wykonuje zadanie — a Ty zachowujesz wolność pracy z git, gdy tego chcesz.",
   },
   guides: {
+    inFrench: "Poradniki są napisane po francusku.",
+    prev: "Poprzedni poradnik",
+    next: "Następny poradnik",
     guidesTitle: "Poradniki",
     guidesLead: "Poradniki krok po kroku do importowania archiwów .rar, .zip i .tar do GitHub, bez git i bez terminala.",
     readMore: "Przeczytaj poradnik",
@@ -254,6 +258,28 @@ export const pl: Dict = {
     guarantee3: "Pełny podgląd przed każdym wysłaniem",
     copyright: "© {year} RepoDrop — Twoje archiwa, Twój GitHub.",
     reserved: "Obszar zastrzeżony",
+  },
+
+  repos: {
+    lead: "Przeglądaj repozytoria, sprawdzaj pliki i zmieniaj gałęzie przed importem.",
+    filter: "Filtruj według nazwy, opisu lub języka…",
+    sort: "Sortuj repozytoria",
+    pushed: "Ostatnia aktywność",
+    name: "Nazwa (od A do Z)",
+    size: "Rozmiar",
+    onlyMine: "Tylko moje repozytoria",
+    refresh: "Odśwież",
+    loadFailed: "Nie udało się wczytać repozytoriów (HTTP {status}).",
+    offline: "Nie można połączyć się z serwerem.",
+    truncated: "Wczytano tylko najnowsze repozytoria. Użyj filtra, aby zawęzić listę.",
+    loading: "Wczytywanie repozytoriów…",
+    emptyFilter: "Żadne repozytorium nie pasuje do tego filtra.",
+    empty: "Z tego konta GitHub nie można uzyskać dostępu do żadnego repozytorium.",
+    shown: "Wyświetlono {count} z {total} repozytoriów",
+    noDescription: "Brak opisu",
+    lastPush: "Ostatni push: {time}",
+    issues: "Otwarte zgłoszenia: {count}",
+    readOnly: "Tylko do odczytu",
   },
 
   job: {

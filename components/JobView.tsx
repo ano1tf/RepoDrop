@@ -5,7 +5,7 @@
  * choix de la destination, lancement du push, résultat.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import {
   AlertTriangle,
   Archive,
@@ -32,8 +32,8 @@ import type { JobRecord, PreviewEntry } from "@/lib/types";
 import { buildRepoLinks } from "@/lib/links";
 import { isUnauthorizedError } from "@/lib/errors";
 import type { PushableRepo } from "@/lib/github";
-import { formatBytes, formatCount } from "@/lib/utils";
-import { fill, formatNumber } from "@/lib/i18n/format";
+import { formatCount } from "@/lib/utils";
+import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,7 +134,7 @@ export function JobView({
             </h1>
             <p className="text-xs text-mist">
               {new Date(job.createdAt).toLocaleString(locale)} ·{" "}
-              {formatBytes(job.archiveSize)} · {job.login}
+              {formatBytes(job.archiveSize, locale)} · {job.login}
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export function JobView({
       )}
       {job.status === "pushing" && <PushingState copy={copy} />}
       {job.status === "ready" && job.preview && (
-        <ReadyState job={job} onPushing={(j) => setJob(j)} />
+        <ReadyState job={job} locale={locale} onPushing={(j) => setJob(j)} />
       )}
       {job.status === "done" && job.push && (
         <DoneState job={job} copy={copy} locale={locale} />
@@ -314,20 +314,20 @@ function FailedState({
 
         <div className="flex flex-wrap justify-center gap-3">
           {mustReconnect && (
-            <Link href="/api/auth/login" className={buttonVariants({})}>
+            <LocaleLink href="/api/auth/login" className={buttonVariants({})}>
               <RefreshCw className="h-4 w-4" />
               Se reconnecter
-            </Link>
+            </LocaleLink>
           )}
-          <Link
+          <LocaleLink
             href="/import"
             className={buttonVariants({ variant: mustReconnect ? "outline" : "default" })}
           >
             Réessayer avec une autre archive
-          </Link>
-          <Link href="/" className={buttonVariants({ variant: "ghost" })}>
+          </LocaleLink>
+          <LocaleLink href="/" className={buttonVariants({ variant: "ghost" })}>
             Retour à l'accueil
-          </Link>
+          </LocaleLink>
         </div>
       </CardContent>
     </Card>
@@ -413,9 +413,9 @@ function DoneState({
           >
             {links.repoUrl.replace("https://", "")}
           </a>
-          <Link href="/import" className="text-xs text-mist underline decoration-edge underline-offset-4 hover:text-chalk">
+          <LocaleLink href="/import" className="text-xs text-mist underline decoration-edge underline-offset-4 hover:text-chalk">
             {copy.doneImportAnother}
-          </Link>
+          </LocaleLink>
         </div>
       </CardContent>
     </Card>
@@ -424,7 +424,7 @@ function DoneState({
 
 /* --------------------------------------------------------------- aperçu */
 
-function TreeLine({ entry }: { entry: PreviewEntry }) {
+function TreeLine({ entry, locale }: { entry: PreviewEntry; locale: string }) {
   const isDir = entry.path.endsWith("/");
   const clean = isDir ? entry.path.slice(0, -1) : entry.path;
   const parts = clean.split("/");
@@ -446,13 +446,13 @@ function TreeLine({ entry }: { entry: PreviewEntry }) {
         </span>
       </span>
       {!isDir && entry.size > 0 && (
-        <span className="shrink-0 tabular-nums text-mist/70">{formatBytes(entry.size)}</span>
+        <span className="shrink-0 tabular-nums text-mist/70">{formatBytes(entry.size, locale)}</span>
       )}
     </div>
   );
 }
 
-function PreviewPanel({ job }: { job: JobRecord }) {
+function PreviewPanel({ job, locale }: { job: JobRecord; locale: string }) {
   const p = job.preview!;
   const ignoredParts: string[] = [];
   if (p.ignored.gitDirs > 0) ignoredParts.push(`.git (${p.ignored.gitDirs})`);
@@ -480,7 +480,7 @@ function PreviewPanel({ job }: { job: JobRecord }) {
       <CardContent className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-2 text-sm">
           <Stat label="Fichiers" value={formatCount(p.fileCount)} />
-          <Stat label="Poids décompressé" value={formatBytes(p.totalSize)} />
+          <Stat label="Poids décompressé" value={formatBytes(p.totalSize, locale)} />
         </div>
 
         {ignoredParts.length > 0 && (
@@ -497,7 +497,7 @@ function PreviewPanel({ job }: { job: JobRecord }) {
               probablement. Ex. :{" "}
               <code className="text-chalk">
                 {p.tooLargeForGitHub.examples[0]?.path}{" "}
-                ({formatBytes(p.tooLargeForGitHub.examples[0]?.size ?? 0)})
+                ({formatBytes(p.tooLargeForGitHub.examples[0]?.size ?? 0, locale)})
               </code>
             </span>
           </div>
@@ -505,7 +505,7 @@ function PreviewPanel({ job }: { job: JobRecord }) {
 
         <div className="max-h-72 overflow-y-auto rounded-xl bg-ink/60 p-2 ring-1 ring-edge">
           {p.tree.map((e) => (
-            <TreeLine key={e.path} entry={e} />
+            <TreeLine key={e.path} entry={e} locale={locale} />
           ))}
         </div>
       </CardContent>
@@ -526,9 +526,11 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function ReadyState({
   job,
+  locale,
   onPushing,
 }: {
   job: JobRecord;
+  locale: string;
   onPushing: (job: JobRecord) => void;
 }) {
   const p = job.preview!;
@@ -653,7 +655,7 @@ function ReadyState({
     <div className="grid gap-5 lg:grid-cols-2 animate-fade-in">
       {/* ---------------------------------------------------- aperçu */}
       <div className="flex flex-col gap-5">
-        <PreviewPanel job={job} />
+        <PreviewPanel job={job} locale={locale} />
 
         <Card>
           <CardHeader>

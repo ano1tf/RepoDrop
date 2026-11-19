@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
+import { getLocaleState } from "@/lib/i18n/server";
+import { localizePath } from "@/lib/i18n/navigation";
 import { ShieldOff } from "lucide-react";
 import { getSession } from "@/lib/session";
 import {
@@ -36,8 +38,8 @@ export const dynamic = "force-dynamic";
 export default async function StaffPage() {
   ensureWorkerInit();
 
-  const session = await getSession();
-  if (!session) redirect("/login");
+  const [session, { urlLocale }] = await Promise.all([getSession(), getLocaleState()]);
+  if (!session) redirect(localizePath("/login", urlLocale));
 
   // Trois états : « denied » (pas staff), « locked » (staff, mot de passe à
   // saisir), « granted ». On reste discret : pas d'indexation, et aucun détail
@@ -123,9 +125,9 @@ function NoAccess({ login }: { login: string }) {
         </p>
       </div>
 
-      <Link href="/" className={buttonVariants({ variant: "secondary" })}>
+      <LocaleLink href="/" className={buttonVariants({ variant: "secondary" })}>
         Retour à l&apos;accueil
-      </Link>
+      </LocaleLink>
     </main>
   );
 }

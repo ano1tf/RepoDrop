@@ -27,7 +27,7 @@ export default function OpenGraphImage() {
     "Sans terminal ni clone",
     "Extraction sandboxée",
     "Jeton GitHub chiffré",
-    "100 % français",
+    "Interface multilingue",
   ];
 
   return new ImageResponse(

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { Archive, FileArchive, FolderArchive, ShieldCheck } from "lucide-react";
 import { LogoMark } from "@/components/Brand";
 import { SecretDoor } from "@/components/SecretDoor";
@@ -24,7 +24,7 @@ export async function Footer() {
               mot de passe du panel.
             */}
             <span className="flex items-center gap-2 font-semibold tracking-tight">
-              <Link
+              <LocaleLink
                 href="/staff"
                 rel="nofollow"
                 aria-label={t.footer.reserved}
@@ -32,10 +32,10 @@ export async function Footer() {
                 className="grid h-8 w-8 place-items-center rounded-lg bg-go/15 text-go ring-1 ring-go/30 transition-colors hover:bg-go/25 hover:ring-go/50"
               >
                 <LogoMark className="h-5 w-5" />
-              </Link>
-              <Link href="/" className="transition-opacity hover:opacity-80">
+              </LocaleLink>
+              <LocaleLink href="/" className="transition-opacity hover:opacity-80">
                 RepoDrop
-              </Link>
+              </LocaleLink>
             </span>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-mist">
               {t.footer.tagline}
@@ -113,11 +113,11 @@ function FooterCol({
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link
+    <LocaleLink
       href={href}
       className="text-sm text-mist transition-colors hover:text-chalk"
     >
       {children}
-    </Link>
+    </LocaleLink>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import { headers } from "next/headers";
 import { getT } from "@/lib/i18n/server";
@@ -10,7 +10,7 @@ import {
   resolveSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
-import { fill } from "@/lib/i18n/format";
+import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { config } from "@/lib/config";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -18,8 +18,7 @@ import { cn } from "@/lib/utils";
 /**
  * Page FAQ indexable (`/faq`).
  *
- * Contenu éditorial public et structuré : les questions fréquentes sont
- * rendues **en français** (langue d'indexation par défaut) et alimentent
+ * Les questions fréquentes suivent le dictionnaire de la requête et alimentent
  * un JSON-LD `Article` + `FAQPage` + `BreadcrumbList` — cible des extraits
  * FAQ dans les résultats de recherche.
  */
@@ -34,16 +33,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FaqPage() {
-  const [reqHeaders, { t }] = await Promise.all([headers(), getT()]);
+  const [reqHeaders, { locale, t }] = await Promise.all([headers(), getT()]);
   const baseUrl = resolveSiteUrl({ headers: reqHeaders });
 
   // Les réponses techniques mentionnent les vraies limites du serveur.
   const faqItems = [
     { question: t.faq.q1, answer: t.faq.a1 },
     { question: t.faq.q2, answer: fill(t.faq.a2, {
-      upload: `${config.limits.maxUploadBytes}`,
-      extract: `${config.limits.maxExtractBytes}`,
-      files: `${config.limits.maxFiles}`,
+      upload: formatBytes(config.limits.maxUploadBytes, locale),
+      extract: formatBytes(config.limits.maxExtractBytes, locale),
+      files: formatNumber(config.limits.maxFiles, locale),
     }) },
     { question: t.faq.q3, answer: t.faq.a3 },
     { question: t.faq.q4, answer: t.faq.a4 },
@@ -58,6 +57,7 @@ export default async function FaqPage() {
       datePublished: "2026-11-07",
       dateModified: "2026-11-07",
       faq: faqItems,
+      inLanguage: locale,
       breadcrumbs: [
         { name: t.footer.home, path: "/" },
         { name: t.home.faqTitle, path: "/faq" },
@@ -77,12 +77,12 @@ export default async function FaqPage() {
       />
 
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        <nav aria-label="Navigation" className="mb-8">
+        <nav aria-label={t.home.faqTitle} className="mb-8">
           <ol className="flex flex-wrap items-center gap-1.5 text-xs text-mist">
             <li>
-              <Link href="/" className="transition-colors hover:text-chalk">
+              <LocaleLink href="/" className="transition-colors hover:text-chalk">
                 {t.footer.home}
-              </Link>
+              </LocaleLink>
             </li>
             <li aria-hidden="true">/</li>
             <li className="text-chalk/80">{t.home.faqTitle}</li>
@@ -122,12 +122,12 @@ export default async function FaqPage() {
           </div>
 
           <div className="mt-10">
-            <Link
+            <LocaleLink
               href="/"
               className={cn(buttonVariants({ variant: "outline" }))}
             >
               {t.notFound.back}
-            </Link>
+            </LocaleLink>
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@
  * revient à l'élément déclencheur (géré par l'appelant).
  */
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { ShieldCheck } from "lucide-react";
 import { GitHubIcon } from "@/components/Brand";
 import { buttonVariants } from "@/components/ui/button";
@@ -90,7 +90,7 @@ export function ConnectModal({
         <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-mist">{body}</p>
 
         <div className="mt-5 flex flex-col gap-2.5">
-          <Link
+          <LocaleLink
             ref={ctaRef}
             href={href}
             className={buttonVariants({ size: "lg" })}
@@ -98,7 +98,7 @@ export function ConnectModal({
           >
             <GitHubIcon className="h-4 w-4" />
             {cta}
-          </Link>
+          </LocaleLink>
           <button
             type="button"
             onClick={onClose}

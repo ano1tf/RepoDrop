@@ -26,6 +26,7 @@ export const de: Dict = {
     language: "Sprache",
     languageChange: "Sprache ändern",
     languageSearch: "Sprache suchen…",
+    languageEmpty: "Keine Sprache entspricht deiner Suche.",
     languageCurrent: "Aktuelle Sprache: {name}",
   },
 
@@ -40,7 +41,7 @@ export const de: Dict = {
     ctaHow: "So funktioniert es",
     checkSandboxed: "Sandbox-Extraktion",
     checkToken: "GitHub-Token wird nie gespeichert",
-    checkFrench: "Offener Workflow",
+    checkLanguages: "Oberfläche in {count} Sprachen verfügbar",
 
     statFormats: "Archivformate",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -226,6 +227,9 @@ export const de: Dict = {
     aboutFaqBody: "RepoDrop ersetzt git nicht: Es beseitigt die Reibung. Wenn Sie Code schnell nach GitHub pushen müssen, ohne Einrichtung, erledigt RepoDrop die Arbeit — und Sie behalten die Freiheit, weiterhin mit git zu arbeiten.",
   },
   guides: {
+    inFrench: "Die Anleitungen sind auf Französisch verfasst.",
+    prev: "Vorherige Anleitung",
+    next: "Nächste Anleitung",
     guidesTitle: "Anleitungen",
     guidesLead: "Schritt-für-Schritt-Anleitungen, um deine .rar-, .zip- und .tar-Archive nach GitHub zu importieren — ohne git und ohne Terminal.",
     readMore: "Anleitung lesen",
@@ -254,6 +258,28 @@ export const de: Dict = {
     guarantee3: "Vollständige Vorschau vor jedem Senden",
     copyright: "© {year} RepoDrop — deine Archive, dein GitHub.",
     reserved: "Reservierter Bereich",
+  },
+
+  repos: {
+    lead: "Durchsuche deine Repositorys, sieh dir Dateien an und wechsle vor dem Import den Branch.",
+    filter: "Nach Name, Beschreibung oder Sprache filtern…",
+    sort: "Repositorys sortieren",
+    pushed: "Letzte Aktivität",
+    name: "Name (A bis Z)",
+    size: "Größe",
+    onlyMine: "Nur meine Repositorys",
+    refresh: "Aktualisieren",
+    loadFailed: "Repositorys konnten nicht geladen werden (HTTP {status}).",
+    offline: "Der Server ist nicht erreichbar.",
+    truncated: "Nur die neuesten Repositorys wurden geladen. Mit dem Filter kannst du die Liste eingrenzen.",
+    loading: "Deine Repositorys werden geladen…",
+    emptyFilter: "Kein Repository entspricht diesem Filter.",
+    empty: "Mit diesem GitHub-Konto sind keine Repositorys zugänglich.",
+    shown: "{count} von {total} Repositorys werden angezeigt",
+    noDescription: "Keine Beschreibung",
+    lastPush: "Letzter Push: {time}",
+    issues: "Offene Issues: {count}",
+    readOnly: "Schreibgeschützt",
   },
 
   job: {

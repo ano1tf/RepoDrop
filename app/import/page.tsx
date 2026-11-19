@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Archive, Eye, FolderArchive, FolderSearch, ShieldCheck } from "lucide-react";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSession } from "@/lib/session";
@@ -10,6 +10,7 @@ import { getViewer } from "@/lib/github";
 import { AppError } from "@/lib/errors";
 import { Uploader } from "@/components/Uploader";
 import { getT } from "@/lib/i18n/server";
+import { localizePath } from "@/lib/i18n/navigation";
 import { formatBytes, fill } from "@/lib/i18n/format";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
  * à son montage et lance l'envoi. Sinon, la zone de dépôt attend un fichier.
  */
 export default async function ImportPage() {
-  const [session, { locale, t }] = await Promise.all([getSession(), getT()]);
-  if (!session) redirect("/login");
+  const [session, { locale, urlLocale, t }] = await Promise.all([getSession(), getT()]);
+  if (!session) redirect(localizePath("/login", urlLocale));
 
   /*
    * Le cookie de session survit jusqu'à 7 jours, mais le jeton GitHub qu'il
@@ -46,7 +47,7 @@ export default async function ImportPage() {
   try {
     await getViewer(session.token);
   } catch (err) {
-    if (err instanceof AppError && err.code === "UNAUTHORIZED") redirect("/logout");
+    if (err instanceof AppError && err.code === "UNAUTHORIZED") redirect(localizePath("/logout", urlLocale));
   }
 
   const maxLabel = formatBytes(config.limits.maxUploadBytes, locale);
@@ -96,13 +97,13 @@ export default async function ImportPage() {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-panel p-4 ring-1 ring-edge">
           <p className="text-sm text-mist">{t.importPage.browseLead}</p>
-          <Link
+          <LocaleLink
             href="/repos"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <FolderSearch className="h-4 w-4" />
             {t.importPage.browseCta}
-          </Link>
+          </LocaleLink>
         </div>
 
         <ul className="mt-6 grid gap-2 text-xs text-mist sm:grid-cols-3">

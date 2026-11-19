@@ -1,18 +1,12 @@
-/**
- * Tests du middleware i18n et de la résolution de langue.
- *
- * Le contrat vérifié ici est simple mais essentiel : **la langue doit être
- * la même partout**. Le middleware la résout une fois pour toutes (cookie,
- * sinon `Accept-Language`), la transmet au rendu via l'en-tête `x-rd-lang`,
- * et la persiste dans le cookie pour qu'elle survive aux navigations.
- */
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { middleware } from "@/middleware";
 import {
   DEFAULT_LOCALE,
+  EMBEDDED_LOCALE_COOKIE,
   LOCALE_COOKIE,
   LOCALE_HEADER,
+  URL_LOCALE_HEADER,
   resolveLocale,
 } from "@/lib/i18n/locales";
 
@@ -72,6 +66,50 @@ describe("middleware i18n", () => {
     expect(forwardedLocale(res)).toBe("es");
   });
 
+  it("rend le choix URL malgré un cookie qui contient encore le français", () => {
+    const res = middleware(request({ cookie: "fr", url: "http://localhost/a-propos?lang=ar" }));
+    expect(forwardedLocale(res)).toBe("ar");
+    expect(res.headers.get(`x-middleware-request-${URL_LOCALE_HEADER}`)).toBe("ar");
+    expect(res.headers.get("content-language")).toBe("ar");
+    expect(res.cookies.get(LOCALE_COOKIE)).toBeUndefined();
+  });
+
+  it("ne propage pas le paramètre quand le navigateur garde le cookie", () => {
+    const res = middleware(request({ cookie: "ja", url: "http://localhost/langues?lang=ja" }));
+    expect(forwardedLocale(res)).toBe("ja");
+    expect(res.headers.get(`x-middleware-request-${URL_LOCALE_HEADER}`)).toBeNull();
+  });
+
+  it("lit le cookie partitionné quand le cookie de premier niveau est absent", () => {
+    const req = new NextRequest("https://preview.e2b.app/a-propos", {
+      headers: { cookie: `${EMBEDDED_LOCALE_COOKIE}=ja`, "accept-language": "fr" },
+    });
+    const res = middleware(req);
+    expect(forwardedLocale(res)).toBe("ja");
+    expect(res.cookies.get(LOCALE_COOKIE)).toBeUndefined();
+  });
+
+  it("ignore une langue inconnue et remplace les en-têtes i18n du client", () => {
+    const req = new NextRequest("https://preview.e2b.app/?lang=invalid", {
+      headers: {
+        cookie: `${LOCALE_COOKIE}=ja`,
+        [LOCALE_HEADER]: "ar",
+        [URL_LOCALE_HEADER]: "ar",
+      },
+    });
+    const res = middleware(req);
+    expect(forwardedLocale(res)).toBe("ja");
+    expect(res.headers.get(`x-middleware-request-${URL_LOCALE_HEADER}`)).toBeNull();
+  });
+
+  it("ne mémorise pas de préférence lors d'un préchargement", () => {
+    const res = middleware(new NextRequest("http://localhost/a-propos", {
+      headers: { "next-router-prefetch": "1", "accept-language": "en" },
+    }));
+    expect(forwardedLocale(res)).toBe("en");
+    expect(res.cookies.get(LOCALE_COOKIE)).toBeUndefined();
+  });
+
   it("pose le cookie à la première visite (langue détectée)", () => {
     const res = middleware(request({ acceptLanguage: "pt-BR" }));
     expect(res.cookies.get(LOCALE_COOKIE)?.value).toBe("pt");
@@ -94,15 +132,4 @@ describe("middleware i18n", () => {
     expect(res.cookies.get(LOCALE_COOKIE)?.value).toBe(DEFAULT_LOCALE);
   });
 
-  it("n'a pas de cas particulier pour une Server Action (la bascule passe par /api/locale)", () => {
-    // La bascule de langue étant un aller-retour document vers `/api/locale`,
-    // le middleware pose le cookie dans tous les cas où il manque ou est
-    // invalide — il n'y a plus d'écriture concurrente à craindre.
-    const req = new NextRequest("http://localhost/", {
-      headers: { "accept-language": "fr-FR", "next-action": "abc123" },
-    });
-    const res = middleware(req);
-    expect(res.cookies.get(LOCALE_COOKIE)?.value).toBe(DEFAULT_LOCALE);
-    expect(forwardedLocale(res)).toBe(DEFAULT_LOCALE);
-  });
 });

@@ -59,6 +59,7 @@ import { readZipIndex, type ZipEntry } from "@/lib/zip-index";
 import { savePendingFile } from "@/lib/pending-import";
 import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
+import { useLocalizedPath } from "@/components/LocaleLink";
 
 /** Id du panneau animé : le wrapper client le retrouve sans ref partagée. */
 const DEMO_ID = "workflow-demo";
@@ -90,6 +91,7 @@ export function WorkflowDemo({
    */
   maxBytes?: number;
 }) {
+  const localize = useLocalizedPath();
   const [phase, setPhase] = useState<Phase>("idle");
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -491,7 +493,7 @@ export function WorkflowDemo({
                 <button
                   type="button"
                   onClick={() => {
-                    if (authenticated) window.location.assign("/import");
+                    if (authenticated) window.location.assign(localize("/import"));
                     else setModalOpen(true);
                   }}
                   className="ms-auto inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-go px-2.5 py-1.5 text-[11px] font-semibold text-ink transition-colors hover:bg-[#4ee2ac]"

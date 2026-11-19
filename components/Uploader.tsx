@@ -6,6 +6,7 @@
  */
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useLocalizedPath } from "@/components/LocaleLink";
 import { Archive, AlertTriangle, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fill } from "@/lib/i18n/format";
@@ -29,6 +30,7 @@ const OK_EXT = /\.(rar|zip|tar|tar\.gz|tar\.z|tgz|tpz)$/i;
 
 export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props) {
   const router = useRouter();
+  const localize = useLocalizedPath();
   /*
    * Les chaînes viennent d'un objet recréé à chaque rendu serveur : on les
    * fige dans une ref pour que `send` garde une identité stable (sinon le
@@ -81,7 +83,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
         xhrRef.current = null;
         setProgress(null);
         if (xhr.status === 202 && xhr.response?.id) {
-          router.push(`/jobs/${xhr.response.id}`);
+          router.push(localize(`/jobs/${xhr.response.id}`));
           return;
         }
         setError(
@@ -106,7 +108,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, t: strings }: Props
       };
       xhr.send(form);
     },
-    [maxBytes, maxLabel, router],
+    [maxBytes, maxLabel, router, localize],
   );
 
   /** Interrompt l'envoi en cours et revient à la zone de dépôt. */

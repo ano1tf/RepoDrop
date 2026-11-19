@@ -1,8 +1,8 @@
 /**
  * Dictionnaire de référence : **toutes** les clés de l'interface, en français.
  *
- * C'est la source de vérité du typage (`Dict = typeof fr`) : ajouter une clé ici
- * casse la compilation des vingt-cinq autres dictionnaires tant qu'elle n'est
+ * C'est la source de vérité du typage (`Dict = DeepStringify<typeof fr>`) : ajouter une clé ici
+ * casse la compilation des quinze autres dictionnaires tant qu'elle n'est
  * pas traduite. Aucune clé ne peut donc rester silencieusement en français dans
  * une autre langue — c'est exactement le bug que ce typage évite.
  *
@@ -37,6 +37,7 @@ export const fr = {
     language: "Langue",
     languageChange: "Changer la langue",
     languageSearch: "Rechercher une langue…",
+    languageEmpty: "Aucune langue ne correspond à votre recherche.",
     languageCurrent: "Langue actuelle : {name}",
   },
 
@@ -51,7 +52,7 @@ export const fr = {
     ctaHow: "Comment ça marche",
     checkSandboxed: "Extraction sandboxée",
     checkToken: "Jeton GitHub jamais stocké",
-    checkFrench: "Interface 100 % française",
+    checkLanguages: "Interface disponible en {count} langues",
 
     statFormats: "formats d'archives",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -237,6 +238,9 @@ export const fr = {
     aboutFaqBody: "RepoDrop ne remplace pas git : il en retire la friction. Quand vous avez besoin de pousser du code sur GitHub rapidement, sans configuration, RepoDrop fait le travail — et vous gardez la liberté de continuer avec git quand vous le souhaitez.",
   },
   guides: {
+    inFrench: "Les articles des guides sont rédigés en français.",
+    prev: "Guide précédent",
+    next: "Guide suivant",
     guidesTitle: "Guides",
     guidesLead: "Tutoriels pas à pas pour importer vos archives .rar, .zip et .tar sur GitHub, sans git ni terminal.",
     readMore: "Lire le guide",
@@ -265,6 +269,28 @@ export const fr = {
     guarantee3: "Aperçu complet avant tout envoi",
     copyright: "© {year} RepoDrop — vos archives, votre GitHub.",
     reserved: "Espace réservé",
+  },
+
+  repos: {
+    lead: "Parcourez vos dépôts, prévisualisez leurs fichiers et changez de branche avant d’importer.",
+    filter: "Filtrer par nom, description ou langage…",
+    sort: "Trier les dépôts",
+    pushed: "Dernière activité",
+    name: "Nom (A à Z)",
+    size: "Taille",
+    onlyMine: "Mes dépôts uniquement",
+    refresh: "Actualiser",
+    loadFailed: "Impossible de charger les dépôts (HTTP {status}).",
+    offline: "Impossible de joindre le serveur.",
+    truncated: "Seuls les dépôts les plus récents sont chargés. Utilisez le filtre pour affiner la liste.",
+    loading: "Chargement de vos dépôts…",
+    emptyFilter: "Aucun dépôt ne correspond à ce filtre.",
+    empty: "Aucun dépôt accessible avec ce compte GitHub.",
+    shown: "Dépôts affichés : {count} sur {total}",
+    noDescription: "Sans description",
+    lastPush: "Dernier envoi : {time}",
+    issues: "Tickets ouverts : {count}",
+    readOnly: "Lecture seule",
   },
 
   job: {

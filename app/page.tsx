@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import {
   Archive,
   ArrowRight,
@@ -30,7 +30,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
-import { LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
+import { DEFAULT_LOCALE, LOCALES, ogLocaleOf } from "@/lib/i18n/locales";
 import type { Dict } from "@/lib/i18n/types";
 import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
 import { config } from "@/lib/config";
@@ -137,14 +137,14 @@ export default async function Home() {
             />
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Link
+              <LocaleLink
                 href={ctaHref}
                 className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto px-8")}
               >
                 <FolderArchive className="h-4 w-4" />
                 {ctaLabel}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </Link>
+              </LocaleLink>
               <a
                 href="#comment"
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
@@ -156,11 +156,11 @@ export default async function Home() {
             <ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-mist">
               <CheckItem>{t.home.checkSandboxed}</CheckItem>
               <CheckItem>{t.home.checkToken}</CheckItem>
-              <CheckItem>{t.home.checkFrench}</CheckItem>
+              <CheckItem>{fill(t.home.checkLanguages, { count: formatNumber(LOCALES.length, locale) })}</CheckItem>
             </ul>
           </div>
 
-          <GitHubRepoMock t={t} />
+          <GitHubRepoMock t={t} locale={locale} />
         </div>
       </section>
 
@@ -171,7 +171,7 @@ export default async function Home() {
           <Stat value="0" label={t.home.statCommands} sub={t.home.statCommandsSub} />
           <Stat value="2 min" label={t.home.statDuration} sub={t.home.statDurationSub} />
           <Stat
-            value={String(LOCALES.length)}
+            value={formatNumber(LOCALES.length, locale)}
             label={t.home.statLanguages}
             sub={t.home.statLanguagesSub}
           />
@@ -325,18 +325,21 @@ export default async function Home() {
             {t.guides.guidesTitle}
           </h2>
           <p className="mt-3 text-mist">{t.guides.guidesLead}</p>
+          {locale !== DEFAULT_LOCALE && (
+            <p className="mt-2 text-sm text-mist">{t.guides.inFrench}</p>
+          )}
         </div>
         <ul className="grid gap-4 sm:grid-cols-2">
           {GUIDES.map((guide) => (
             <li key={guide.slug}>
-              <Link
+              <LocaleLink
                 href={`/guides/${guide.slug}`}
                 className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
-                <h3 className="font-semibold tracking-tight text-chalk">
+                <h3 lang={DEFAULT_LOCALE} dir="ltr" className="font-semibold tracking-tight text-chalk">
                   {guide.title}
                 </h3>
-                <p className="line-clamp-2 text-sm leading-relaxed text-mist">
+                <p lang={DEFAULT_LOCALE} dir="ltr" className="line-clamp-2 text-sm leading-relaxed text-mist">
                   {guide.description}
                 </p>
                 <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-go">
@@ -346,7 +349,7 @@ export default async function Home() {
                     aria-hidden="true"
                   />
                 </span>
-              </Link>
+              </LocaleLink>
             </li>
           ))}
         </ul>
@@ -402,10 +405,10 @@ export default async function Home() {
             {t.home.ctaLead}
           </p>
           <div className="relative mt-7">
-            <Link href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
+            <LocaleLink href={ctaHref} className={cn(buttonVariants({ size: "lg" }))}>
               {ctaLabel}
               <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
+            </LocaleLink>
           </div>
         </div>
       </section>
@@ -452,7 +455,7 @@ function Stat({
  *
  * 100 % décoratif : aucun appel réseau, aucun état.
  */
-function GitHubRepoMock({ t }: { t: Dict }) {
+function GitHubRepoMock({ t, locale }: { t: Dict; locale: string }) {
   const fileName = t.home.mockFile;
   const repoName = fileName.replace(/\.[^.]+$/, "");
 
@@ -507,10 +510,10 @@ function GitHubRepoMock({ t }: { t: Dict }) {
           </div>
           <ul className="font-mono text-[11px]">
             {[
-              { name: "src", dir: true, meta: "6 files" },
-              { name: "package.json", meta: "1.1 KB" },
-              { name: "README.md", meta: "2.4 KB" },
-              { name: ".gitignore", meta: "312 B" },
+              { name: "src", dir: true, meta: "" },
+              { name: "package.json", meta: formatBytes(1126, locale) },
+              { name: "README.md", meta: formatBytes(2458, locale) },
+              { name: ".gitignore", meta: formatBytes(312, locale) },
             ].map((row) => (
               <li
                 key={row.name}

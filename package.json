@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:i18n:production": "node --test tests/i18n-production.mjs"
   },
   "dependencies": {
     "busboy": "^1.6.0",

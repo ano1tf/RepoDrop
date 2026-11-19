@@ -87,3 +87,16 @@ export function formatBytes(bytes: number, locale: string): string {
     return `${value.toFixed(1)} ${unit}`;
   }
 }
+
+/** Date relative localisée pour l'activité d'un dépôt. */
+export function formatRelativeTime(timestamp: number, locale: string, now = Date.now()): string {
+  if (!Number.isFinite(timestamp)) return "—";
+  const seconds = Math.round((timestamp - now) / 1000);
+  const abs = Math.abs(seconds);
+  const intl = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  if (abs < 45) return intl.format(0, "second");
+  if (abs < 3600) return intl.format(Math.round(seconds / 60), "minute");
+  if (abs < 86_400) return intl.format(Math.round(seconds / 3600), "hour");
+  if (abs < 30 * 86_400) return intl.format(Math.round(seconds / 86_400), "day");
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(timestamp);
+}

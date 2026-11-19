@@ -9,7 +9,7 @@
  * session chiffré — rien n'est stocké côté client.
  */
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { useRouter } from "next/navigation";
 import { KeyRound, Loader2, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -122,12 +122,12 @@ export function StaffGate({ login }: { login: string }) {
         </p>
       </div>
 
-      <Link
+      <LocaleLink
         href="/"
         className={buttonVariants({ variant: "ghost", size: "sm" })}
       >
         Retour à l'accueil
-      </Link>
+      </LocaleLink>
     </main>
   );
 }

@@ -26,6 +26,7 @@ export const nl: Dict = {
     language: "Taal",
     languageChange: "Taal wijzigen",
     languageSearch: "Zoek een taal…",
+    languageEmpty: "Geen talen komen overeen met je zoekopdracht.",
     languageCurrent: "Huidige taal: {name}",
   },
 
@@ -40,7 +41,7 @@ export const nl: Dict = {
     ctaHow: "Hoe het werkt",
     checkSandboxed: "Extractie in sandbox",
     checkToken: "GitHub-token nooit opgeslagen",
-    checkFrench: "Open werkwijze",
+    checkLanguages: "Interface beschikbaar in {count} talen",
 
     statFormats: "archiefformaten",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -226,6 +227,9 @@ export const nl: Dict = {
     aboutFaqBody: "RepoDrop vervangt git niet: het verwijdert de wrijving. Wanneer u code snel naar GitHub moet pushen, zonder instellingen, vervult RepoDrop de taak — en u behoudt de vrijheid om met git door te gaan wanneer u dat wilt.",
   },
   guides: {
+    inFrench: "De handleidingen zijn in het Frans geschreven.",
+    prev: "Vorige handleiding",
+    next: "Volgende handleiding",
     guidesTitle: "Handleidingen",
     guidesLead: "Stap voor stap handleidingen om je .rar-, .zip- en .tar-archiven naar GitHub te importeren, zonder git of terminal.",
     readMore: "Handleiding lezen",
@@ -254,6 +258,28 @@ export const nl: Dict = {
     guarantee3: "Volledig voorbeeld voor elk versturen",
     copyright: "© {year} RepoDrop — jouw archieven, jouw GitHub.",
     reserved: "Besloten gedeelte",
+  },
+
+  repos: {
+    lead: "Blader door je repositories, bekijk bestanden en wissel van branch voordat je importeert.",
+    filter: "Filter op naam, beschrijving of taal…",
+    sort: "Repositories sorteren",
+    pushed: "Recente activiteit",
+    name: "Naam (A tot Z)",
+    size: "Grootte",
+    onlyMine: "Alleen mijn repositories",
+    refresh: "Vernieuwen",
+    loadFailed: "Repositories konden niet worden geladen (HTTP {status}).",
+    offline: "De server is niet bereikbaar.",
+    truncated: "Alleen de meest recente repositories zijn geladen. Gebruik het filter om de lijst te verkleinen.",
+    loading: "Je repositories worden geladen…",
+    emptyFilter: "Geen repositories komen overeen met dit filter.",
+    empty: "Met dit GitHub-account zijn geen repositories toegankelijk.",
+    shown: "{count} van {total} repositories worden getoond",
+    noDescription: "Geen beschrijving",
+    lastPush: "Laatste push: {time}",
+    issues: "Openstaande issues: {count}",
+    readOnly: "Alleen-lezen",
   },
 
   job: {

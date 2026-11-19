@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { ArrowRight, Search } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
+import { DEFAULT_LOCALE, LOCALE_PARAM, ogLocaleOf } from "@/lib/i18n/locales";
 import { buildPageMetadata } from "@/lib/seo";
 import { searchGuides } from "@/lib/seo-guides";
 
@@ -17,12 +18,13 @@ import { searchGuides } from "@/lib/seo-guides";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getT();
+  const { locale, t } = await getT();
   return buildPageMetadata({
     title: t.guides.searchTitle,
     description: t.guides.searchTitle,
     path: "/recherche",
     noIndex: true,
+    ogLocale: ogLocaleOf(locale),
   });
 }
 
@@ -31,7 +33,7 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const [{ q }, { t }] = await Promise.all([searchParams, getT()]);
+  const [{ q }, { locale, urlLocale, t }] = await Promise.all([searchParams, getT()]);
   const results = searchGuides(q ?? "");
 
   return (
@@ -53,10 +55,11 @@ export default async function SearchPage({
             className="mt-6"
             aria-label={t.guides.searchTitle}
           >
+            {urlLocale && <input type="hidden" name={LOCALE_PARAM} value={urlLocale} />}
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search
-                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mist"
+                  className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mist"
                   aria-hidden="true"
                 />
                 <input
@@ -65,7 +68,7 @@ export default async function SearchPage({
                   defaultValue={q ?? ""}
                   placeholder={t.guides.searchPlaceholder}
                   aria-label={t.guides.searchPlaceholder}
-                  className="w-full rounded-lg border border-edge/70 bg-panel2/60 py-2.5 pl-10 pr-3 text-sm text-chalk outline-none transition-colors placeholder:text-mist/60 focus:border-go/60"
+                  className="w-full rounded-lg border border-edge/70 bg-panel2/60 py-2.5 ps-10 pe-3 text-sm text-chalk outline-none transition-colors placeholder:text-mist/60 focus:border-go/60"
                 />
               </div>
               <button
@@ -91,17 +94,20 @@ export default async function SearchPage({
                 <p className="mb-4 text-sm text-mist">
                   {t.guides.searchResultsFor.replace("{q}", q)}
                 </p>
+                {locale !== DEFAULT_LOCALE && (
+                  <p className="mb-4 text-sm text-mist">{t.guides.inFrench}</p>
+                )}
                 <ul className="space-y-3">
                   {results.map((guide) => (
                     <li key={guide.slug}>
-                      <Link
+                      <LocaleLink
                         href={`/guides/${guide.slug}`}
                         className="panel group flex items-start gap-3 p-4 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
                       >
                         <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-go/10 text-go ring-1 ring-go/25">
                           <Search className="h-3.5 w-3.5" aria-hidden="true" />
                         </span>
-                        <div className="min-w-0 flex-1">
+                        <div lang={DEFAULT_LOCALE} dir="ltr" className="min-w-0 flex-1">
                           <h2 className="font-semibold text-chalk">
                             {guide.title}
                           </h2>
@@ -113,7 +119,7 @@ export default async function SearchPage({
                           className="mt-1 h-4 w-4 shrink-0 text-mist transition-transform duration-200 group-hover:translate-x-1 group-hover:text-go rtl:rotate-180"
                           aria-hidden="true"
                         />
-                      </Link>
+                      </LocaleLink>
                     </li>
                   ))}
                 </ul>

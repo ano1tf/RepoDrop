@@ -32,6 +32,7 @@ export const ar: Dict = {
     language: "اللغة",
     languageChange: "تغيير اللغة",
     languageSearch: "ابحث عن لغة…",
+    languageEmpty: "لم يُعثر على أي لغة تطابق بحثك.",
     languageCurrent: "اللغة الحالية: {name}",
   },
 
@@ -46,7 +47,7 @@ export const ar: Dict = {
     ctaHow: "كيف يعمل",
     checkSandboxed: "استخراج معزول",
     checkToken: "رمز GitHub لا يُخزَّن أبدًا",
-    checkFrench: "سير عمل مفتوح",
+    checkLanguages: "الواجهة متاحة بـ{count} لغة",
 
     statFormats: "صيغ الأرشيف",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -231,6 +232,9 @@ export const ar: Dict = {
     aboutFaqBody: "RepoDrop لا يحلّ محل git: إنه يزيل الاحتكاك. عندما تحتاج إلى إرسال الكود إلى GitHub بسرعة، دون إعداد، يقوم RepoDrop بالعمل — وتحتفظ بحرية مواصلة العمل مع git متى شئت.",
   },
   guides: {
+    inFrench: "مقالات الأدلة مكتوبة باللغة الفرنسية.",
+    prev: "الدليل السابق",
+    next: "الدليل التالي",
     guidesTitle: "الأدلة",
     guidesLead: "أدلة خطوة بخطوة لاستيراد أرشيفاتك .rar و .zip و .tar إلى GitHub، دون git ولا terminal.",
     readMore: "قراءة الدليل",
@@ -259,6 +263,28 @@ export const ar: Dict = {
     guarantee3: "معاينة كاملة قبل أي إرسال",
     copyright: "© {year} RepoDrop — أرشيفاتك، GitHub الخاص بك.",
     reserved: "منطقة محجوزة",
+  },
+
+  repos: {
+    lead: "تصفّح مستودعاتك وعاين الملفات وبدّل الفروع قبل الاستيراد.",
+    filter: "التصفية حسب الاسم أو الوصف أو لغة البرمجة…",
+    sort: "ترتيب المستودعات",
+    pushed: "آخر نشاط",
+    name: "الاسم (أبجديًا)",
+    size: "الحجم",
+    onlyMine: "مستودعاتي فقط",
+    refresh: "تحديث",
+    loadFailed: "تعذّر تحميل المستودعات (HTTP {status}).",
+    offline: "تعذّر الاتصال بالخادم.",
+    truncated: "تم تحميل أحدث المستودعات فقط. استخدم التصفية لتضييق القائمة.",
+    loading: "جارٍ تحميل مستودعاتك…",
+    emptyFilter: "لا توجد مستودعات تطابق هذا الفلتر.",
+    empty: "لا توجد مستودعات يمكن الوصول إليها بهذا الحساب على GitHub.",
+    shown: "عرض {count} من أصل {total} مستودعًا",
+    noDescription: "بلا وصف",
+    lastPush: "آخر دفع: {time}",
+    issues: "المشكلات المفتوحة: {count}",
+    readOnly: "للقراءة فقط",
   },
 
   job: {

@@ -20,7 +20,8 @@ import {
   safeNextPath,
 } from "@/lib/i18n/locales";
 import { DICTIONARIES, getDictionary, section } from "@/lib/i18n/dictionary";
-import { fill, formatNumber, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
+import { fill, formatNumber, formatRelativeTime, hasPlaceholders, placeholdersOf } from "@/lib/i18n/format";
+import { localizePath, localeSwitchPath } from "@/lib/i18n/navigation";
 
 /** Aplatit un dictionnaire en `section.clé` → valeur. */
 function flatten(obj: Record<string, unknown>, prefix = ""): Map<string, string> {
@@ -98,7 +99,6 @@ describe("dictionnaires", () => {
     for (const l of LOCALES) {
       const dict = flatten(DICTIONARIES[l.code]);
       for (const [key, frValue] of reference) {
-        if (!hasPlaceholders(frValue)) continue;
         expect(
           placeholdersOf(dict.get(key) ?? ""),
           `${l.code} → ${key} : placeholders divergents`,
@@ -145,6 +145,13 @@ describe("normalizeLocale", () => {
     expect(normalizeLocale("AR")).toBe("ar");
   });
 
+  it("sélectionne la langue prise en charge la mieux pondérée", () => {
+    expect(normalizeLocale("sv-SE, fr;q=0.4, pt-BR;q=0.9")).toBe("pt");
+    expect(normalizeLocale("ja;q=0, ko;q=0.7, ar;q=0.7")).toBe("ko");
+    expect(normalizeLocale("ja;q=0, *;q=0.6")).toBe(DEFAULT_LOCALE);
+    expect(normalizeLocale("en;q=abc, es;q=0.5")).toBe("es");
+  });
+
   it("retombe sur le français pour une valeur inconnue ou vide", () => {
     expect(normalizeLocale("xx")).toBe(DEFAULT_LOCALE);
     expect(normalizeLocale("")).toBe(DEFAULT_LOCALE);
@@ -168,6 +175,9 @@ describe("parseLocale (validation stricte)", () => {
     expect(parseLocale("")).toBeNull();
     expect(parseLocale(null)).toBeNull();
     expect(parseLocale("xx-YY")).toBeNull();
+    expect(parseLocale("en,fr")).toBeNull();
+    expect(parseLocale("en;q=0")).toBeNull();
+    expect(parseLocale("en-../etc")).toBeNull();
     // Une tentative d'injection ne doit jamais ressortir comme une langue.
     expect(parseLocale("../../etc/passwd")).toBeNull();
   });
@@ -193,6 +203,13 @@ describe("formatage", () => {
   it("détecte et liste les placeholders", () => {
     expect(hasPlaceholders("aucun")).toBe(false);
     expect(placeholdersOf("{b} puis {a}")).toEqual(["a", "b"]);
+  });
+
+  it("localise les dates relatives", () => {
+    const now = Date.UTC(2026, 10, 18);
+    expect(formatRelativeTime(now - 120_000, "en", now)).toBe("2 minutes ago");
+    expect(formatRelativeTime(now - 120_000, "fr", now)).toBe("il y a 2 minutes");
+    expect(formatRelativeTime(NaN, "fr", now)).toBe("—");
   });
 
   it("localise les nombres et survit à une locale invalide", () => {
@@ -234,5 +251,29 @@ describe("safeNextPath (bascule par lien direct)", () => {
     expect(safeNextPath("//evil.com")).toBe("/");
     expect(safeNextPath("/\\evil.com")).toBe("/");
     expect(safeNextPath("/\tlangues")).toBe("/");
+  });
+});
+
+
+describe("liens avec repli URL", () => {
+  it("préserve tous les paramètres de navigation, hors langue remplacée", () => {
+    expect(localizePath("/repos?repo=a%2Fb&lang=en&ref=main#file", "ar"))
+      .toBe("/repos?repo=a%2Fb&lang=ar&ref=main#file");
+    expect(localizePath("/#faq", "ja")).toBe("/?lang=ja#faq");
+    expect(localizePath("/faq", null)).toBe("/faq");
+  });
+
+  it("ne modifie pas les liens externes ni les ancres relatives", () => {
+    expect(localizePath("#faq", "ja")).toBe("#faq");
+    expect(localizePath("https://github.com/RepoDrop", "ja")).toBe("https://github.com/RepoDrop");
+    expect(localizePath("//github.com/RepoDrop", "ja")).toBe("//github.com/RepoDrop");
+  });
+
+  it("construit un lien document correctement encodé", () => {
+    const target = "/recherche?q=caf%C3%A9#resultats";
+    const url = new URL(localeSwitchPath("ja", target), "https://example.test");
+    expect(url.pathname).toBe("/api/locale");
+    expect(url.searchParams.get("to")).toBe("ja");
+    expect(url.searchParams.get("next")).toBe(target);
   });
 });

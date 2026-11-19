@@ -26,6 +26,7 @@ export const tr: Dict = {
     language: "Dil",
     languageChange: "Dili değiştir",
     languageSearch: "Dil ara…",
+    languageEmpty: "Aramanızla eşleşen dil bulunamadı.",
     languageCurrent: "Geçerli dil: {name}",
   },
 
@@ -40,7 +41,7 @@ export const tr: Dict = {
     ctaHow: "Nasıl çalışır",
     checkSandboxed: "Korumalı çıkarma",
     checkToken: "GitHub belirteci asla saklanmaz",
-    checkFrench: "Açık iş akışı",
+    checkLanguages: "Arayüz {count} dilde kullanılabilir",
 
     statFormats: "arşiv biçimi",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -226,6 +227,9 @@ export const tr: Dict = {
     aboutFaqBody: "RepoDrop git'i değiştirmez: sürtünmeyi giderir. Kodu hızlıca GitHub'a öndermek için kurulum gerektirmeyen bir durumda RepoDrop işi yapar — ve istediğinizde git ile çalışmaya devam etme özgürlüğüne sahip olursunuz.",
   },
   guides: {
+    inFrench: "Rehber yazıları Fransızca hazırlanmıştır.",
+    prev: "Önceki rehber",
+    next: "Sonraki rehber",
     guidesTitle: "Kılavuzlar",
     guidesLead: "Adım adım kılavuzlar, arşivlerinizi .rar, .zip ve .tar olarak GitHub'a git veya terminal olmadan içe aktarın.",
     readMore: "Kılavuzoku",
@@ -254,6 +258,28 @@ export const tr: Dict = {
     guarantee3: "Her gönderimden önce tam önizleme",
     copyright: "© {year} RepoDrop — arşivleriniz, GitHub'ınız.",
     reserved: "Ayrılmış alan",
+  },
+
+  repos: {
+    lead: "İçe aktarmadan önce depolarınıza göz atın, dosyaları önizleyin ve dalları değiştirin.",
+    filter: "Ada, açıklamaya veya programlama diline göre filtrele…",
+    sort: "Depoları sırala",
+    pushed: "Son etkinlik",
+    name: "Ad (A’dan Z’ye)",
+    size: "Boyut",
+    onlyMine: "Yalnızca benim depolarım",
+    refresh: "Yenile",
+    loadFailed: "Depolar yüklenemedi (HTTP {status}).",
+    offline: "Sunucuya ulaşılamadı.",
+    truncated: "Yalnızca en güncel depolar yüklendi. Listeyi daraltmak için filtreyi kullanın.",
+    loading: "Depolarınız yükleniyor…",
+    emptyFilter: "Bu filtreyle eşleşen depo yok.",
+    empty: "Bu GitHub hesabıyla erişilebilen depo yok.",
+    shown: "{total} depodan {count} tanesi gösteriliyor",
+    noDescription: "Açıklama yok",
+    lastPush: "Son gönderim: {time}",
+    issues: "Açık sorunlar: {count}",
+    readOnly: "Salt okunur",
   },
 
   job: {

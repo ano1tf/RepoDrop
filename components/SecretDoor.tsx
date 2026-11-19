@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLocalizedPath } from "@/components/LocaleLink";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ const KEY_WINDOW_MS = 2_500;
 
 export function SecretDoor() {
   const router = useRouter();
+  const localize = useLocalizedPath();
   const [unlocked, setUnlocked] = useState(false);
   const keys = useRef<string[]>([]);
   const keyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,8 +47,8 @@ export function SecretDoor() {
     setUnlocked(true);
     // Navigation immédiate : aucun délai imposé (le voile se dessine pendant
     // que la page arrive).
-    router.push("/staff");
-  }, [router]);
+    router.push(localize("/staff"));
+  }, [router, localize]);
 
   // ---------------------------------------------------------- séquence Konami
   useEffect(() => {

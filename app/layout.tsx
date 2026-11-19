@@ -3,14 +3,13 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { getLocale } from "@/lib/i18n/server";
-import { dirOf } from "@/lib/i18n/locales";
+import { LocaleNavigation } from "@/components/LocaleLink";
+import { getLocaleState, getT } from "@/lib/i18n/server";
+import { dirOf, ogLocaleOf } from "@/lib/i18n/locales";
 import {
   buildIcons,
   buildVerification,
   resolveSiteUrl,
-  SITE_DEFAULT_TITLE,
-  SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
   SITE_OG_IMAGE,
@@ -19,16 +18,17 @@ import {
 } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = resolveSiteUrl({ headers: await headers() });
+  const [requestHeaders, { locale, t }] = await Promise.all([headers(), getT()]);
+  const baseUrl = resolveSiteUrl({ headers: requestHeaders });
 
   return {
     metadataBase: new URL(baseUrl),
     applicationName: SITE_NAME,
     title: {
-      default: SITE_DEFAULT_TITLE,
+      default: t.meta.title,
       template: `%s · ${SITE_NAME}`,
     },
-    description: SITE_DESCRIPTION,
+    description: t.meta.description,
     keywords: SITE_KEYWORDS,
     authors: [{ name: SITE_NAME }],
     creator: SITE_NAME,
@@ -64,17 +64,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      locale: "fr_FR",
+      locale: ogLocaleOf(locale),
       siteName: SITE_NAME,
       url: "/",
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: t.meta.title,
+      description: t.meta.description,
       images: [SITE_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: t.meta.title,
+      description: t.meta.description,
       images: [SITE_TWITTER_IMAGE],
       ...twitterHandleFields(),
     },
@@ -92,7 +92,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getLocale();
+  const { locale, urlLocale } = await getLocaleState();
 
   // `lang`/`dir` reflètent la langue réellement rendue : indispensable pour la
   // synthèse vocale, la césure et le rendu droite-à-gauche (arabe).
@@ -103,9 +103,11 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />
-        <Header />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <Footer />
+        <LocaleNavigation urlLocale={urlLocale}>
+          <Header />
+          <div className="flex flex-1 flex-col">{children}</div>
+          <Footer />
+        </LocaleNavigation>
       </body>
     </html>
   );

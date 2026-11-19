@@ -26,6 +26,7 @@ export const ja: Dict = {
     language: "言語",
     languageChange: "言語を変更",
     languageSearch: "言語を検索…",
+    languageEmpty: "検索条件に一致する言語はありません。",
     languageCurrent: "現在の言語: {name}",
   },
 
@@ -40,7 +41,7 @@ export const ja: Dict = {
     ctaHow: "使い方",
     checkSandboxed: "サンドボックス展開",
     checkToken: "GitHub トークンは保存しません",
-    checkFrench: "オープンなワークフロー",
+    checkLanguages: "インターフェースは{count}言語に対応",
 
     statFormats: "種類のアーカイブ形式",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -225,6 +226,9 @@ export const ja: Dict = {
     aboutFaqBody: "RepoDropはgitを置き換えません。摩擦を取り除くだけです。セットアップなしで素早くコードをGitHubにプッシュしたいとき、RepoDropが作業をこなし、あなたはいつでもgitで続けられる自由を保っています。",
   },
   guides: {
+    inFrench: "ガイド記事はフランス語で書かれています。",
+    prev: "前のガイド",
+    next: "次のガイド",
     guidesTitle: "ガイド",
     guidesLead: "git もターミナルも使わず、.rar・.zip・.tar アーカイブを GitHub にインポートするための段階的なガイド。",
     readMore: "ガイドを読む",
@@ -253,6 +257,28 @@ export const ja: Dict = {
     guarantee3: "送信前の完全なプレビュー",
     copyright: "© {year} RepoDrop — あなたのアーカイブ、あなたの GitHub。",
     reserved: "関係者専用",
+  },
+
+  repos: {
+    lead: "インポートする前にリポジトリを閲覧し、ファイルのプレビューやブランチの切り替えができます。",
+    filter: "名前・説明・プログラミング言語で絞り込む…",
+    sort: "リポジトリの並べ替え",
+    pushed: "最近のアクティビティ",
+    name: "名前（A～Z）",
+    size: "サイズ",
+    onlyMine: "自分のリポジトリのみ",
+    refresh: "更新",
+    loadFailed: "リポジトリを読み込めませんでした（HTTP {status}）。",
+    offline: "サーバーに接続できませんでした。",
+    truncated: "最近のリポジトリのみを読み込みました。フィルターで一覧を絞り込んでください。",
+    loading: "リポジトリを読み込んでいます…",
+    emptyFilter: "フィルターに一致するリポジトリはありません。",
+    empty: "このGitHubアカウントでアクセス可能なリポジトリはありません。",
+    shown: "全{total}件中{count}件のリポジトリを表示",
+    noDescription: "説明なし",
+    lastPush: "最終プッシュ：{time}",
+    issues: "未解決のIssue：{count}",
+    readOnly: "読み取り専用",
   },
 
   job: {

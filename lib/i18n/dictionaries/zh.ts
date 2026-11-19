@@ -26,6 +26,7 @@ export const zh: Dict = {
     language: "语言",
     languageChange: "切换语言",
     languageSearch: "搜索语言…",
+    languageEmpty: "没有符合搜索条件的语言。",
     languageCurrent: "当前语言：{name}",
   },
 
@@ -40,7 +41,7 @@ export const zh: Dict = {
     ctaHow: "工作原理",
     checkSandboxed: "沙箱解压",
     checkToken: "GitHub 令牌永不存储",
-    checkFrench: "开放工作流",
+    checkLanguages: "界面支持 {count} 种语言",
 
     statFormats: "种压缩格式",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -214,6 +215,9 @@ export const zh: Dict = {
     aboutFaqBody: "RepoDrop 并不取代 git：它消除的是摩擦。当你需要快速、无需配置地把代码推到 GitHub 时，RepoDrop 来完成工作——而你保留随时继续使用 git 的自由。",
   },
   guides: {
+    inFrench: "指南文章以法语撰写。",
+    prev: "上一篇指南",
+    next: "下一篇指南",
     guidesTitle: "指南",
     guidesLead: "分步指南，无需 git 和终端，即可将 .rar、.zip 和 .tar 压缩包导入 GitHub。",
     readMore: "阅读指南",
@@ -241,6 +245,28 @@ export const zh: Dict = {
     guarantee3: "发送前完整预览",
     copyright: "© {year} RepoDrop — 你的压缩包，你的 GitHub。",
     reserved: "保留区域",
+  },
+
+  repos: {
+    lead: "导入前可以浏览仓库、预览文件并切换分支。",
+    filter: "按名称、描述或编程语言筛选…",
+    sort: "仓库排序",
+    pushed: "最近活动",
+    name: "名称（A 到 Z）",
+    size: "大小",
+    onlyMine: "仅我的仓库",
+    refresh: "刷新",
+    loadFailed: "无法加载仓库（HTTP {status}）。",
+    offline: "无法连接服务器。",
+    truncated: "仅加载了最近的仓库。请使用筛选功能缩小范围。",
+    loading: "正在加载你的仓库…",
+    emptyFilter: "没有仓库符合此筛选条件。",
+    empty: "此 GitHub 账户没有可访问的仓库。",
+    shown: "显示 {count} 个仓库，共 {total} 个",
+    noDescription: "暂无描述",
+    lastPush: "最近推送：{time}",
+    issues: "未关闭的问题：{count}",
+    readOnly: "只读",
   },
 
   job: {

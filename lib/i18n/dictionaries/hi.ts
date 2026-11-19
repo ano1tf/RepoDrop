@@ -26,6 +26,7 @@ export const hi: Dict = {
     language: "भाषा",
     languageChange: "भाषा बदलें",
     languageSearch: "भाषा खोजें…",
+    languageEmpty: "आपकी खोज से मेल खाने वाली कोई भाषा नहीं मिली।",
     languageCurrent: "वर्तमान भाषा: {name}",
   },
 
@@ -40,7 +41,7 @@ export const hi: Dict = {
     ctaHow: "यह कैसे काम करता है",
     checkSandboxed: "सैंडबॉक्स एक्सट्रैक्शन",
     checkToken: "GitHub टोकन कभी संग्रहीत नहीं",
-    checkFrench: "खुला वर्कफ़्लो",
+    checkLanguages: "इंटरफ़ेस {count} भाषाओं में उपलब्ध है",
 
     statFormats: "आर्काइव फ़ॉर्मैट",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -226,6 +227,9 @@ export const hi: Dict = {
     aboutFaqBody: "RepoDrop git को प्रतिस्थापित नहीं करता: यह फ्रीक्शन हटाता है। जब आपको तेज़ी से कोड GitHub पर भेजना हो, बिना सेटिंग के, RepoDrop काम कर जाता है — और आप जब चाहें git के साथ जारी रखने की स्वतंत्रता बनाए रखते हैं।",
   },
   guides: {
+    inFrench: "मार्गदर्शिका के लेख फ़्रेंच में लिखे गए हैं।",
+    prev: "पिछली मार्गदर्शिका",
+    next: "अगली मार्गदर्शिका",
     guidesTitle: "गाइड",
     guidesLead: "अपने .rar, .zip और .tar आर۰पीएसी GitHub पर import करने के लिए चरण-दर-चरण गाइड, git या terminal के बिना।",
     readMore: "गाइड पढ़ें",
@@ -254,6 +258,28 @@ export const hi: Dict = {
     guarantee3: "किसी भी भेजने से पहले पूरा पूर्वावलोकन",
     copyright: "© {year} RepoDrop — आपके आर्काइव, आपका GitHub।",
     reserved: "आरक्षित क्षेत्र",
+  },
+
+  repos: {
+    lead: "इंपोर्ट करने से पहले रिपॉज़िटरी देखें, फ़ाइलों का पूर्वावलोकन करें और शाखाएँ बदलें।",
+    filter: "नाम, विवरण या प्रोग्रामिंग भाषा से फ़िल्टर करें…",
+    sort: "रिपॉज़िटरी क्रमबद्ध करें",
+    pushed: "हाल की गतिविधि",
+    name: "नाम (वर्णमाला के क्रम में)",
+    size: "आकार",
+    onlyMine: "केवल मेरी रिपॉज़िटरी",
+    refresh: "रीफ़्रेश करें",
+    loadFailed: "रिपॉज़िटरी लोड नहीं हो सकीं (HTTP {status})।",
+    offline: "सर्वर से संपर्क नहीं हो सका।",
+    truncated: "केवल सबसे हाल की रिपॉज़िटरी लोड हुई हैं। सूची छोटी करने के लिए फ़िल्टर का उपयोग करें।",
+    loading: "आपकी रिपॉज़िटरी लोड हो रही हैं…",
+    emptyFilter: "कोई रिपॉज़िटरी इस फ़िल्टर से मेल नहीं खाती।",
+    empty: "इस GitHub खाते से कोई रिपॉज़िटरी उपलब्ध नहीं है।",
+    shown: "{total} में से {count} रिपॉज़िटरी दिखाई जा रही हैं",
+    noDescription: "कोई विवरण नहीं",
+    lastPush: "आखिरी पुश: {time}",
+    issues: "खुले मुद्दे: {count}",
+    readOnly: "केवल पढ़ने के लिए",
   },
 
   job: {

@@ -30,3 +30,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Smoke test i18n en production
+        run: npm run test:i18n:production

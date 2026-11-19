@@ -31,6 +31,7 @@ export const en: Dict = {
     language: "Language",
     languageChange: "Change language",
     languageSearch: "Search a language…",
+    languageEmpty: "No languages match your search.",
     languageCurrent: "Current language: {name}",
   },
 
@@ -45,7 +46,7 @@ export const en: Dict = {
     ctaHow: "How it works",
     checkSandboxed: "Sandboxed extraction",
     checkToken: "GitHub token never stored",
-    checkFrench: "Open source workflow",
+    checkLanguages: "Interface available in {count} languages",
 
     statFormats: "archive formats",
     statFormatsSub: ".rar · .zip · .tar[.gz]",
@@ -230,6 +231,9 @@ export const en: Dict = {
     aboutFaqBody: "RepoDrop does not replace git: it removes the friction. When you need to push code to GitHub quickly, without setup, RepoDrop does the job — and you keep the freedom to continue with git whenever you want.",
   },
   guides: {
+    inFrench: "The guide articles are written in French.",
+    prev: "Previous guide",
+    next: "Next guide",
     guidesTitle: "Guides",
     guidesLead: "Step-by-step tutorials to import your .rar, .zip and .tar archives to GitHub, without git or a terminal.",
     readMore: "Read the guide",
@@ -258,6 +262,28 @@ export const en: Dict = {
     guarantee3: "Full preview before anything is sent",
     copyright: "© {year} RepoDrop — your archives, your GitHub.",
     reserved: "Reserved area",
+  },
+
+  repos: {
+    lead: "Browse your repositories, preview files and switch branches before importing.",
+    filter: "Filter by name, description or language…",
+    sort: "Sort repositories",
+    pushed: "Recent activity",
+    name: "Name (A to Z)",
+    size: "Size",
+    onlyMine: "Only my repositories",
+    refresh: "Refresh",
+    loadFailed: "Could not load repositories (HTTP {status}).",
+    offline: "Could not reach the server.",
+    truncated: "Only the most recent repositories were loaded. Use the filter to narrow the list.",
+    loading: "Loading your repositories…",
+    emptyFilter: "No repositories match this filter.",
+    empty: "No repositories are accessible with this GitHub account.",
+    shown: "Showing {count} of {total} repositories",
+    noDescription: "No description",
+    lastPush: "Last push: {time}",
+    issues: "Open issues: {count}",
+    readOnly: "Read-only",
   },
 
   job: {

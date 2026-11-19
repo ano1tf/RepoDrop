@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import LocaleLink from "@/components/LocaleLink";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
-import { ogLocaleOf } from "@/lib/i18n/locales";
+import { DEFAULT_LOCALE, ogLocaleOf } from "@/lib/i18n/locales";
 import {
   buildGuidesIndexStructuredData,
   buildPageMetadata,
@@ -67,17 +67,20 @@ export default async function GuidesPage() {
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mist">
             {t.guides.guidesLead}
           </p>
+          {locale !== DEFAULT_LOCALE && (
+            <p className="mt-3 text-sm text-mist">{t.guides.inFrench}</p>
+          )}
         </div>
 
         <ul className="mt-10 grid gap-4">
           {GUIDES.map((guide) => (
             <li key={guide.slug}>
-              <Link
+              <LocaleLink
                 href={`/guides/${guide.slug}`}
                 className="panel group flex h-full flex-col gap-2 p-5 transition-colors transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-go/30"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-semibold tracking-tight text-chalk">
+                  <h2 lang={DEFAULT_LOCALE} dir="ltr" className="font-semibold tracking-tight text-chalk">
                     {guide.title}
                   </h2>
                   <ArrowRight
@@ -85,24 +88,24 @@ export default async function GuidesPage() {
                     aria-hidden="true"
                   />
                 </div>
-                <p className="line-clamp-3 text-sm leading-relaxed text-mist">
+                <p lang={DEFAULT_LOCALE} dir="ltr" className="line-clamp-3 text-sm leading-relaxed text-mist">
                   {guide.description}
                 </p>
                 <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-go">
                   {t.guides.readMore}
                 </span>
-              </Link>
+              </LocaleLink>
             </li>
           ))}
         </ul>
 
         <div className="mt-10">
-          <Link
-            href={`/api/locale?to=${locale}&next=/guides`}
+          <LocaleLink
+            href="/"
             className={cn(buttonVariants({ variant: "outline" }))}
           >
             {t.notFound.back}
-          </Link>
+          </LocaleLink>
         </div>
       </div>
     </main>
