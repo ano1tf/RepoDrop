@@ -15,6 +15,7 @@ export const de: Dict = {
   },
 
   nav: {
+    rightToLeft: "Schreibrichtung von rechts nach links",
     howItWorks: "So funktioniert es",
     myRepos: "Meine Repos",
     importArchive: "Archiv importieren",
@@ -31,6 +32,7 @@ export const de: Dict = {
   },
 
   home: {
+    demoReadError: "Diese ZIP-Datei ist nicht lesbar. Versuche es mit einer anderen.",
     heroBadge: "Neu: .tar und .tar.gz",
     heroTitleLine1: "Deine Code-Archive,",
     heroTitleLine2: "per Drag-and-drop auf GitHub.",
@@ -40,7 +42,7 @@ export const de: Dict = {
     ctaImport: "Archiv importieren",
     ctaHow: "So funktioniert es",
     checkSandboxed: "Sandbox-Extraktion",
-    checkToken: "GitHub-Token wird nie gespeichert",
+    checkToken: "Verschlüsseltes GitHub-Token",
     checkLanguages: "Oberfläche in {count} Sprachen verfügbar",
 
     statFormats: "Archivformate",
@@ -89,9 +91,8 @@ export const de: Dict = {
       "Alte Windows-.rar-Dateien, exportierte .zip-Dateien, .tar.gz von einem Linux-Server: alles wird serverseitig und gestreamt gelesen, mit denselben Schutznetzen. Der einzelne Wurzelordner wird automatisch entfernt, node_modules standardmäßig ausgeschlossen.",
 
     securityTitle: "Was wir ablehnen, und warum",
-    securityLead:
-      "Das Archiv eines Fremden zu entpacken ist ein Risikosport. Hier sind die Netze unter jedem Import.",
-    guard1Title: "Zip-Slip & Traversal",
+    securityLead: "Archive werden in einem temporären Arbeitsverzeichnis entpackt. RepoDrop prüft Pfade und begrenzt die Größe und Anzahl der Dateien.",
+    guard1Title: "Pfadprüfung",
     guard1Body:
       "Jeder Pfad wird geprüft (../, absolut, UNC, NUL). Ein einziger Versuch und das ganze Archiv wird abgelehnt.",
     guard2Title: "Dekompressionsbomben",
@@ -101,34 +102,28 @@ export const de: Dict = {
     guard3Body:
       "Verschlüsseltes httpOnly-Cookie (JWE A256GCM), Push über GIT_ASKPASS. Nie in der Datenbank, nie in Logs.",
     guard4Title: "Kontingente",
-    guard4Body:
-      "30 Uploads/h pro IP und 10 Pushes/h pro Nutzer, persistente Zähler: der Dienst bleibt gesund.",
-    limitsNote:
-      "Standardgrenzen: {upload} hochgeladen, {extract} entpackt, {files} Dateien pro Import.",
+    guard4Body: "Uploads: {uploads} pro Stunde und IP-Adresse. Pushes: {pushes} pro Stunde und Konto.",
+    limitsNote: "Limits pro Import: {upload} pro Archiv, {extract} nach dem Entpacken und höchstens {files} Dateien.",
 
     faqTitle: "Häufige Fragen",
     faqLead:
       "Alles zum Import von Archiven zu GitHub, zu den akzeptierten Formaten und zur Privatsphäre deines Kontos.",
 
-    ctaTitle: "Bereit, dein nächstes Archiv auf GitHub zu entleeren?",
-    ctaLead: "Anmelden, ablegen, pushen. Wir kümmern uns um den Rest.",
+    ctaTitle: "Bereit, dein Projekt zu GitHub zu importieren?",
+    ctaLead: "Melde dich an, lade das Archiv hoch und prüfe die Vorschau, bevor du den Push bestätigst.",
 
     mockFile: "mein-projekt.zip",
-    mockFileMeta: "{size} · {count} Dateien",
-    mockExcluded: "ausgeschlossen",
-    mockPushed: "Gepusht zu github.com/du/mein-projekt · Branch main",
 
-    demoEyebrow: "Die Magie vor dem Login",
+    demoEyebrow: "Ohne Konto ausprobieren",
     demoTitle: "Vom Archiv zum GitHub-Repo – in Sekunden.",
     demoTitleAccent: "Ohne Terminal.",
-    demoLead: "Reinziehen, Vorschau prüfen, pushen. Keine Befehle, und nichts geht raus ohne dein Okay.",
+    demoLead: "Probiere es mit einer ZIP-Datei. Die Vorschau bleibt in deinem Browser.",
     demoStep1: "Lokales Archiv",
-    demoStep2: "Extraktion geprüft",
+    demoStep2: "Dateivorschau",
     demoStep3: "Repo bereit",
-    demoFileMeta: "18,4 MB · 1.284 Dateien",
-    demoScan: "Pfade geprüft",
-    demoPushed: "Gepusht · gerade eben",
-    demoBranches: "main",
+    demoFileMeta: "{size} · Dateien: {count}",
+    demoScan: "Beispielprüfung",
+    demoPushed: "Beispielergebnis",
     demoNoAccount: "Kein Account, kein Terminal.",
     demoLocalBadge: "Lokal",
     demoDropHint: "Ziehe eine .zip hierher",
@@ -137,14 +132,14 @@ export const de: Dict = {
     demoDropTooLarge: "Archiv zu groß: maximal {max}.",
     demoDropError: "Es werden nur .zip-Dateien akzeptiert.",
     demoReading: "Archiv wird gelesen…",
-    demoExtracting: "Entpacken…",
-    demoReady: "Bereit zum Pushen",
-    demoReadyMeta: "{count} Dateien erkannt · nichts hat deinen Browser verlassen",
+    demoPreparing: "Vorschau lädt…",
+    demoReady: "Vorschau bereit",
+    demoReadyMeta: "Gefundene Dateien: {count} · lokal gelesen",
     demoPushCta: "Nach GitHub pushen",
     demoLocalNote: "Deine Dateien bleiben im Browser — es wird nichts hochgeladen.",
     demoConnectTitle: "Datei bereit!",
-    demoConnectBody: "Verbinde dein GitHub-Konto, um den Push abzuschließen.",
-    demoConnectNote: "Das Archiv hat deinen Browser nicht verlassen: gepusht wird aus deiner GitHub-Sitzung.",
+    demoConnectBody: "Melde dich bei GitHub an, um den Import fortzusetzen.",
+    demoConnectNote: "Prüfe die Vorschau und wähle vor dem Push ein Repository und einen Branch.",
     demoConnectCta: "Mit GitHub anmelden",
     demoConnectLater: "Später",
   },
@@ -153,7 +148,7 @@ export const de: Dict = {
     q1: "Wie bekomme ich ein .rar- oder .zip-Archiv ohne Git auf GitHub?",
     a1: "Verbinde dein GitHub-Konto mit RepoDrop, zieh deine .rar-, .zip-, .tar- oder .tar.gz-Datei hinein, prüfe die Vorschau der extrahierten Dateien und wähle ein neues oder bestehendes Repository. RepoDrop erstellt den Commit und pusht den Code direkt unter deiner GitHub-Identität, ohne Terminal und ohne Kommandozeile.",
     q2: "Welche Archivformate und Größen werden unterstützt?",
-    a2: "RepoDrop unterstützt nativ .rar- (RAR4 und RAR5), .zip-, .tar-, .tar.gz- und .tgz-Archive, serverseitig an ihren Magic Bytes erkannt. Standardmäßig darf ein Archiv bis zu {upload} komprimiert wiegen ({extract} entpackt und {files} Dateien).",
+    a2: "RepoDrop erkennt und entpackt .rar- (RAR4 und RAR5), .zip-, .tar-, .tar.gz- und .tgz-Archive. Es gelten {upload} pro Archiv, {extract} nach dem Entpacken und höchstens {files} Dateien.",
     q3: "Werden mein GitHub-Token und mein privater Quellcode gespeichert?",
     a3: "Nein. Dein GitHub-OAuth-Token liegt ausschließlich in einem verschlüsselten httpOnly-Cookie (JWE A256GCM) in deinem Browser: Er wird nie in die Datenbank oder in Logs geschrieben. Extrahierte Dateien liegen in einem isolierten temporären Bereich und werden nach dem Push automatisch gelöscht.",
     q4: "Kann ich ein Archiv in ein bestehendes GitHub-Repository senden, ohne meine Arbeit zu überschreiben?",
@@ -201,6 +196,7 @@ export const de: Dict = {
   },
 
   uploader: {
+    progressLabel: "Archiv wird hochgeladen",
     dropLabel: "Ein .rar-, .zip- oder .tar-Archiv ablegen",
     uploading: "Archiv wird gesendet… {progress}",
     keepOpen: "Schließe diesen Tab nicht.",
@@ -397,6 +393,7 @@ export const de: Dict = {
   },
 
   ui: {
+    fork: "Abgezweigtes Repository",
     cancel: "Abbrechen",
     offline: "Server nicht erreichbar. Versuche es erneut.",
     repoName: "Repository-Name",
@@ -552,6 +549,8 @@ export const de: Dict = {
   },
 
   discord: {
+    monitorIssue: "Bei der Discord-Überwachung ist ein Problem aufgetreten.",
+    gatewayConnected: "Bot mit Discord verbunden",
     title: "Discord-Bot",
     lead: "Füge ein Discord-Bot-Token oder eine Webhook-URL ein. Der Wert wird verschlüsselt und nicht erneut angezeigt.",
     secretWarning: "SESSION_SECRET ist nicht gesetzt. Richte es auf dem Server ein, damit das Token nach einem Neustart nutzbar bleibt.",
@@ -603,9 +602,15 @@ export const de: Dict = {
     setupVerify: "Speichere die Einstellungen und sende dann eine Testnachricht, um den Kanal zu prüfen.",
   },
 
+  errorPage: {
+    title: "Diese Seite konnte nicht angezeigt werden",
+    body: "Ein Fehler ist aufgetreten. Versuche es erneut oder gehe zur Startseite zurück.",
+    retry: "Erneut versuchen",
+  },
+
   notFound: {
     title: "Seite nicht gefunden",
-    body: "Diese Seite existiert nicht — oder der Job ist abgelaufen (Archive werden nach einer Weile gelöscht).",
+    body: "Diese Seite existiert nicht oder der Import ist abgelaufen. Kehre zur Startseite zurück, um fortzufahren.",
     back: "Zurück zur Startseite",
   },
 };

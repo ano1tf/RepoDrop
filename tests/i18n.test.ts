@@ -115,26 +115,27 @@ describe("dictionnaires", () => {
     }
   });
 
-  it("traduit réellement les chaînes d'interface (hors noms propres)", () => {
-    // Les marques et codes techniques peuvent rester identiques ; une phrase
-    // entière qui reste en français signale une traduction oubliée.
-    const isBrandish = (s: string) =>
-      /^(RepoDrop|GitHub|\.rar.*|RepoDrop — .*GitHub)$/.test(s);
-    for (const l of LOCALES) {
-      if (l.code === "fr") continue;
-      const dict = flatten(DICTIONARIES[l.code]);
-      const untranslated = [...reference.entries()].filter(
-        ([key, frValue]) =>
-          dict.get(key) === frValue &&
-          frValue.length > 40 &&
-          !isBrandish(frValue) &&
-          // `meta.title` et le slogan gardent la marque : tolérés.
-          !key.startsWith("meta."),
-      );
-      expect(
-        untranslated.map(([k]) => k),
-        `chaînes non traduites en ${l.code}`,
-      ).toEqual([]);
+  it("ne reprend pas le français, sauf vocabulaire partagé vérifié", () => {
+    // Ne pas ignorer les libellés courts : un bouton recopié est aussi visible
+    // qu'un paragraphe recopié. Chaque égalité doit être intentionnelle.
+    const shared: Partial<Record<(typeof LOCALES)[number]["code"], readonly string[]>> = {
+      en: ["home.guard4Title", "home.demoLocalBadge", "guides.guidesTitle", "job.destination", "job.doneCommit",
+        "ui.description", "ui.public", "ui.actions", "ui.date", "ui.confirmation", "activity.push", "system.configuration"],
+      es: ["nav.avatarAlt", "home.demoLocalBadge", "job.doneCommit"],
+      de: ["activity.push"],
+      it: ["job.doneCommit", "staff.source", "activity.push", "discord.title"],
+      pt: ["nav.avatarAlt", "home.guard4Title", "home.demoLocalBadge", "job.doneCommit"],
+      nl: ["footer.guaranteesTitle", "job.doneCommit", "ui.private", "activity.push"],
+      pl: ["job.doneCommit", "discord.title"],
+      tr: ["job.doneCommit"],
+      ar: ["job.doneCommit"],
+    };
+    const compact = (s: string) => s.normalize("NFC").trim().replace(/\s+/g, " ");
+    for (const { code } of LOCALES) {
+      if (code === DEFAULT_LOCALE) continue;
+      const dict = flatten(DICTIONARIES[code]);
+      const same = [...reference.keys()].filter((key) => compact(dict.get(key) ?? "") === compact(reference.get(key)!));
+      expect(same.sort(), `${code} : égalités avec le français`).toEqual(["home.statFormatsSub", ...(shared[code] ?? [])].sort());
     }
   });
 });

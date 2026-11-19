@@ -38,8 +38,8 @@ export interface DemoCopy {
   /** Nom de l'archive de démonstration. */
   mockFile: string;
   /** Métadonnées de l'archive de démonstration. */
-  mockFileMeta: string;
-  /** Message de l'étape « extraction vérifiée ». */
+  archiveMeta: string;
+  /** Légende de la carte qui illustre la vérification. */
   scan: string;
   /** Message de l'étape « repo prêt ». */
   pushed: string;
@@ -52,14 +52,16 @@ export interface DemoCopy {
   dropBrowse: string;
   /** Gros bouton primaire de la zone de dépôt (« Importer une archive »). */
   dropCta: string;
-  /** Message d'erreur (format non supporté / archive illisible). */
+  /** Format non pris en charge. */
   dropError: string;
+  /** Le fichier a l’extension ZIP, mais son index ne se lit pas. */
+  readError: string;
   /** Message d'erreur : archive au-delà de la limite d'envoi (`{max}`). */
   dropTooLarge: string;
   /** Étape « lecture de l'archive ». */
   reading: string;
-  /** Étape « extraction ». */
-  extracting: string;
+  /** Étape « préparation de l’aperçu local ». */
+  preparing: string;
   /** État final : prêt à pousser. */
   ready: string;
   /** Détail de l'état « prêt à pousser » (`{count}`). */
@@ -95,7 +97,7 @@ export function demoCopyFrom(home: Dict["home"]): DemoCopy {
     step3: home.demoStep3,
 
     mockFile: home.mockFile,
-    mockFileMeta: home.demoFileMeta,
+    archiveMeta: home.demoFileMeta,
     scan: home.demoScan,
     pushed: home.demoPushed,
     localBadge: home.demoLocalBadge,
@@ -104,9 +106,10 @@ export function demoCopyFrom(home: Dict["home"]): DemoCopy {
     dropBrowse: home.demoDropBrowse,
     dropCta: home.demoDropCta,
     dropError: home.demoDropError,
+    readError: home.demoReadError,
     dropTooLarge: home.demoDropTooLarge,
     reading: home.demoReading,
-    extracting: home.demoExtracting,
+    preparing: home.demoPreparing,
     ready: home.demoReady,
     readyMeta: home.demoReadyMeta,
     pushCta: home.demoPushCta,

@@ -21,6 +21,7 @@ export const ar: Dict = {
   },
 
   nav: {
+    rightToLeft: "كتابة من اليمين إلى اليسار",
     howItWorks: "كيف يعمل",
     myRepos: "مستودعاتي",
     importArchive: "استيراد أرشيف",
@@ -37,6 +38,7 @@ export const ar: Dict = {
   },
 
   home: {
+    demoReadError: "تعذّرت قراءة ملف ZIP هذا. جرّب أرشيفًا آخر.",
     heroBadge: "جديد: .tar و.tar.gz",
     heroTitleLine1: "أرشيفات شيفرتك،",
     heroTitleLine2: "على GitHub بسحب وإفلات.",
@@ -46,7 +48,7 @@ export const ar: Dict = {
     ctaImport: "استيراد أرشيف",
     ctaHow: "كيف يعمل",
     checkSandboxed: "استخراج معزول",
-    checkToken: "رمز GitHub لا يُخزَّن أبدًا",
+    checkToken: "رمز GitHub مشفّر",
     checkLanguages: "الواجهة متاحة بـ{count} لغة",
 
     statFormats: "صيغ الأرشيف",
@@ -63,7 +65,7 @@ export const ar: Dict = {
     step1Title: "اربط GitHub",
     step1Body:
       "نقرة تفويض واحدة. نطلب فقط الصلاحيات اللازمة — يبقى رمزك مشفَّرًا داخل متصفحك.",
-    step2Title: "أفلِت الأرشيف",
+    step2Title: "اسحب الأرشيف وأفلته",
     step2Body:
       "اسحب ملف .rar أو .zip أو .tar. استخراج معزول، مسارات موثَّقة، ومعاينة كاملة قبل الإرسال.",
     step3Title: "ادفع بنقرة واحدة",
@@ -95,9 +97,8 @@ export const ar: Dict = {
       "ملفات .rar القديمة من Windows، وملفات .zip من تصدير، وملفات .tar.gz من خادم Linux: كل شيء يُقرأ على الخادم، بتدفق، وبنفس الضمانات. يُزال المجلد الجذر الوحيد تلقائيًا، ويُستبعد node_modules افتراضيًا.",
 
     securityTitle: "ما نرفضه، ولماذا",
-    securityLead:
-      "فك ضغط أرشيف شخص غريب رياضة محفوفة بالمخاطر. هذه هي الشبكات الممدودة تحت كل استيراد.",
-    guard1Title: "Zip-slip وtraversal",
+    securityLead: "تُستخرج الأرشيفات في مساحة عمل مؤقتة. يتحقق RepoDrop من مسارات الملفات ويضع حدودًا لحجمها وعددها.",
+    guard1Title: "التحقق من المسارات",
     guard1Body:
       "يُتحقق من كل مسار (../، المطلق، UNC، NUL). محاولة واحدة ويُرفض الأرشيف بأكمله.",
     guard2Title: "قنابل فك الضغط",
@@ -107,50 +108,44 @@ export const ar: Dict = {
     guard3Body:
       "كوكي httpOnly مشفَّر (JWE A256GCM)، والدفع عبر GIT_ASKPASS. لا في قاعدة البيانات ولا في السجلات.",
     guard4Title: "الحصص",
-    guard4Body:
-      "30 رفعًا/ساعة لكل IP و10 دفعات/ساعة لكل مستخدم، بعدادات محفوظة: تبقى الخدمة سليمة.",
-    limitsNote:
-      "الحدود الافتراضية: {upload} مرفوعة، {extract} مفكوكة، {files} ملفًا لكل استيراد.",
+    guard4Body: "رفع الأرشيفات: {uploads} في الساعة لكل عنوان IP. الدفع إلى GitHub: ‏{pushes} في الساعة لكل حساب.",
+    limitsNote: "حدود الاستيراد: {upload} لكل أرشيف و{extract} بعد الاستخراج. الحد الأقصى لعدد الملفات: {files}.",
 
     faqTitle: "أسئلة متكررة",
     faqLead:
       "كل شيء عن استيراد الأرشيفات إلى GitHub والصيغ المقبولة وخصوصية حسابك.",
 
-    ctaTitle: "مستعد لتفريغ أرشيفك التالي على GitHub؟",
-    ctaLead: "سجّل الدخول، أفلِت، ادفع. نحن نتولى الباقي.",
+    ctaTitle: "هل تريد استيراد مشروعك إلى GitHub؟",
+    ctaLead: "سجّل الدخول وارفع الأرشيف، ثم راجع المعاينة قبل تأكيد إرسال الشيفرة.",
 
-    mockFile: "مشروعي.zip",
-    mockFileMeta: "{size} · {count} ملفًا",
-    mockExcluded: "مستبعد",
-    mockPushed: "دُفع إلى github.com/أنت/مشروعي · الفرع main",
+    mockFile: "mashrui.zip",
 
-    demoEyebrow: "السحر قبل تسجيل الدخول",
+    demoEyebrow: "جرّب بلا حساب",
     demoTitle: "من الأرشيف إلى مستودع GitHub في ثوانٍ.",
     demoTitleAccent: "بلا طرفية.",
-    demoLead: "أفلِت الملف، راجع المعاينة، ثم ادفع. لا أوامر، ولا شيء يُرسل دون موافقتك.",
+    demoLead: "جرّب ملف ZIP. تُعرض المعاينة داخل متصفحك دون رفع الملف.",
     demoStep1: "أرشيف محلي",
-    demoStep2: "الاستخراج موثّق",
+    demoStep2: "معاينة الملفات",
     demoStep3: "المستودع جاهز",
-    demoFileMeta: "18,4 م.ب · 1 284 ملفًا",
-    demoScan: "المسارات موثّقة",
-    demoPushed: "دُفع · الآن",
-    demoBranches: "main",
+    demoFileMeta: "{size} · الملفات: {count}",
+    demoScan: "مثال على الفحص",
+    demoPushed: "مثال للنتيجة",
     demoNoAccount: "بلا حساب وبلا طرفية.",
     demoLocalBadge: "محلي",
     demoDropHint: "أفلت ملف .zip هنا",
     demoDropBrowse: "أو اختر ملفًا",
     demoDropCta: "استيراد أرشيف",
     demoDropTooLarge: "الأرشيف كبير جدًا: الحد الأقصى {max}.",
-    demoDropError: "يُقبلت ملفات .zip فقط.",
+    demoDropError: "تُقبل ملفات ZIP فقط.",
     demoReading: "جارٍ قراءة الأرشيف…",
-    demoExtracting: "جارٍ الاستخراج…",
-    demoReady: "جاهز للرفع",
-    demoReadyMeta: "تم العثور على {count} ملف · لم يغادر شيء متصفحك",
+    demoPreparing: "جارٍ إعداد المعاينة…",
+    demoReady: "المعاينة جاهزة",
+    demoReadyMeta: "الملفات المكتشفة: {count} · قراءة محلية",
     demoPushCta: "الرفع إلى GitHub",
     demoLocalNote: "تبقى ملفاتك في متصفحك — لا يتم إرسال أي شيء.",
     demoConnectTitle: "الملف جاهز!",
-    demoConnectBody: "اربط حساب GitHub لإتمام الرفع.",
-    demoConnectNote: "لم يغادر الأرشيف متصفحك: سيتم رفعه من جلستك على GitHub.",
+    demoConnectBody: "سجّل الدخول عبر GitHub لمتابعة الاستيراد.",
+    demoConnectNote: "راجع الأرشيف ثم اختر المستودع والفرع قبل دفع الشيفرة.",
     demoConnectCta: "الربط مع GitHub",
     demoConnectLater: "لاحقًا",
   },
@@ -159,7 +154,7 @@ export const ar: Dict = {
     q1: "كيف أضع أرشيف .rar أو .zip على GitHub دون استخدام Git؟",
     a1: "اربط حساب GitHub على RepoDrop، واسحب ملف .rar أو .zip أو .tar أو .tar.gz وأفلته، وراجع معاينة الملفات المستخرجة ثم اختر مستودعًا جديدًا أو قائمًا. ينشئ RepoDrop الـ commit ويدفع الشيفرة مباشرة بهويتك على GitHub، بلا طرفية وبلا سطر أوامر.",
     q2: "ما صيغ الأرشيف والأحجام المدعومة؟",
-    a2: "يدعم RepoDrop أصلاً أرشيفات .rar (RAR4 وRAR5) و.zip و.tar و.tar.gz و.tgz، ويُتعرَّف عليها من بايتاتها السحرية على الخادم. افتراضيًا يمكن أن يزن الأرشيف حتى {upload} مضغوطًا ({extract} مفكوكة و{files} ملفًا).",
+    a2: "يتعرّف RepoDrop على أرشيفات .rar (‏RAR4 وRAR5‏) و.zip و.tar و.tar.gz و.tgz ويفكّها. الحد الأقصى لكل أرشيف: {upload} قبل الاستخراج و{extract} بعده. الحد الأقصى لعدد الملفات: {files}.",
     q3: "هل يُخزَّن رمز GitHub والشيفرة الخاصة؟",
     a3: "لا. رمز OAuth الخاص بك يعيش فقط في كوكي httpOnly مشفَّر (JWE A256GCM) داخل متصفحك: لا يُكتب أبدًا في قاعدة البيانات ولا في السجلات. تبقى الملفات المستخرجة في مساحة مؤقتة معزولة وتُمسح تلقائيًا بعد الدفع.",
     q4: "هل يمكنني إرسال أرشيف إلى مستودع GitHub قائم دون الكتابة فوق عملي؟",
@@ -206,6 +201,7 @@ export const ar: Dict = {
   },
 
   uploader: {
+    progressLabel: "رفع الأرشيف",
     dropLabel: "إفلات أرشيف .rar أو .zip أو .tar",
     uploading: "جارٍ إرسال الأرشيف… {progress}",
     keepOpen: "لا تغلق هذا التبويب.",
@@ -402,6 +398,7 @@ export const ar: Dict = {
   },
 
   ui: {
+    fork: "مستودع مشتق",
     cancel: "إلغاء",
     offline: "تعذّر الاتصال بالخادم. حاول مجددًا.",
     repoName: "اسم المستودع",
@@ -557,6 +554,8 @@ export const ar: Dict = {
   },
 
   discord: {
+    monitorIssue: "واجه مراقب Discord مشكلة.",
+    gatewayConnected: "البوت متصل بـ Discord",
     title: "بوت Discord",
     lead: "ألصق رمز بوت Discord أو رابط webhook. تُشفّر القيمة ولن تُعرض مجددًا.",
     secretWarning: "لم يُعيّن SESSION_SECRET. اضبطه في الخادم ليظل الرمز صالحًا بعد إعادة التشغيل.",
@@ -608,9 +607,15 @@ export const ar: Dict = {
     setupVerify: "احفظ الإعدادات ثم أرسل رسالة اختبار للتحقق من القناة.",
   },
 
+  errorPage: {
+    title: "تعذّر عرض هذه الصفحة",
+    body: "حدث خطأ. أعد المحاولة أو ارجع إلى الصفحة الرئيسية.",
+    retry: "إعادة المحاولة",
+  },
+
   notFound: {
     title: "الصفحة غير موجودة",
-    body: "هذه الصفحة غير موجودة — أو انتهت صلاحية المهمة (تُمسح الأرشيفات بعد مدة).",
+    body: "هذه الصفحة غير موجودة أو انتهت صلاحية عملية الاستيراد. عُد إلى الصفحة الرئيسية للمتابعة.",
     back: "العودة إلى الرئيسية",
   },
 };

@@ -15,6 +15,7 @@ export const ja: Dict = {
   },
 
   nav: {
+    rightToLeft: "右から左に書く言語",
     howItWorks: "使い方",
     myRepos: "マイリポジトリ",
     importArchive: "アーカイブをインポート",
@@ -31,6 +32,7 @@ export const ja: Dict = {
   },
 
   home: {
+    demoReadError: "この ZIP は読み込めません。別のアーカイブをお試しください。",
     heroBadge: "新機能: .tar と .tar.gz",
     heroTitleLine1: "コードのアーカイブを、",
     heroTitleLine2: "ドラッグ＆ドロップで GitHub へ。",
@@ -40,7 +42,7 @@ export const ja: Dict = {
     ctaImport: "アーカイブをインポート",
     ctaHow: "使い方",
     checkSandboxed: "サンドボックス展開",
-    checkToken: "GitHub トークンは保存しません",
+    checkToken: "暗号化された GitHub トークン",
     checkLanguages: "インターフェースは{count}言語に対応",
 
     statFormats: "種類のアーカイブ形式",
@@ -89,9 +91,8 @@ export const ja: Dict = {
       "Windows の古い .rar、エクスポートの .zip、Linux サーバーの .tar.gz：すべてサーバー側でストリーミング読み込みされ、同じ防護網が適用されます。単一のルートフォルダは自動的に取り除かれ、node_modules は既定で除外されます。",
 
     securityTitle: "何を拒否し、なぜか",
-    securityLead:
-      "見知らぬ人のアーカイブを展開するのは危険なスポーツです。すべてのインポートの下に張られた網がこれです。",
-    guard1Title: "Zip-slip とトラバーサル",
+    securityLead: "アーカイブは一時ディレクトリに展開されます。RepoDrop はファイルのパスを検証し、容量とファイル数を制限します。",
+    guard1Title: "ファイルパスの検証",
     guard1Body:
       "すべてのパスを検証（../、絶対パス、UNC、NUL）。一度でも該当すればアーカイブ全体を拒否します。",
     guard2Title: "展開爆弾",
@@ -101,34 +102,28 @@ export const ja: Dict = {
     guard3Body:
       "暗号化された httpOnly Cookie（JWE A256GCM）、GIT_ASKPASS 経由でプッシュ。DB にもログにも残しません。",
     guard4Title: "クォータ",
-    guard4Body:
-      "IP あたり毎時 30 アップロード、ユーザーあたり毎時 10 プッシュ、永続カウンタ：サービスは健全に保たれます。",
-    limitsNote:
-      "既定の上限：{upload} アップロード、{extract} 展開、1 インポートあたり {files} ファイル。",
+    guard4Body: "アーカイブのアップロード：IP アドレスごとに 1 時間あたり {uploads} 回。GitHub へのプッシュ：アカウントごとに 1 時間あたり {pushes} 回。",
+    limitsNote: "インポートの上限はアーカイブが {upload}、展開後が {extract}、ファイル数が {files} 件です。",
 
     faqTitle: "よくある質問",
     faqLead:
       "GitHub へのアーカイブのインポート、対応形式、アカウントのプライバシーについて。",
 
-    ctaTitle: "次のアーカイブを GitHub に流し込みますか？",
-    ctaLead: "ログインして、ドロップして、プッシュ。あとはこちらで。",
+    ctaTitle: "プロジェクトを GitHub にインポートしますか？",
+    ctaLead: "ログインしてアーカイブをアップロードし、プレビューを確認してからプッシュします。",
 
-    mockFile: "my-project.zip",
-    mockFileMeta: "{size} · {count} ファイル",
-    mockExcluded: "除外",
-    mockPushed: "github.com/you/my-project にプッシュ · main ブランチ",
+    mockFile: "watashi-no-project.zip",
 
-    demoEyebrow: "ログイン前に、その手触りを。",
+    demoEyebrow: "アカウントなしで試せます",
     demoTitle: "アーカイブから GitHub リポジトリまで数秒。",
     demoTitleAccent: "ターミナル不要。",
-    demoLead: "ドロップして、プレビューを確認して、プッシュ。コマンド不要、承認するまで何も送信されません。",
+    demoLead: "ZIP でお試しください。プレビューはブラウザー内で行われ、ファイルはアップロードされません。",
     demoStep1: "ローカルの ZIP",
-    demoStep2: "展開を検証済み",
+    demoStep2: "ファイルのプレビュー",
     demoStep3: "リポジトリ完成",
-    demoFileMeta: "18.4 MB · 1,284 ファイル",
-    demoScan: "パス検証済み",
-    demoPushed: "プッシュ済み · たった今",
-    demoBranches: "main",
+    demoFileMeta: "{size} · ファイル数：{count}",
+    demoScan: "チェック結果の例",
+    demoPushed: "結果の例",
     demoNoAccount: "アカウントもターミナルも不要。",
     demoLocalBadge: "ローカル",
     demoDropHint: "ここに .zip をドロップ",
@@ -137,14 +132,14 @@ export const ja: Dict = {
     demoDropTooLarge: "アーカイブが大きすぎます（上限 {max}）。",
     demoDropError: "対応しているのは .zip ファイルのみです。",
     demoReading: "アーカイブを読み込み中…",
-    demoExtracting: "展開中…",
-    demoReady: "プッシュの準備ができました",
-    demoReadyMeta: "{count} 個のファイルを検出 · ブラウザーの外には出ていません",
+    demoPreparing: "プレビューを準備中…",
+    demoReady: "プレビューの準備完了",
+    demoReadyMeta: "検出したファイル数：{count} · ローカルで読み取り",
     demoPushCta: "GitHub にプッシュ",
     demoLocalNote: "ファイルはブラウザー内に留まります — 何もアップロードされません。",
     demoConnectTitle: "ファイルの準備ができました！",
-    demoConnectBody: "GitHub アカウントを連携してプッシュを完了しましょう。",
-    demoConnectNote: "アーカイブはブラウザーの外に出ていません — GitHub セッションからプッシュされます。",
+    demoConnectBody: "インポートを続けるには GitHub でログインしてください。",
+    demoConnectNote: "アーカイブの内容を確認し、リポジトリとブランチを選んでからプッシュします。",
     demoConnectCta: "GitHub でログイン",
     demoConnectLater: "あとで",
   },
@@ -153,7 +148,7 @@ export const ja: Dict = {
     q1: "Git を使わずに .rar や .zip アーカイブを GitHub に置くには？",
     a1: "RepoDrop で GitHub アカウントを接続し、.rar、.zip、.tar、.tar.gz ファイルをドラッグ＆ドロップし、展開されたファイルのプレビューを確認して、新規または既存のリポジトリを選びます。RepoDrop がコミットを作成し、あなたの GitHub アイデンティティで直接コードをプッシュします。ターミナルもコマンドラインも不要です。",
     q2: "対応しているアーカイブ形式とサイズは？",
-    a2: "RepoDrop は .rar（RAR4 と RAR5）、.zip、.tar、.tar.gz、.tgz をネイティブ対応し、サーバー側でマジックバイトにより判別します。既定ではアーカイブは圧縮状態で {upload} まで（展開後 {extract}、{files} ファイル）。",
+    a2: "RepoDrop は .rar（RAR4・RAR5）、.zip、.tar、.tar.gz、.tgz を検出して展開します。上限はアーカイブが {upload}、展開後が {extract}、ファイル数が {files} 件です。",
     q3: "GitHub トークンや非公開コードは保存されますか？",
     a3: "いいえ。GitHub OAuth トークンはブラウザ内の暗号化された httpOnly Cookie（JWE A256GCM）にのみ存在し、データベースにもログにも書かれません。展開されたファイルは隔離された一時領域に置かれ、プッシュ後に自動的に削除されます。",
     q4: "作業を上書きせずに既存の GitHub リポジトリへアーカイブを送れますか？",
@@ -200,6 +195,7 @@ export const ja: Dict = {
   },
 
   uploader: {
+    progressLabel: "アーカイブをアップロード中",
     dropLabel: ".rar、.zip、.tar アーカイブをドロップ",
     uploading: "アーカイブを送信中… {progress}",
     keepOpen: "このタブを閉じないでください。",
@@ -396,6 +392,7 @@ export const ja: Dict = {
   },
 
   ui: {
+    fork: "フォークしたリポジトリ",
     cancel: "キャンセル",
     offline: "サーバーに接続できませんでした。再試行してください。",
     repoName: "リポジトリ名",
@@ -551,6 +548,8 @@ export const ja: Dict = {
   },
 
   discord: {
+    monitorIssue: "Discord の監視で問題が発生しました。",
+    gatewayConnected: "ボットは Discord に接続中",
     title: "Discordボット",
     lead: "DiscordのボットトークンまたはWebhook URLを貼り付けます。値は暗号化され、再表示されません。",
     secretWarning: "SESSION_SECRETが設定されていません。再起動後もトークンを使えるよう、サーバーで設定してください。",
@@ -602,9 +601,15 @@ export const ja: Dict = {
     setupVerify: "設定を保存し、テストメッセージを送信してチャンネルを確認します。",
   },
 
+  errorPage: {
+    title: "ページを表示できませんでした",
+    body: "エラーが発生しました。再試行するか、ホームに戻ってください。",
+    retry: "再試行",
+  },
+
   notFound: {
     title: "ページが見つかりません",
-    body: "このページは存在しません——またはジョブが期限切れです（アーカイブは一定時間後に削除されます）。",
+    body: "このページは存在しないか、インポートの有効期限が切れました。ホームに戻って続けてください。",
     back: "ホームに戻る",
   },
 };

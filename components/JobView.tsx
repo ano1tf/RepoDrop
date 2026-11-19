@@ -172,7 +172,7 @@ function ExtractingState({ copy }: { copy: JobCopy }) {
           <h2 className="text-lg font-semibold">{copy.extractingTitle}</h2>
           <p className="mt-1.5 max-w-md text-sm text-mist">{copy.extractingBody}</p>
         </div>
-        <IndeterminateBar className="max-w-xs" />
+        <IndeterminateBar label={copy.extractingTitle} className="max-w-xs" />
       </CardContent>
     </Card>
   );
@@ -189,7 +189,7 @@ function PushingState({ copy }: { copy: JobCopy }) {
           <h2 className="text-lg font-semibold">{copy.pushingTitle}</h2>
           <p className="mt-1.5 max-w-md text-sm text-mist">{copy.pushingBody}</p>
         </div>
-        <IndeterminateBar className="max-w-xs" />
+        <IndeterminateBar label={copy.pushingTitle} className="max-w-xs" />
       </CardContent>
     </Card>
   );
@@ -703,7 +703,6 @@ function ReadyState({
                   <Input
                     id="repo-name"
                     dir="ltr"
-                    placeholder="my-project"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     maxLength={100}

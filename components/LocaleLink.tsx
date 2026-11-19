@@ -4,15 +4,25 @@ import Link from "next/link";
 import { createContext, useCallback, useContext, type ComponentProps, type ReactNode } from "react";
 import type { Locale } from "@/lib/i18n/locales";
 import { localizePath } from "@/lib/i18n/navigation";
+import type { Dict } from "@/lib/i18n/types";
 
-const UrlLocaleContext = createContext<Locale | null>(null);
+type ErrorCopy = Dict["errorPage"] & { home: string };
+const LocaleContext = createContext<{ urlLocale: Locale | null; errorCopy?: ErrorCopy }>({ urlLocale: null });
 
-export function LocaleNavigation({ urlLocale, children }: { urlLocale: Locale | null; children: ReactNode }) {
-  return <UrlLocaleContext.Provider value={urlLocale}>{children}</UrlLocaleContext.Provider>;
+export function LocaleNavigation({ urlLocale, errorCopy, children }: {
+  urlLocale: Locale | null;
+  errorCopy?: ErrorCopy;
+  children: ReactNode;
+}) {
+  return <LocaleContext.Provider value={{ urlLocale, errorCopy }}>{children}</LocaleContext.Provider>;
+}
+
+export function usePageErrorCopy() {
+  return useContext(LocaleContext).errorCopy;
 }
 
 export function useLocalizedPath() {
-  const locale = useContext(UrlLocaleContext);
+  const { urlLocale: locale } = useContext(LocaleContext);
   return useCallback((href: string) => localizePath(href, locale), [locale]);
 }
 

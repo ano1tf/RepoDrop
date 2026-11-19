@@ -63,6 +63,8 @@ function expectedValues(locale: Locale) {
     upload: formatBytes(config.limits.maxUploadBytes, locale),
     extract: formatBytes(config.limits.maxExtractBytes, locale),
     files: formatNumber(config.limits.maxFiles, locale),
+    uploads: formatNumber(config.limits.uploadsPerHour, locale),
+    pushes: formatNumber(config.limits.pushesPerHour, locale),
   };
 }
 
@@ -79,7 +81,7 @@ describe("landing : gabarits i18n remplis", () => {
     expect(html.match(PLACEHOLDER)).toBeNull();
   });
 
-  it("remplit les trois gabarits avec les limites de la configuration", async () => {
+  it("remplit les gabarits avec les limites actives de la configuration", async () => {
     for (const locale of ["fr", "en"] as const) {
       const html = await renderHome(locale);
       const dict = DICTIONARIES[locale];
@@ -91,6 +93,7 @@ describe("landing : gabarits i18n remplis", () => {
 
       for (const template of [
         dict.home.guard2Body,
+        dict.home.guard4Body,
         dict.home.limitsNote,
         dict.faq.a2,
       ]) {

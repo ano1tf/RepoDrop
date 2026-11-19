@@ -784,8 +784,9 @@ describe("éditions localisées des guides", () => {
       expect(guide.datePublished).toBe(source.datePublished);
       expect(guide.dateModified).toBe(source.dateModified);
       expect(guide.steps).toHaveLength(3);
-      expect(guide.sections.length).toBeGreaterThan(0);
-      expect(guide.faq.length).toBeGreaterThan(0);
+      expect(guide.sections).toHaveLength(source.sections.length);
+      expect(guide.sections.map(({ paragraphs }) => paragraphs.length)).toEqual(source.sections.map(({ paragraphs }) => paragraphs.length));
+      expect(guide.faq).toHaveLength(3);
       expect(JSON.stringify(guide)).not.toMatch(/\{\w+\}/);
       if (code !== "fr") {
         expect(guide.title).not.toBe(source.title);

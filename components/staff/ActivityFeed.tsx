@@ -256,6 +256,7 @@ export function ActivityFeed({ initial, locale, copy }: { initial: ActivityRespo
               variant="ghost"
               size="sm"
               onClick={() => exportCsv(data.events)}
+              aria-label={t.export}
               title={t.export}
             >
               <Download className="h-3.5 w-3.5" />
@@ -324,17 +325,40 @@ function EventRow({ event, locale, now, copy }: {
   event: ActivityEvent; locale: Locale; now: number; copy: ActivityCopy;
 }) {
   const d = event.detail ?? {};
-  const { ui, discord } = copy;
-  const actions: Record<string, string> = {
-    test: discord.testToken, "send-test": discord.sendTest, "ping-now": discord.pingNow,
-    start: discord.start, stop: discord.stop,
-  };
-  const action = typeof d.action === "string" && Object.hasOwn(actions, d.action) ? actions[d.action] : null;
-  const eventData = event.kind === "upload" && typeof d.filename === "string"
-    ? d.filename
-    : event.kind === "settings" && Array.isArray(d.changed)
-      ? d.changed.join(", ")
-      : event.kind === "system" && typeof d.repo === "string" ? d.repo : null;
+  const { ui, discord, staff } = copy;
+  let actionLabel: string | undefined;
+  let outcome: string | undefined;
+  let eventData: string | undefined;
+  if (event.kind === "discord") {
+    const actions: Record<string, string> = {
+      test: discord.testToken, send: discord.sendTest, "send-test": discord.sendTest,
+      ping: discord.pingNow, "ping-now": discord.pingNow,
+      start: discord.start, stop: discord.stop,
+      heal: discord.status, tick: discord.lastPing, heartbeat: discord.heartbeat,
+    };
+    if (typeof d.action === "string" && Object.hasOwn(actions, d.action)) actionLabel = actions[d.action];
+    if (d.ok === false || d.running === false) outcome = ui.failed;
+  } else if (event.kind === "settings") {
+    if (d.scope === "staff.password") {
+      actionLabel = staff.panelPassword;
+      if (typeof d.enabled === "boolean") outcome = d.enabled ? ui.active : ui.inactive;
+    } else if (d.scope === "staff.unlock") {
+      actionLabel = d.action === "lock" ? staff.lock : staff.unlock;
+      if (typeof d.ok === "boolean") outcome = d.ok ? ui.success : ui.failed;
+    } else if (Array.isArray(d.changed)) {
+      const labels: Record<string, string> = {
+        enabled: discord.enable, token: discord.token, channelId: discord.channelId,
+        intervalMin: discord.interval, heartbeat: discord.heartbeat, notifyPush: discord.notifyPush,
+        alertOnDown: discord.alertDown, probeUrl: discord.probeUrl, roleMention: discord.mention,
+      };
+      const changed = d.changed.flatMap((key) => typeof key === "string" && Object.hasOwn(labels, key) ? [labels[key]] : []);
+      if (changed.length) actionLabel = new Intl.ListFormat(locale).format(changed);
+    }
+  } else if (event.kind === "upload" && typeof d.filename === "string") {
+    eventData = d.filename;
+  } else if (event.kind === "system" && typeof d.repo === "string") {
+    eventData = d.repo;
+  }
   const meta = KIND_META[event.kind] ?? KIND_META.system;
   const push = event.kind === "push" ? (event.detail as unknown as PushDetail) : null;
 
@@ -392,8 +416,8 @@ function EventRow({ event, locale, now, copy }: {
               {push.ok ? ui.success : ui.failed}
             </Badge>
           )}
-          {event.kind === "discord" && action && (
-            <span className="text-sm text-chalk/90">{action}{d.ok === false ? ` · ${ui.failed}` : ""}</span>
+          {(actionLabel || outcome) && (
+            <span className="text-sm text-chalk/90">{[actionLabel, outcome].filter(Boolean).join(" · ")}</span>
           )}
           {eventData && <bdi className="truncate text-sm text-chalk/90">{eventData}</bdi>}
         </div>

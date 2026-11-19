@@ -15,6 +15,7 @@ export const zh: Dict = {
   },
 
   nav: {
+    rightToLeft: "从右向左书写",
     howItWorks: "工作原理",
     myRepos: "我的仓库",
     importArchive: "导入压缩包",
@@ -31,6 +32,7 @@ export const zh: Dict = {
   },
 
   home: {
+    demoReadError: "无法读取此 ZIP。请尝试其他压缩包。",
     heroBadge: "新增：.tar 与 .tar.gz",
     heroTitleLine1: "你的代码压缩包，",
     heroTitleLine2: "拖放即可上 GitHub。",
@@ -40,7 +42,7 @@ export const zh: Dict = {
     ctaImport: "导入压缩包",
     ctaHow: "工作原理",
     checkSandboxed: "沙箱解压",
-    checkToken: "GitHub 令牌永不存储",
+    checkToken: "已加密的 GitHub 令牌",
     checkLanguages: "界面支持 {count} 种语言",
 
     statFormats: "种压缩格式",
@@ -87,8 +89,8 @@ export const zh: Dict = {
       "Windows 的老 .rar、导出得到的 .zip、Linux 服务器的 .tar.gz：全部在服务端以流式读取，并有同样的防护。唯一的根目录会自动去掉，node_modules 默认排除。",
 
     securityTitle: "我们拒绝什么，以及为什么",
-    securityLead: "解压陌生人的压缩包是有风险的运动。以下是每次导入下方张开的网。",
-    guard1Title: "Zip-slip 与路径穿越",
+    securityLead: "归档文件在临时工作区解包。RepoDrop 会检查文件路径，并限制文件大小和数量。",
+    guard1Title: "文件路径检查",
     guard1Body: "每个路径都被校验（../、绝对路径、UNC、NUL）。一次命中即拒收整个压缩包。",
     guard2Title: "解压炸弹",
     guard2Body: "声明的大小在写入前累加：最多 {extract} 解压量、{files} 个文件。",
@@ -96,31 +98,27 @@ export const zh: Dict = {
     guard3Body:
       "加密的 httpOnly Cookie（JWE A256GCM），通过 GIT_ASKPASS 推送。绝不入库、绝不写日志。",
     guard4Title: "配额",
-    guard4Body: "每 IP 每小时 30 次上传、每用户每小时 10 次推送，计数持久化：服务保持健康。",
-    limitsNote: "默认限制：上传 {upload}、解压 {extract}、每次导入 {files} 个文件。",
+    guard4Body: "归档上传：每个 IP 地址每小时 {uploads} 次。GitHub 推送：每个账号每小时 {pushes} 次。",
+    limitsNote: "每次导入的上限：归档 {upload}，解压后 {extract}，最多 {files} 个文件。",
 
     faqTitle: "常见问题",
     faqLead: "关于把压缩包导入 GitHub、支持的格式以及账号隐私的一切。",
 
-    ctaTitle: "准备好把下一个压缩包倒进 GitHub 了吗？",
-    ctaLead: "登录、拖入、推送。其余交给我们。",
+    ctaTitle: "想将项目导入 GitHub 吗？",
+    ctaLead: "登录后上传压缩包，检查预览内容，再确认推送。",
 
-    mockFile: "my-project.zip",
-    mockFileMeta: "{size} · {count} 个文件",
-    mockExcluded: "已排除",
-    mockPushed: "已推送到 github.com/you/my-project · main 分支",
+    mockFile: "wode-xiangmu.zip",
 
-    demoEyebrow: "登录之前，先看魔法",
+    demoEyebrow: "无需账号即可试用",
     demoTitle: "从压缩包到 GitHub 仓库，只要几秒。",
     demoTitleAccent: "无需终端。",
-    demoLead: "拖入、看预览、点推送。不用敲任何命令，你确认前什么都不会发出。",
+    demoLead: "使用 ZIP 试一试。预览在浏览器中完成，不会上传文件。",
     demoStep1: "本地压缩包",
-    demoStep2: "解压已校验",
+    demoStep2: "文件预览",
     demoStep3: "仓库就绪",
-    demoFileMeta: "18.4 MB · 1,284 个文件",
-    demoScan: "路径已校验",
-    demoPushed: "已推送 · 刚刚",
-    demoBranches: "main",
+    demoFileMeta: "{size} · 文件数：{count}",
+    demoScan: "扫描示例",
+    demoPushed: "结果示例",
     demoNoAccount: "不用账号，不用终端。",
     demoLocalBadge: "本地",
     demoDropHint: "把 .zip 拖到这里",
@@ -129,14 +127,14 @@ export const zh: Dict = {
     demoDropTooLarge: "压缩包过大（上限 {max}）。",
     demoDropError: "仅支持 .zip 文件。",
     demoReading: "正在读取压缩包…",
-    demoExtracting: "正在解压…",
-    demoReady: "可以推送",
-    demoReadyMeta: "检测到 {count} 个文件 · 没有离开你的浏览器",
+    demoPreparing: "正在准备预览…",
+    demoReady: "预览已就绪",
+    demoReadyMeta: "检测到的文件数：{count} · 本地读取",
     demoPushCta: "推送到 GitHub",
     demoLocalNote: "文件始终留在你的浏览器里 — 不会上传任何内容。",
     demoConnectTitle: "文件已就绪！",
-    demoConnectBody: "连接你的 GitHub 账号以完成推送。",
-    demoConnectNote: "压缩包没有离开你的浏览器 — 推送将通过你的 GitHub 会话完成。",
+    demoConnectBody: "请使用 GitHub 登录，继续导入。",
+    demoConnectNote: "先检查归档内容，再选择目标仓库和分支，最后推送代码。",
     demoConnectCta: "使用 GitHub 登录",
     demoConnectLater: "稍后",
   },
@@ -145,7 +143,7 @@ export const zh: Dict = {
     q1: "如何在不使用 Git 的情况下把 .rar 或 .zip 压缩包放到 GitHub？",
     a1: "在 RepoDrop 上连接你的 GitHub 账号，拖入 .rar、.zip、.tar 或 .tar.gz 文件，检查解压后的文件预览，然后选择新建或已有仓库。RepoDrop 会创建提交并以你的 GitHub 身份直接推送代码，无需终端和命令行。",
     q2: "支持哪些压缩格式和大小？",
-    a2: "RepoDrop 原生支持 .rar（RAR4 与 RAR5）、.zip、.tar、.tar.gz 和 .tgz 压缩包，在服务端通过魔数识别。默认情况下压缩包最大为 {upload}（解压后 {extract}、{files} 个文件）。",
+    a2: "RepoDrop 可以识别并解压 .rar（RAR4 和 RAR5）、.zip、.tar、.tar.gz 和 .tgz 归档。上限：每个归档 {upload}，解压后 {extract}，最多 {files} 个文件。",
     q3: "我的 GitHub 令牌和私有源码会被存储吗？",
     a3: "不会。你的 GitHub OAuth 令牌只存在于浏览器中加密的 httpOnly Cookie（JWE A256GCM）里：绝不写入数据库或日志。解压出的文件位于隔离的临时空间，推送后自动清除。",
     q4: "可以把压缩包发到已有 GitHub 仓库而不覆盖我的工作吗？",
@@ -190,6 +188,7 @@ export const zh: Dict = {
   },
 
   uploader: {
+    progressLabel: "正在上传归档",
     dropLabel: "拖入 .rar、.zip 或 .tar 压缩包",
     uploading: "正在发送压缩包… {progress}",
     keepOpen: "请勿关闭此标签页。",
@@ -384,6 +383,7 @@ export const zh: Dict = {
   },
 
   ui: {
+    fork: "派生仓库",
     cancel: "取消",
     offline: "无法连接到服务器。请重试。",
     repoName: "仓库名称",
@@ -539,6 +539,8 @@ export const zh: Dict = {
   },
 
   discord: {
+    monitorIssue: "Discord 监控出现问题。",
+    gatewayConnected: "机器人已连接到 Discord",
     title: "Discord 机器人",
     lead: "粘贴 Discord 机器人令牌或 Webhook URL。该值会加密保存，不再显示。",
     secretWarning: "未设置 SESSION_SECRET。请在服务器上配置它，以便重启后仍能使用令牌。",
@@ -590,9 +592,15 @@ export const zh: Dict = {
     setupVerify: "保存设置后，发送一条测试消息来验证频道。",
   },
 
+  errorPage: {
+    title: "无法显示此页面",
+    body: "发生错误。请重试或返回首页。",
+    retry: "重试",
+  },
+
   notFound: {
     title: "页面不存在",
-    body: "此页面不存在——或者任务已过期（压缩包会在一段时间后被清除）。",
+    body: "此页面不存在，或此次导入已过期。请返回首页继续。",
     back: "返回首页",
   },
 };

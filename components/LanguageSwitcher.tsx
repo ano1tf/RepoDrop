@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Check, Languages, Search } from "lucide-react";
 import { localeDefinition, type Locale } from "@/lib/i18n/locales";
@@ -24,7 +24,6 @@ export function LanguageSwitcher({
   emptyLabel,
 }: Props) {
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
@@ -34,13 +33,21 @@ export function LanguageSwitcher({
   const current = localeDefinition(locale);
   const filtered = useMemo(() => findLanguages(query, locale), [query, locale]);
 
+  const close = useCallback(() => {
+    const details = detailsRef.current;
+    if (details?.open) {
+      details.open = false;
+      setQuery("");
+    }
+  }, []);
+
   function navigateOptions(event: ReactKeyboardEvent<HTMLDetailsElement>) {
     const details = event.currentTarget;
     if (!details.open || event.nativeEvent.isComposing ||
         event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.key === "Escape") {
       event.preventDefault();
-      details.open = false;
+      close();
       details.querySelector("summary")?.focus();
       return;
     }
@@ -67,30 +74,28 @@ export function LanguageSwitcher({
   }
 
   useEffect(() => {
-    if (!open) return;
-
     const onPointerDown = (e: PointerEvent) => {
       const details = detailsRef.current;
-      if (details && !details.contains(e.target as Node)) details.open = false;
+      if (details?.open && !details.contains(e.target as Node)) close();
     };
 
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-    else setQuery("");
-  }, [open]);
+  }, [close]);
 
   return (
     <details
       ref={detailsRef}
       onKeyDown={navigateOptions}
       onBlur={(e) => {
-        if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false;
+        if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) close();
       }}
-      onToggle={(e) => setOpen(e.currentTarget.open)}
+      onToggle={(e) => {
+        // Pour un aller-retour rapide, le navigateur peut fusionner les deux
+        // événements. Le focus doit suivre l’état natif, pas un effet React.
+        if (e.currentTarget.open) inputRef.current?.focus();
+        else setQuery("");
+      }}
       className="sm:relative"
     >
       <summary

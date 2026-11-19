@@ -15,6 +15,7 @@ export const tr: Dict = {
   },
 
   nav: {
+    rightToLeft: "Sağdan sola yazım",
     howItWorks: "Nasıl çalışır",
     myRepos: "Depolarım",
     importArchive: "Arşiv aktar",
@@ -31,6 +32,7 @@ export const tr: Dict = {
   },
 
   home: {
+    demoReadError: "Bu ZIP okunamadı. Başka bir arşiv deneyin.",
     heroBadge: "Yeni: .tar ve .tar.gz",
     heroTitleLine1: "Kod arşivleriniz,",
     heroTitleLine2: "sürükle bırak ile GitHub'da.",
@@ -40,7 +42,7 @@ export const tr: Dict = {
     ctaImport: "Arşiv aktar",
     ctaHow: "Nasıl çalışır",
     checkSandboxed: "Korumalı çıkarma",
-    checkToken: "GitHub belirteci asla saklanmaz",
+    checkToken: "Şifrelenmiş GitHub jetonu",
     checkLanguages: "Arayüz {count} dilde kullanılabilir",
 
     statFormats: "arşiv biçimi",
@@ -89,9 +91,8 @@ export const tr: Dict = {
       "Eski Windows .rar dosyaları, bir dışa aktarımın .zip dosyaları, bir Linux sunucusunun .tar.gz dosyaları: her şey sunucu tarafında, akış hâlinde, aynı güvenlik ağlarıyla okunur. Tek kök klasör otomatik olarak kaldırılır ve node_modules varsayılan olarak hariç tutulur.",
 
     securityTitle: "Neyi reddediyoruz ve neden",
-    securityLead:
-      "Bir yabancının arşivini açmak riskli bir spordur. Her aktarımın altına gerilen ağlar bunlar.",
-    guard1Title: "Zip-slip ve traversal",
+    securityLead: "Arşivler geçici bir çalışma alanında açılır. RepoDrop dosya yollarını kontrol eder, boyutu ve dosya sayısını sınırlar.",
+    guard1Title: "Dosya yolu denetimi",
     guard1Body:
       "Her yol doğrulanır (../, mutlak, UNC, NUL). Tek bir deneme ve arşivin tamamı reddedilir.",
     guard2Title: "Açma bombaları",
@@ -101,34 +102,28 @@ export const tr: Dict = {
     guard3Body:
       "Şifreli httpOnly çerez (JWE A256GCM), GIT_ASKPASS ile gönderim. Asla veritabanında, asla günlüklerde.",
     guard4Title: "Kotalar",
-    guard4Body:
-      "IP başına saatte 30 yükleme ve kullanıcı başına saatte 10 gönderim, kalıcı sayaçlar: hizmet sağlıklı kalır.",
-    limitsNote:
-      "Varsayılan sınırlar: {upload} yüklendi, {extract} açıldı, aktarım başına {files} dosya.",
+    guard4Body: "Arşiv yükleme: IP adresi başına saatte {uploads}. GitHub’a gönderme: hesap başına saatte {pushes}.",
+    limitsNote: "İçe aktarma sınırları: arşiv başına {upload}, açıldıktan sonra {extract} ve en fazla {files} dosya.",
 
     faqTitle: "Sık sorulan sorular",
     faqLead:
       "Arşivleri GitHub'a aktarma, kabul edilen biçimler ve hesabınızın gizliliği hakkında her şey.",
 
-    ctaTitle: "Sıradaki arşivinizi GitHub'a boşaltmaya hazır mısınız?",
-    ctaLead: "Giriş yapın, bırakın, gönderin. Gerisini biz hallederiz.",
+    ctaTitle: "Projenizi GitHub’a aktarmaya hazır mısınız?",
+    ctaLead: "Oturum açın, arşivi yükleyin ve göndermeyi onaylamadan önce önizlemeyi kontrol edin.",
 
     mockFile: "projem.zip",
-    mockFileMeta: "{size} · {count} dosya",
-    mockExcluded: "hariç",
-    mockPushed: "github.com/sen/projem adresine gönderildi · main dalı",
 
-    demoEyebrow: "Girişten önce sihir",
+    demoEyebrow: "Hesap olmadan deneyin",
     demoTitle: "Arşivden GitHub reposuna saniyeler içinde.",
     demoTitleAccent: "Terminal yok.",
-    demoLead: "Sürükle, önizlemeye bak, push'la. Komut yok; onaylamadan hiçbir şey gitmez.",
+    demoLead: "Bir ZIP ile deneyin. Önizleme tarayıcınızda kalır; dosya yüklenmez.",
     demoStep1: "Yerel arşiv",
-    demoStep2: "Çıkarma doğrulandı",
+    demoStep2: "Dosya önizlemesi",
     demoStep3: "Repo hazır",
-    demoFileMeta: "18,4 MB · 1.284 dosya",
-    demoScan: "Yollar doğrulandı",
-    demoPushed: "Push'landı · az önce",
-    demoBranches: "main",
+    demoFileMeta: "{size} · Dosyalar: {count}",
+    demoScan: "Örnek tarama",
+    demoPushed: "Örnek sonuç",
     demoNoAccount: "Hesap yok, terminal yok.",
     demoLocalBadge: "Yerel",
     demoDropHint: "Buraya bir .zip bırakın",
@@ -137,14 +132,14 @@ export const tr: Dict = {
     demoDropTooLarge: "Arşiv çok büyük: en fazla {max}.",
     demoDropError: "Yalnızca .zip dosyaları kabul edilir.",
     demoReading: "Arşiv okunuyor…",
-    demoExtracting: "Çıkarılıyor…",
-    demoReady: "Gönderime hazır",
-    demoReadyMeta: "{count} dosya bulundu · tarayıcınızdan hiçbir şey çıkmadı",
+    demoPreparing: "Önizleme hazırlanıyor…",
+    demoReady: "Önizleme hazır",
+    demoReadyMeta: "Bulunan dosyalar: {count} · yerel okuma",
     demoPushCta: "GitHub'a gönder",
     demoLocalNote: "Dosyalarınız tarayıcınızda kalır — hiçbir şey gönderilmez.",
     demoConnectTitle: "Dosya hazır!",
-    demoConnectBody: "Gönderimi tamamlamak için GitHub hesabınızı bağlayın.",
-    demoConnectNote: "Arşiv tarayıcınızdan çıkmadı: GitHub oturumunuzdan gönderilecek.",
+    demoConnectBody: "İçe aktarmaya devam etmek için GitHub ile oturum açın.",
+    demoConnectNote: "Arşivi inceleyin, ardından kodu göndermeden önce depoyu ve dalı seçin.",
     demoConnectCta: "GitHub ile bağlan",
     demoConnectLater: "Sonra",
   },
@@ -153,7 +148,7 @@ export const tr: Dict = {
     q1: "Git kullanmadan bir .rar veya .zip arşivini GitHub'a nasıl koyarım?",
     a1: "RepoDrop'ta GitHub hesabınızı bağlayın, .rar, .zip, .tar veya .tar.gz dosyanızı sürükleyip bırakın, çıkarılan dosyaların önizlemesini kontrol edin ve yeni ya da var olan bir depo seçin. RepoDrop commit'i oluşturur ve kodu doğrudan GitHub kimliğinizle gönderir; terminal veya komut satırı gerekmez.",
     q2: "Hangi arşiv biçimleri ve boyutları destekleniyor?",
-    a2: "RepoDrop .rar (RAR4 ve RAR5), .zip, .tar, .tar.gz ve .tgz arşivlerini yerel olarak destekler; bunlar sunucu tarafında sihirli baytlarından tanınır. Varsayılan olarak bir arşiv sıkıştırılmış hâlde {upload} ağırlığında olabilir ({extract} açılmış ve {files} dosya).",
+    a2: "RepoDrop .rar (RAR4 ve RAR5), .zip, .tar, .tar.gz ve .tgz arşivlerini tanır ve açar. Sınırlar: arşiv başına {upload}, açıldıktan sonra {extract} ve en fazla {files} dosya.",
     q3: "GitHub belirteci ve özel kaynak kodum saklanıyor mu?",
     a3: "Hayır. GitHub OAuth belirteciniz yalnızca tarayıcınızdaki şifreli bir httpOnly çerezde (JWE A256GCM) yaşar: asla veritabanına veya günlüklere yazılmaz. Çıkarılan dosyalar yalıtılmış geçici bir alanda durur ve gönderimden sonra otomatik olarak silinir.",
     q4: "Arşivi çalışmamı ezmeden var olan bir GitHub deposuna gönderebilir miyim?",
@@ -201,6 +196,7 @@ export const tr: Dict = {
   },
 
   uploader: {
+    progressLabel: "Arşiv yükleniyor",
     dropLabel: "Bir .rar, .zip veya .tar arşivi bırakın",
     uploading: "Arşiv gönderiliyor… {progress}",
     keepOpen: "Bu sekmeyi kapatmayın.",
@@ -397,6 +393,7 @@ export const tr: Dict = {
   },
 
   ui: {
+    fork: "Çatallanmış depo",
     cancel: "İptal",
     offline: "Sunucuya ulaşılamadı. Tekrar deneyin.",
     repoName: "Depo adı",
@@ -552,6 +549,8 @@ export const tr: Dict = {
   },
 
   discord: {
+    monitorIssue: "Discord izleyicisinde bir sorun oluştu.",
+    gatewayConnected: "Bot Discord’a bağlı",
     title: "Discord botu",
     lead: "Discord bot jetonunu veya webhook URL’sini yapıştırın. Değer şifrelenir ve tekrar gösterilmez.",
     secretWarning: "SESSION_SECRET ayarlanmamış. Jetonu yeniden başlatma sonrasında kullanmak için sunucuda ayarlayın.",
@@ -603,9 +602,15 @@ export const tr: Dict = {
     setupVerify: "Ayarları kaydedin ve kanalı doğrulamak için bir test mesajı gönderin.",
   },
 
+  errorPage: {
+    title: "Bu sayfa görüntülenemedi",
+    body: "Bir hata oluştu. Tekrar deneyin veya ana sayfaya dönün.",
+    retry: "Tekrar dene",
+  },
+
   notFound: {
     title: "Sayfa bulunamadı",
-    body: "Bu sayfa yok — ya da iş sona erdi (arşivler bir süre sonra silinir).",
+    body: "Bu sayfa yok veya içe aktarma süresi dolmuş. Devam etmek için ana sayfaya dönün.",
     back: "Ana sayfaya dön",
   },
 };

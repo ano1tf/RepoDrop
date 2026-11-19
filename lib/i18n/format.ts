@@ -4,7 +4,8 @@
  * Les dictionnaires ne contiennent **pas** de fonctions (elles ne sont pas
  * sérialisables, et un test ne peut pas les comparer clé à clé). À la place,
  * quelques chaînes portent des accolades : `"Envoi… {progress}"`. Ce module
- * les remplit, en refusant silencieusement de produire un `{placeholder}` visible.
+ * les remplit. Les tests de dictionnaire et de rendu vérifient que les
+ * placeholders attendus sont préservés et remplis.
  */
 
 /** Remplace `{clé}` par sa valeur ; les placeholders inconnus restent tels quels. */

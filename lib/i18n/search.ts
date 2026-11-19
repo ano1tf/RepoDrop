@@ -1,4 +1,4 @@
-import { LOCALES, type Locale } from "./locales";
+import { LOCALES, type Locale, type LocaleDefinition } from "./locales";
 
 /** Ignore optional accents and width variants without dropping meaningful
  * vowel signs in scripts such as Devanagari. Used for comparison, never display. */
@@ -10,15 +10,21 @@ export function searchKey(text: string, locale: Locale): string {
     .normalize("NFC").trim();
 }
 
-/** Match a language by code, endonym, or the name in the current UI language. */
+/** Localized names for the gallery and picker, with the endonym as fallback. */
+export function languageLabeler(locale: Locale) {
+  const names = typeof Intl.DisplayNames === "function"
+    ? new Intl.DisplayNames(locale, { type: "language", fallback: "none" })
+    : null;
+  return (entry: LocaleDefinition) => names?.of(entry.code) ?? entry.nativeName;
+}
+
+/** Match a language by code, endonym, English name or translated name. */
 export function findLanguages(query: string, locale: Locale) {
   const needle = searchKey(query, locale);
   if (!needle) return LOCALES;
-  const names = typeof Intl.DisplayNames === "function"
-    ? new Intl.DisplayNames(locale, { type: "language" })
-    : null;
+  const label = languageLabeler(locale);
   return LOCALES.filter((entry) => {
-    const labels = [entry.code, entry.nativeName, entry.englishName, names?.of(entry.code) ?? ""];
+    const labels = [entry.code, entry.nativeName, entry.englishName, label(entry)];
     return labels.some((label) => searchKey(label, locale).includes(needle));
   });
 }

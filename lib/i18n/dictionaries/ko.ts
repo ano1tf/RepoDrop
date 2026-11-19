@@ -15,6 +15,7 @@ export const ko: Dict = {
   },
 
   nav: {
+    rightToLeft: "오른쪽에서 왼쪽으로 쓰는 언어",
     howItWorks: "사용 방법",
     myRepos: "내 저장소",
     importArchive: "압축 파일 가져오기",
@@ -31,6 +32,7 @@ export const ko: Dict = {
   },
 
   home: {
+    demoReadError: "이 ZIP을 읽을 수 없습니다. 다른 압축 파일을 사용해 보세요.",
     heroBadge: "신규: .tar 및 .tar.gz",
     heroTitleLine1: "코드 압축 파일을,",
     heroTitleLine2: "끌어다 놓으면 GitHub에.",
@@ -40,7 +42,7 @@ export const ko: Dict = {
     ctaImport: "압축 파일 가져오기",
     ctaHow: "사용 방법",
     checkSandboxed: "샌드박스 압축 해제",
-    checkToken: "GitHub 토큰은 저장되지 않음",
+    checkToken: "암호화된 GitHub 토큰",
     checkLanguages: "인터페이스는 {count}개 언어를 지원합니다",
 
     statFormats: "가지 압축 형식",
@@ -89,9 +91,8 @@ export const ko: Dict = {
       "Windows의 오래된 .rar, 내보내기에서 나온 .zip, Linux 서버의 .tar.gz: 모두 서버 측에서 스트리밍으로 읽히고 같은 보호 장치가 적용됩니다. 단일 루트 폴더는 자동으로 제거되고 node_modules는 기본적으로 제외됩니다.",
 
     securityTitle: "무엇을 거부하고, 왜",
-    securityLead:
-      "낯선 사람의 압축 파일을 푸는 것은 위험한 스포츠입니다. 모든 가져오기 아래 펼쳐진 그물은 이렇습니다.",
-    guard1Title: "Zip-slip 및 경로 이탈",
+    securityLead: "압축 파일은 임시 작업 공간에 풀립니다. RepoDrop은 파일 경로를 검사하고 용량과 파일 수를 제한합니다.",
+    guard1Title: "파일 경로 검사",
     guard1Body:
       "모든 경로를 검증합니다(../, 절대 경로, UNC, NUL). 한 번이라도 걸리면 압축 파일 전체가 거부됩니다.",
     guard2Title: "압축 폭탄",
@@ -101,34 +102,28 @@ export const ko: Dict = {
     guard3Body:
       "암호화된 httpOnly 쿠키(JWE A256GCM), GIT_ASKPASS로 푸시. DB에도 로그에도 남기지 않습니다.",
     guard4Title: "할당량",
-    guard4Body:
-      "IP당 시간당 30 업로드, 사용자당 시간당 10 푸시, 영구 카운터: 서비스가 건강하게 유지됩니다.",
-    limitsNote:
-      "기본 한도: {upload} 업로드, {extract} 압축 해제, 가져오기당 {files}개 파일.",
+    guard4Body: "압축 파일 업로드: IP 주소당 시간당 {uploads}회. GitHub 푸시: 계정당 시간당 {pushes}회.",
+    limitsNote: "가져오기 제한: 압축 파일당 {upload}, 해제 후 {extract}, 최대 {files}개 파일.",
 
     faqTitle: "자주 묻는 질문",
     faqLead:
       "GitHub로 압축 파일 가져오기, 지원 형식, 계정 개인정보에 관한 모든 것.",
 
-    ctaTitle: "다음 압축 파일을 GitHub에 풀어 놓을 준비가 되셨나요?",
-    ctaLead: "로그인하고, 올리고, 푸시하세요. 나머지는 저희가.",
+    ctaTitle: "프로젝트를 GitHub로 가져올까요?",
+    ctaLead: "로그인하고 압축 파일을 올린 뒤, 미리보기를 확인하고 푸시를 승인하세요.",
 
     mockFile: "nae-peurojekteu.zip",
-    mockFileMeta: "{size} · {count}개 파일",
-    mockExcluded: "제외됨",
-    mockPushed: "github.com/you/nae-peurojekteu에 푸시됨 · main 브랜치",
 
-    demoEyebrow: "로그인 전에 보는 마법",
+    demoEyebrow: "계정 없이 체험하기",
     demoTitle: "압축 파일에서 GitHub 리포지토리까지 몇 초.",
     demoTitleAccent: "터미널 없이.",
-    demoLead: "끌어다 놓고, 미리 보고, 푸시하세요. 명령어 없이, 승인 전에는 아무것도 전송되지 않습니다.",
+    demoLead: "ZIP 파일로 테스트해 보세요. 브라우저에서만 미리 보고 파일은 업로드하지 않습니다.",
     demoStep1: "로컬 ZIP",
-    demoStep2: "압축 해제 검증됨",
+    demoStep2: "파일 미리보기",
     demoStep3: "리포 준비 완료",
-    demoFileMeta: "18.4MB · 파일 1,284개",
-    demoScan: "경로 검증됨",
-    demoPushed: "푸시됨 · 방금",
-    demoBranches: "main",
+    demoFileMeta: "{size} · 파일 수: {count}",
+    demoScan: "검사 예시",
+    demoPushed: "결과 예시",
     demoNoAccount: "계정도 터미널도 필요 없음.",
     demoLocalBadge: "로컬",
     demoDropHint: "여기에 .zip 파일을 놓으세요",
@@ -137,14 +132,14 @@ export const ko: Dict = {
     demoDropTooLarge: "압축 파일이 너무 큽니다(최대 {max}).",
     demoDropError: ".zip 파일만 사용할 수 있습니다.",
     demoReading: "압축파일 읽는 중…",
-    demoExtracting: "압축 푸는 중…",
-    demoReady: "푸시 준비 완료",
-    demoReadyMeta: "파일 {count}개 감지됨 · 브라우저 밖으로 나가지 않았습니다",
+    demoPreparing: "미리보기 준비 중…",
+    demoReady: "미리보기 준비 완료",
+    demoReadyMeta: "확인한 파일 수: {count} · 브라우저에서 읽음",
     demoPushCta: "GitHub로 푸시",
     demoLocalNote: "파일은 브라우저에만 남습니다 — 아무것도 업로드되지 않습니다.",
     demoConnectTitle: "파일이 준비되었습니다!",
-    demoConnectBody: "GitHub 계정을 연결해 푸시를 완료하세요.",
-    demoConnectNote: "압축파일은 브라우저 밖으로 나가지 않았습니다 — GitHub 세션에서 푸시됩니다.",
+    demoConnectBody: "가져오기를 계속하려면 GitHub로 로그인하세요.",
+    demoConnectNote: "압축 파일의 내용을 확인하고 저장소와 브랜치를 선택한 뒤 코드를 푸시하세요.",
     demoConnectCta: "GitHub로 연결",
     demoConnectLater: "나중에",
   },
@@ -153,7 +148,7 @@ export const ko: Dict = {
     q1: "Git을 쓰지 않고 .rar 또는 .zip 압축 파일을 GitHub에 올리려면?",
     a1: "RepoDrop에서 GitHub 계정을 연결하고 .rar, .zip, .tar, .tar.gz 파일을 끌어다 놓은 뒤, 압축을 푼 파일의 미리보기를 확인하고 새 저장소나 기존 저장소를 고르세요. RepoDrop이 커밋을 만들고 당신의 GitHub 아이덴티티로 코드를 직접 푸시합니다. 터미널도 명령줄도 필요 없습니다.",
     q2: "어떤 압축 형식과 크기를 지원하나요?",
-    a2: "RepoDrop은 .rar(RAR4 및 RAR5), .zip, .tar, .tar.gz, .tgz 압축 파일을 기본 지원하며 서버 측에서 매직 바이트로 판별합니다. 기본적으로 압축 파일은 압축 상태로 {upload}까지 가능합니다(압축 해제 후 {extract}, {files}개 파일).",
+    a2: "RepoDrop은 .rar(RAR4 및 RAR5), .zip, .tar, .tar.gz, .tgz 파일을 감지하고 압축을 풉니다. 제한은 압축 파일당 {upload}, 해제 후 {extract}, 최대 {files}개 파일입니다.",
     q3: "GitHub 토큰과 비공개 소스 코드가 저장되나요?",
     a3: "아니요. GitHub OAuth 토큰은 브라우저 안의 암호화된 httpOnly 쿠키(JWE A256GCM)에만 존재하며 데이터베이스나 로그에 기록되지 않습니다. 압축을 푼 파일은 격리된 임시 공간에 있으며 푸시 후 자동으로 삭제됩니다.",
     q4: "작업을 덮어쓰지 않고 기존 GitHub 저장소로 압축 파일을 보낼 수 있나요?",
@@ -200,6 +195,7 @@ export const ko: Dict = {
   },
 
   uploader: {
+    progressLabel: "압축 파일 업로드 중",
     dropLabel: ".rar, .zip, .tar 압축 파일 놓기",
     uploading: "압축 파일 전송 중… {progress}",
     keepOpen: "이 탭을 닫지 마세요.",
@@ -396,6 +392,7 @@ export const ko: Dict = {
   },
 
   ui: {
+    fork: "포크한 저장소",
     cancel: "취소",
     offline: "서버에 연결할 수 없습니다. 다시 시도하세요.",
     repoName: "저장소 이름",
@@ -551,6 +548,8 @@ export const ko: Dict = {
   },
 
   discord: {
+    monitorIssue: "Discord 모니터링 중 문제가 발생했습니다.",
+    gatewayConnected: "봇이 Discord에 연결됨",
     title: "Discord 봇",
     lead: "Discord 봇 토큰이나 웹후크 URL을 붙여넣으세요. 값은 암호화되며 다시 표시되지 않습니다.",
     secretWarning: "SESSION_SECRET이 설정되지 않았습니다. 재시작 후에도 토큰을 사용하려면 서버에서 설정하세요.",
@@ -602,9 +601,15 @@ export const ko: Dict = {
     setupVerify: "설정을 저장한 뒤 테스트 메시지를 보내 채널을 확인하세요.",
   },
 
+  errorPage: {
+    title: "이 페이지를 표시할 수 없습니다",
+    body: "오류가 발생했습니다. 다시 시도하거나 홈으로 돌아가세요.",
+    retry: "다시 시도",
+  },
+
   notFound: {
     title: "페이지를 찾을 수 없습니다",
-    body: "이 페이지는 존재하지 않습니다 — 또는 작업이 만료되었습니다(압축 파일은 일정 시간 후 삭제됩니다).",
+    body: "페이지가 없거나 가져오기 유효 기간이 지났습니다. 홈으로 돌아가 계속하세요.",
     back: "홈으로 돌아가기",
   },
 };

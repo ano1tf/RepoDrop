@@ -15,6 +15,7 @@ export const pl: Dict = {
   },
 
   nav: {
+    rightToLeft: "Pismo od prawej do lewej",
     howItWorks: "Jak to działa",
     myRepos: "Moje repozytoria",
     importArchive: "Importuj archiwum",
@@ -31,6 +32,7 @@ export const pl: Dict = {
   },
 
   home: {
+    demoReadError: "Nie można odczytać tego pliku ZIP. Spróbuj z innym.",
     heroBadge: "Nowość: .tar i .tar.gz",
     heroTitleLine1: "Twoje archiwa kodu,",
     heroTitleLine2: "na GitHubie przeciągnij i upuść.",
@@ -40,7 +42,7 @@ export const pl: Dict = {
     ctaImport: "Importuj archiwum",
     ctaHow: "Jak to działa",
     checkSandboxed: "Rozpakowywanie w sandboxie",
-    checkToken: "Token GitHub nigdy nie zapisywany",
+    checkToken: "Zaszyfrowany token GitHuba",
     checkLanguages: "Interfejs dostępny w {count} językach",
 
     statFormats: "formaty archiwów",
@@ -89,9 +91,8 @@ export const pl: Dict = {
       "Stare .rar z Windows, .zip z eksportu, .tar.gz z serwera Linux: wszystko jest czytane po stronie serwera, strumieniowo, z tymi samymi zabezpieczeniami. Pojedynczy folder główny jest usuwany automatycznie, a node_modules wykluczany domyślnie.",
 
     securityTitle: "Czego odmawiamy i dlaczego",
-    securityLead:
-      "Rozpakowywanie archiwum nieznajomego to ryzykowny sport. Oto siatki rozpięte pod każdym importem.",
-    guard1Title: "Zip-slip i traversal",
+    securityLead: "Archiwa są rozpakowywane w katalogu tymczasowym. RepoDrop sprawdza ścieżki oraz ogranicza rozmiar i liczbę plików.",
+    guard1Title: "Sprawdzanie ścieżek",
     guard1Body:
       "Każda ścieżka jest sprawdzana (../, bezwzględne, UNC, NUL). Jedna próba i całe archiwum jest odrzucane.",
     guard2Title: "Bomby dekompresji",
@@ -101,34 +102,28 @@ export const pl: Dict = {
     guard3Body:
       "Zaszyfrowane ciasteczko httpOnly (JWE A256GCM), push przez GIT_ASKPASS. Nigdy w bazie, nigdy w logach.",
     guard4Title: "Limity",
-    guard4Body:
-      "30 wgrań/h na IP i 10 pushy/h na użytkownika, trwałe liczniki: usługa pozostaje zdrowa.",
-    limitsNote:
-      "Domyślne limity: {upload} wgranych, {extract} rozpakowanych, {files} plików na import.",
+    guard4Body: "Przesłania archiwum: {uploads} na godzinę na adres IP. Operacje push: {pushes} na godzinę na konto.",
+    limitsNote: "Limity importu: {upload} na archiwum, {extract} po rozpakowaniu i maksymalnie {files} plików.",
 
     faqTitle: "Najczęstsze pytania",
     faqLead:
       "Wszystko o imporcie archiwów do GitHuba, akceptowanych formatach i prywatności Twojego konta.",
 
-    ctaTitle: "Gotów opróżnić kolejne archiwum na GitHuba?",
-    ctaLead: "Zaloguj się, wrzuć, wypchnij. Resztą zajmiemy się my.",
+    ctaTitle: "Chcesz zaimportować projekt do GitHuba?",
+    ctaLead: "Zaloguj się, prześlij archiwum i sprawdź podgląd przed zatwierdzeniem wysyłki.",
 
     mockFile: "moj-projekt.zip",
-    mockFileMeta: "{size} · {count} plików",
-    mockExcluded: "pominięty",
-    mockPushed: "Wypchnięto do github.com/ty/moj-projekt · branch main",
 
-    demoEyebrow: "Magia przed logowaniem",
+    demoEyebrow: "Wypróbuj bez konta",
     demoTitle: "Z archiwum do repo na GitHubie w sekundy.",
     demoTitleAccent: "Bez terminala.",
-    demoLead: "Przeciągnij, sprawdź podgląd, pushuj. Zero komend, nic nie wychodzi bez twojej zgody.",
+    demoLead: "Wypróbuj plik ZIP. Podgląd powstaje w przeglądarce, bez wysyłania pliku.",
     demoStep1: "Lokalne archiwum",
-    demoStep2: "Rozpakowanie OK",
+    demoStep2: "Podgląd plików",
     demoStep3: "Repo gotowe",
-    demoFileMeta: "18,4 MB · 1 284 pliki",
-    demoScan: "Ścieżki sprawdzone",
-    demoPushed: "Pushnięte · teraz",
-    demoBranches: "main",
+    demoFileMeta: "{size} · Pliki: {count}",
+    demoScan: "Przykładowa analiza",
+    demoPushed: "Przykładowy wynik",
     demoNoAccount: "Zero konta, zero terminala.",
     demoLocalBadge: "Lokalnie",
     demoDropHint: "Przeciągnij tutaj plik .zip",
@@ -137,14 +132,14 @@ export const pl: Dict = {
     demoDropTooLarge: "Archiwum jest za duże: maksymalnie {max}.",
     demoDropError: "Akceptowane są tylko pliki .zip.",
     demoReading: "Odczyt archiwum…",
-    demoExtracting: "Rozpakowywanie…",
-    demoReady: "Gotowe do wypchnięcia",
-    demoReadyMeta: "Wykryto {count} plików · nic nie opuściło przeglądarki",
+    demoPreparing: "Tworzenie podglądu…",
+    demoReady: "Podgląd gotowy",
+    demoReadyMeta: "Wykryte pliki: {count} · odczyt lokalny",
     demoPushCta: "Wypchnij na GitHub",
     demoLocalNote: "Twoje pliki zostają w przeglądarce — nic nie jest wysyłane.",
     demoConnectTitle: "Plik gotowy!",
-    demoConnectBody: "Połącz konto GitHub, aby dokończyć wypchnięcie.",
-    demoConnectNote: "Archiwum nie opuściło przeglądarki: zostanie wypchnięte z Twojej sesji GitHub.",
+    demoConnectBody: "Zaloguj się przez GitHub, aby kontynuować import.",
+    demoConnectNote: "Sprawdź podgląd, a przed wysłaniem kodu wybierz repozytorium i gałąź.",
     demoConnectCta: "Połącz z GitHub",
     demoConnectLater: "Później",
   },
@@ -153,7 +148,7 @@ export const pl: Dict = {
     q1: "Jak umieścić archiwum .rar lub .zip na GitHubie bez używania Gita?",
     a1: "Połącz konto GitHub w RepoDrop, przeciągnij plik .rar, .zip, .tar lub .tar.gz, sprawdź podgląd rozpakowanych plików i wybierz nowe lub istniejące repozytorium. RepoDrop tworzy commit i wypycha kod bezpośrednio pod Twoją tożsamością GitHub, bez terminala i bez wiersza poleceń.",
     q2: "Jakie formaty archiwów i rozmiary są obsługiwane?",
-    a2: "RepoDrop obsługuje natywnie archiwa .rar (RAR4 i RAR5), .zip, .tar, .tar.gz i .tgz, rozpoznawane po magicznych bajtach po stronie serwera. Domyślnie archiwum może ważyć do {upload} po kompresji ({extract} rozpakowanych i {files} plików).",
+    a2: "RepoDrop rozpoznaje i rozpakowuje archiwa .rar (RAR4 i RAR5), .zip, .tar, .tar.gz i .tgz. Limity: {upload} na archiwum, {extract} po rozpakowaniu i maksymalnie {files} plików.",
     q3: "Czy mój token GitHub i prywatny kod są zapisywane?",
     a3: "Nie. Twój token OAuth GitHub przebywa wyłącznie w zaszyfrowanym ciasteczku httpOnly (JWE A256GCM) w przeglądarce: nigdy nie trafia do bazy ani do logów. Rozpakowane pliki leżą w odizolowanej przestrzeni tymczasowej i są automatycznie usuwane po pushu.",
     q4: "Czy mogę wysłać archiwum do istniejącego repozytorium GitHub bez nadpisywania pracy?",
@@ -201,6 +196,7 @@ export const pl: Dict = {
   },
 
   uploader: {
+    progressLabel: "Przesyłanie archiwum",
     dropLabel: "Upuść archiwum .rar, .zip lub .tar",
     uploading: "Wysyłanie archiwum… {progress}",
     keepOpen: "Nie zamykaj tej karty.",
@@ -397,6 +393,7 @@ export const pl: Dict = {
   },
 
   ui: {
+    fork: "Repozytorium pochodne",
     cancel: "Anuluj",
     offline: "Nie można połączyć się z serwerem. Spróbuj ponownie.",
     repoName: "Nazwa repozytorium",
@@ -552,6 +549,8 @@ export const pl: Dict = {
   },
 
   discord: {
+    monitorIssue: "Monitor Discorda napotkał problem.",
+    gatewayConnected: "Bot połączony z Discordem",
     title: "Bot Discord",
     lead: "Wklej token bota lub adres webhooka Discord. Wartość jest szyfrowana i nie będzie wyświetlana ponownie.",
     secretWarning: "Brak SESSION_SECRET. Ustaw go na serwerze, by token działał po ponownym uruchomieniu.",
@@ -603,9 +602,15 @@ export const pl: Dict = {
     setupVerify: "Zapisz ustawienia, a potem wyślij wiadomość testową, aby sprawdzić kanał.",
   },
 
+  errorPage: {
+    title: "Nie można wyświetlić tej strony",
+    body: "Wystąpił błąd. Spróbuj ponownie lub wróć na stronę główną.",
+    retry: "Spróbuj ponownie",
+  },
+
   notFound: {
     title: "Nie znaleziono strony",
-    body: "Ta strona nie istnieje — albo zadanie wygasło (archiwa są usuwane po pewnym czasie).",
+    body: "Ta strona nie istnieje lub import wygasł. Wróć na stronę główną, aby kontynuować.",
     back: "Wróć na stronę główną",
   },
 };

@@ -313,7 +313,7 @@ export function RepoActions({
           {repo.private ? ui.private : ui.public}
         </Badge>
         {repo.archived && <Badge variant="amber">{ui.archived}</Badge>}
-        {repo.fork && <Badge variant="muted">fork</Badge>}
+        {repo.fork && <Badge variant="muted">{ui.fork}</Badge>}
         {!repo.can.push && <Badge variant="amber">{copy.readOnly}</Badge>}
       </div>
     </div>

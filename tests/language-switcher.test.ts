@@ -4,7 +4,8 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getDictionary } from "@/lib/i18n/dictionary";
-import type { Locale } from "@/lib/i18n/locales";
+import { fill } from "@/lib/i18n/format";
+import { localeDefinition, type Locale } from "@/lib/i18n/locales";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/recherche",
@@ -40,9 +41,9 @@ async function open(locale: Locale) {
   const { nav } = getDictionary(locale);
   act(() => root.render(createElement(LanguageSwitcher, {
     locale,
-    changeLabel: nav.language,
+    changeLabel: nav.languageChange,
     searchLabel: nav.languageSearch,
-    currentLabel: nav.languageCurrent,
+    currentLabel: fill(nav.languageCurrent, { name: localeDefinition(locale).nativeName }),
     emptyLabel: nav.languageEmpty,
   })));
   const details = container.querySelector("details")!;
@@ -67,6 +68,7 @@ describe("sélecteur de langue au clavier", () => {
     const { details, search, summary } = await open("ar");
     const links = [...details.querySelectorAll("a[lang]")];
     expect(document.activeElement).toBe(search);
+    expect(summary.getAttribute("aria-label")).toBe("تغيير اللغة — اللغة الحالية: العربية");
     expect(links).toHaveLength(16);
     expect(details.querySelector('a[aria-current="true"]')?.getAttribute("lang")).toBe("ar");
     expect(details.querySelector('a[lang="ar"] bdi')?.getAttribute("dir")).toBe("rtl");
@@ -85,6 +87,18 @@ describe("sélecteur de langue au clavier", () => {
     await toggle(details, () => press(links[0], "Escape"));
     expect(details.open).toBe(false);
     expect(document.activeElement).toBe(summary);
+  });
+
+  it("rend le focus au filtre même si une fermeture et une réouverture partagent un toggle", async () => {
+    const { details, search, summary } = await open("ar");
+    type(search, "English");
+    await toggle(details, () => {
+      press(search, "Escape");
+      summary.click();
+    });
+    expect(details.open).toBe(true);
+    expect(document.activeElement).toBe(search);
+    expect(search.value).toBe("");
   });
 
   it("active le résultat unique avec le chemin, la requête et le fragment d'origine", async () => {

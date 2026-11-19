@@ -16,7 +16,7 @@ async function start(env) {
   ], {
     env: { ...process.env, ...env },
     stdio: ["ignore", "pipe", "inherit"],
-    timeout: 60_000,
+    timeout: 90_000,
   });
   const lines = createInterface({ input: server.stdout });
   try {
@@ -44,15 +44,42 @@ function page(origin, path, headers = {}, options = {}) {
   });
 }
 
-async function localizedHtml(response, locale, dir = "ltr") {
-  assert.equal(response.status, 200);
+async function localizedHtml(response, locale, dir = "ltr", status = 200) {
+  assert.equal(response.status, status, `${locale} ${response.url}`);
   assert.equal(response.headers.get("content-language"), locale);
   const html = await response.text();
   assert.ok(html.includes(`<html lang="${locale}" dir="${dir}">`));
   return html;
 }
 
-test("la langue choisie survit au rendu public et connecté en production", { timeout: 60_000 }, async (t) => {
+// Independent sentinels: a correct header alone does not prove that the
+// server used the requested dictionary to render the page and its guides.
+const expected = {
+  fr: ["À propos de RepoDrop", "Conseil pratique"],
+  en: ["About RepoDrop", "Practical tip"],
+  es: ["Acerca de RepoDrop", "Consejo práctico"],
+  de: ["Über RepoDrop", "Praxistipp"],
+  it: ["Riguardo RepoDrop", "Consiglio pratico"],
+  pt: ["Sobre o RepoDrop", "Sugestão prática"],
+  nl: ["Over RepoDrop", "Praktische tip"],
+  pl: ["O RepoDrop", "Praktyczna wskazówka"],
+  ru: ["О RepoDrop", "Практический совет"],
+  uk: ["Про RepoDrop", "Практична порада"],
+  tr: ["RepoDrop Hakkında", "Pratik ipucu"],
+  ar: ["حول RepoDrop", "نصيحة عملية"],
+  hi: ["RepoDrop के बारे में", "काम की सलाह"],
+  zh: ["关于 RepoDrop", "实用提示"],
+  ja: ["RepoDropについて", "実用的なヒント"],
+  ko: ["RepoDrop 소개", "실용적인 팁"],
+};
+
+function mainMarkup(html) {
+  const main = html.match(/<main(?:\s[^>]*)?>([\s\S]*?)<\/main>/)?.[1];
+  assert.ok(main, "missing main content");
+  return main.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, "");
+}
+
+test("la langue choisie survit au rendu public et connecté en production", { timeout: 100_000 }, async (t) => {
   const dir = await mkdtemp(join(tmpdir(), "repodrop-i18n-"));
   let server;
   let github;
@@ -74,6 +101,8 @@ test("la langue choisie survit au rendu public et connecté en production", { ti
     MAX_UPLOAD_MB: "37",
     MAX_EXTRACT_MB: "98",
     MAX_FILES: "4321",
+    UPLOADS_PER_HOUR: "31",
+    PUSHES_PER_HOUR: "13",
     DEV_AUTH: "1",
     GITHUB_API_URL: github.url,
     GITHUB_CLIENT_ID: "",
@@ -211,4 +240,39 @@ test("la langue choisie survit au rendu public et connecté en production", { ti
   assert.ok(unlocked);
   const staff = await localizedHtml(await page(origin, "/staff?lang=ar", { Cookie: unlocked }), "ar", "rtl");
   assert.match(staff, /<h1[^>]*>لوحة الفريق<\/h1>/);
+
+  for (const [locale, [aboutTitle, tip]] of Object.entries(expected)) {
+    await t.test(`${locale} : navigation publique, huit guides et pages connectées`, async () => {
+      const dir = locale === "ar" ? "rtl" : "ltr";
+      const read = async (path, headers = {}, status = 200) => {
+        const url = new URL(path, origin);
+        url.searchParams.set("lang", locale);
+        const main = mainMarkup(await localizedHtml(await page(origin, url, headers), locale, dir, status));
+        assert.doesNotMatch(main, /\{[a-z][a-z0-9_]*\}/i, `${locale} ${path}: unfilled placeholder`);
+        return main;
+      };
+      const about = await read("/a-propos");
+      assert.ok(about.includes(`>${aboutTitle}</h1>`), locale);
+      const index = await read("/guides");
+      const routes = new Set([...index.matchAll(/href="(\/guides\/[a-z-]+)\?lang=[a-z]+"/g)].map((m) => m[1]));
+      assert.equal(routes.size, 8);
+      for (const path of routes) {
+        const article = await read(path);
+        assert.ok(article.includes(`>${tip}</h2>`), `${locale} ${path}: translated tip`);
+        assert.equal([...article.matchAll(/<summary\b/g)].length, 3, `${locale} ${path}: FAQ parity`);
+      }
+      const home = await read("/");
+      assert.doesNotMatch(home, /chore: import|github\.com\/you\//);
+      if (locale === "fr") assert.match(home, /Envois d’archives[^<]*31 par heure[^<]*13 par heure/);
+      await read("/faq");
+      await read("/recherche?q=ZIP");
+      await read("/langues");
+      await read("/login?error=config");
+      await read("/missing-translated-page", {}, 404);
+      await read("/import", headers);
+      await read(`/jobs/${id}`, headers);
+      await read("/repos", headers);
+      await read("/staff", { Cookie: unlocked });
+    });
+  }
 });

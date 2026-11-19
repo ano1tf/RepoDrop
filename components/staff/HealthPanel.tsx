@@ -35,7 +35,7 @@ export function HealthPanel({
 }: {
   pings: PingRow[];
   locale: Locale;
-  copy: Pick<Dict, "system" | "ui" | "staff"> & { archiveLimit: string };
+  copy: Pick<Dict, "system" | "ui" | "discord"> & { archiveLimit: string };
   uptime: UptimeStats;
   configView: ConfigView;
 }) {
@@ -119,7 +119,7 @@ export function HealthPanel({
                           <CheckCircle2 className="h-3.5 w-3.5" /> {ui.success}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-danger" title={p.error ? `${copy.staff.diagnostics}: ${p.error}` : undefined}>
+                        <span className="inline-flex items-center gap-1 text-danger" title={p.status === null ? copy.discord.unreachable : fill(ui.httpError, { status: p.status })}>
                           <AlertTriangle className="h-3.5 w-3.5" />
                           {ui.failed}
                         </span>

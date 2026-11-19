@@ -9,12 +9,9 @@
  * - Elle lit **uniquement l'index de l'archive** (le répertoire central du
  *   ZIP), dans le navigateur : la liste des fichiers s'affiche, le contenu
  *   n'est jamais décompressé et **rien n'est envoyé au serveur**.
- * - Elle rejoue une extraction **simulée** (barre de progression) puis
- *   bascule dans un état « prêt à pousser ».
- * - Cliquer sur « Pousser sur GitHub » ouvre une modale qui renvoie vers la
- *   connexion GitHub : c'est là, et seulement là, que l'utilisateur décide
- *   de s'authentifier. Le message est explicite sur ce qui s'est passé
- *   (« votre fichier est prêt, connectez-vous pour terminer le push »).
+ * - Elle anime la préparation de l’aperçu local (barre de progression).
+ * - Cliquer sur « Pousser sur GitHub » conduit à l’import après connexion.
+ *   Le dépôt et la branche restent à choisir avant l’envoi vers GitHub.
  *
  * Architecture
  * ------------
@@ -57,7 +54,8 @@ import type { DemoCopy } from "@/components/workflow-demo/copy";
 import { DEMO_INTERACT_EVENT } from "@/components/workflow-demo/events";
 import { readZipIndex, type ZipEntry } from "@/lib/zip-index";
 import { savePendingFile } from "@/lib/pending-import";
-import { fill, formatBytes, formatNumber } from "@/lib/i18n/format";
+import { demoRepository } from "@/lib/demo-repo";
+import { fill, formatBytes, formatNumber, formatPercent } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { useLocalizedPath } from "@/components/LocaleLink";
 
@@ -65,7 +63,7 @@ import { useLocalizedPath } from "@/components/LocaleLink";
 const DEMO_ID = "workflow-demo";
 
 /** Étapes de l'aperçu interactif. */
-type Phase = "idle" | "reading" | "extracting" | "ready" | "error";
+type Phase = "idle" | "reading" | "previewing" | "ready" | "error";
 
 export function WorkflowDemo({
   copy,
@@ -142,13 +140,13 @@ export function WorkflowDemo({
         // Lecture **locale** : seul l'index de l'archive est lu.
         const list = await readZipIndex(file);
         setEntries(list);
-        setPhase("extracting");
+        setPhase("previewing");
 
         /*
          * Relais pour /import, **après** une lecture réussie : si le visiteur
          * part se connecter (ou clique « pousser »), l'archive l'attend côté
-         * import — jamais uploadée pour autant, elle ne quitte le navigateur
-         * qu'après le choix du dépôt.
+         * import. Seule la page /import envoie l’archive au serveur pour
+         * préparer l’aperçu, avant le choix du dépôt et le push vers GitHub.
          *
          * Pourquoi si tard ? Une archive illisible (ou trop grosse) ne doit
          * pas être rangée dans IndexedDB : `/import` la relancerait, l'envoi
@@ -158,18 +156,17 @@ export function WorkflowDemo({
         void savePendingFile(file);
       } catch {
         setPhase("error");
-        setError(copy.dropError);
+        setError(copy.readError);
       }
     },
-    [copy.dropError, copy.dropTooLarge, locale, maxBytes],
+    [copy.dropError, copy.dropTooLarge, copy.readError, locale, maxBytes],
   );
 
-  /* ------------------------------------------- extraction simulée ------- */
-  /* La lecture de l'index est instantanée : sans animation, le visiteur ne
-     comprendrait pas ce qui se passe. On rejoue donc une extraction
-     « propre » (~1 s), comme le ferait la vraie décompression serveur. */
+  /* ------------------------------------------------ animation d’aperçu --- */
+  /* Transition vers l’aperçu local : seul l’index est lu, pas le contenu.
+     L’extraction a lieu sur le serveur, après connexion et envoi. */
   useEffect(() => {
-    if (phase !== "extracting") return;
+    if (phase !== "previewing") return;
     const timer = setInterval(() => {
       setProgress((p) => Math.min(100, p + 4 + Math.round(Math.random() * 9)));
     }, 70);
@@ -177,7 +174,7 @@ export function WorkflowDemo({
   }, [phase]);
 
   useEffect(() => {
-    if (phase === "extracting" && progress >= 100) setPhase("ready");
+    if (phase === "previewing" && progress >= 100) setPhase("ready");
   }, [phase, progress]);
 
   /* ------------------------------------------------------ glisser-déposer */
@@ -225,7 +222,7 @@ export function WorkflowDemo({
 
   /* ------------------------------------------------------- rendu ---------- */
 
-  const repoName = copy.mockFile.replace(/\.[^.]+$/, "");
+  const exampleRepo = demoRepository(copy.mockFile);
   const ready = phase === "ready";
   const fileCount = entries.filter((e) => !e.isDirectory).length;
   const readyMeta = fill(copy.readyMeta, {
@@ -233,9 +230,11 @@ export function WorkflowDemo({
   });
 
   const displayName = fileName ?? copy.mockFile;
-  const displayMeta = fileSize
-    ? `${formatBytes(fileSize, locale)} · ${formatNumber(fileCount, locale)}`
-    : copy.mockFileMeta;
+  const size = formatBytes(fileSize ?? Math.round(18.4 * 1024 ** 2), locale);
+  const displayMeta = fileSize === null || phase === "previewing" || ready
+    ? fill(copy.archiveMeta, { size, count: formatNumber(fileSize === null ? 1284 : fileCount, locale) })
+    : size;
+  const progressLabel = formatPercent(progress, locale);
 
   return (
     <section aria-labelledby="workflow-demo-title" className="relative mt-9 w-full">
@@ -281,7 +280,7 @@ export function WorkflowDemo({
 
           {/* --------------------------------------------------- étapes 1→3 */}
           <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
-            <DemoCard step={1} label={copy.step1}>
+            <DemoCard step={formatNumber(1, locale)} label={copy.step1}>
               {/* Carte 1 : la zone de dépôt. */}
               <div
                 data-wd="archive-card"
@@ -316,7 +315,7 @@ export function WorkflowDemo({
                       className="truncate font-mono text-[11px] text-chalk"
                       title={displayName}
                     >
-                      {displayName}
+                      <bdi>{displayName}</bdi>
                     </p>
                     <p data-wd="archive-meta" className="mt-0.5 truncate text-[10px] text-mist">
                       {displayMeta}
@@ -340,21 +339,23 @@ export function WorkflowDemo({
                     </p>
                   )}
 
-                  {phase === "extracting" && (
+                  {phase === "previewing" && (
                     <div>
                       <div className="flex items-center justify-between gap-2 text-[10px] text-mist">
-                        <span>{copy.extracting}</span>
-                        <span className="font-mono tabular-nums">{progress}%</span>
+                        <span>{copy.preparing}</span>
+                        <span className="font-mono tabular-nums">{progressLabel}</span>
                       </div>
                       <div
                         role="progressbar"
+                        aria-label={copy.preparing}
+                        aria-valuetext={progressLabel}
                         aria-valuenow={progress}
                         aria-valuemin={0}
                         aria-valuemax={100}
                         className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-panel2"
                       >
                         <div
-                          className="h-full w-full origin-left rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-100 ease-linear"
+                          className="h-full w-full origin-left rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-100 rtl:origin-right ease-linear"
                           style={{ transform: `scaleX(${progress / 100})` }}
                         />
                       </div>
@@ -380,7 +381,7 @@ export function WorkflowDemo({
                     <ul className="mt-1.5 max-h-16 space-y-0.5 overflow-y-auto font-mono text-[10px] text-mist">
                       {entries.slice(0, 8).map((e) => (
                         <li key={e.name} className="truncate">
-                          {e.name}
+                          <bdi>{e.name}</bdi>
                         </li>
                       ))}
                     </ul>
@@ -409,7 +410,7 @@ export function WorkflowDemo({
               </div>
             </DemoCard>
 
-            <DemoCard step={2} label={copy.step2}>
+            <DemoCard step={formatNumber(2, locale)} label={copy.step2}>
               <div className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5">
                 <div className="flex h-8 items-end gap-[3px]" aria-hidden="true">
                   {[38, 62, 46, 78, 55, 88, 70, 95, 60, 84, 48, 72].map((h, i) => (
@@ -432,7 +433,7 @@ export function WorkflowDemo({
               </div>
             </DemoCard>
 
-            <DemoCard step={3} label={copy.step3}>
+            <DemoCard step={formatNumber(3, locale)} label={copy.step3}>
               <div className="rounded-lg border border-edge/70 bg-panel2/70 p-2.5 font-mono text-[10px] leading-4">
                 <RepoLine name="src/" depth={0} dir />
                 <RepoLine name="index.ts" depth={1} />
@@ -504,9 +505,9 @@ export function WorkflowDemo({
               </>
             ) : (
               <>
-                <span className="inline-flex min-w-0 items-center gap-1 font-mono text-[11px]">
-                  <span className="shrink-0 text-mist">github.com/you/</span>
-                  <span className="truncate font-semibold text-go">{repoName}</span>
+                <span dir="ltr" className="inline-flex min-w-0 items-center font-mono text-[11px]">
+                  <span className="shrink-0 text-mist">{`github.com/${exampleRepo.owner}/`}</span>
+                  <span className="truncate font-semibold text-go">{exampleRepo.name}</span>
                 </span>
                 <span className="flex items-center gap-1 font-mono text-[11px] text-mist">
                   <GitBranch className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -600,7 +601,7 @@ function DemoCard({
   label,
   children,
 }: {
-  step: number;
+  step: string;
   label: string;
   children: React.ReactNode;
 }) {

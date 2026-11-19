@@ -478,7 +478,7 @@ export function DiscordSettings({
               {status.bot.connected && (
                 <Badge variant="default">
                   <Check className="h-3 w-3" />
-                  Gateway{status.bot.user ? `: ${status.bot.user}` : ""}
+                  {t.gatewayConnected}{status.bot.user && <>: <bdi>{status.bot.user}</bdi></>}
                   {status.bot.latencyMs !== null ? ` · ${duration(status.bot.latencyMs)}` : ""}
                 </Badge>
               )}
@@ -515,11 +515,17 @@ export function DiscordSettings({
                 {statusError}
               </p>
             )}
+            {status.lastOk === false && (
+              <p className="text-xs text-amber">{t.unreachable}</p>
+            )}
             {status.lastError && (
-              <details className="rounded-lg bg-danger/10 p-2.5 text-xs text-danger ring-1 ring-danger/25">
-                <summary className="cursor-pointer">{staff.diagnostics}</summary>
-                <code dir="auto" className="mt-2 block break-all">{status.lastError}</code>
-              </details>
+              <div className="rounded-lg bg-danger/10 p-2.5 text-xs text-danger ring-1 ring-danger/25">
+                <p>{t.monitorIssue}</p>
+                <details className="mt-2">
+                  <summary className="cursor-pointer">{staff.diagnostics}</summary>
+                  <code dir="auto" className="mt-2 block break-all">{status.lastError}</code>
+                </details>
+              </div>
             )}
             {status.startedAt && (
               <p className="text-[11px] text-mist">

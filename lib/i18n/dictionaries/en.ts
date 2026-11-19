@@ -9,7 +9,7 @@ export const en: Dict = {
   meta: {
     title: "RepoDrop — Import your .rar, .zip and .tar archives to GitHub",
     description:
-      "Drop a .rar, .zip, .tar or .tar.gz archive and push your code to GitHub in one click. Safe extraction, preview before upload, no terminal and no git.",
+      "Drop a .rar, .zip, .tar or .tar.gz archive and push your code to GitHub in one click. Safe extraction and a preview before you push. No terminal or Git required.",
     loginTitle: "GitHub sign-in",
     loginDescription:
       "Connect your GitHub account to RepoDrop to create a repo and push your .rar, .zip or .tar archives in one click. Token encrypted, never stored in the database.",
@@ -20,6 +20,7 @@ export const en: Dict = {
   },
 
   nav: {
+    rightToLeft: "Right-to-left writing",
     howItWorks: "How it works",
     myRepos: "My repos",
     importArchive: "Import an archive",
@@ -36,6 +37,7 @@ export const en: Dict = {
   },
 
   home: {
+    demoReadError: "This ZIP couldn’t be read. Try another archive.",
     heroBadge: "New: .tar and .tar.gz",
     heroTitleLine1: "Your code archives,",
     heroTitleLine2: "on GitHub with a drag and drop.",
@@ -45,7 +47,7 @@ export const en: Dict = {
     ctaImport: "Import an archive",
     ctaHow: "How it works",
     checkSandboxed: "Sandboxed extraction",
-    checkToken: "GitHub token never stored",
+    checkToken: "Encrypted GitHub token",
     checkLanguages: "Interface available in {count} languages",
 
     statFormats: "archive formats",
@@ -94,9 +96,8 @@ export const en: Dict = {
       "Old Windows .rar files, exported .zip files, .tar.gz from a Linux server: everything is read server-side, streamed, with the same guard rails. The single root folder is removed automatically and node_modules is excluded by default.",
 
     securityTitle: "What we refuse, and why",
-    securityLead:
-      "Unpacking a stranger's archive is a risky sport. Here are the nets stretched under every import.",
-    guard1Title: "Zip-slip & traversal",
+    securityLead: "Archives are extracted in a temporary workspace. RepoDrop checks paths and limits the size and number of files.",
+    guard1Title: "Path validation",
     guard1Body:
       "Every path is validated (../, absolute, UNC, NUL). A single attempt and the whole archive is rejected.",
     guard2Title: "Decompression bombs",
@@ -106,34 +107,28 @@ export const en: Dict = {
     guard3Body:
       "Encrypted httpOnly cookie (JWE A256GCM), push through GIT_ASKPASS. Never in the database, never in logs.",
     guard4Title: "Quotas",
-    guard4Body:
-      "30 uploads/h per IP and 10 pushes/h per user, persisted counters: the service stays healthy.",
-    limitsNote:
-      "Default limits: {upload} uploaded, {extract} extracted, {files} files per import.",
+    guard4Body: "Uploads: {uploads} per hour per IP address. Pushes: {pushes} per hour per account.",
+    limitsNote: "Limits per import: {upload} per archive, {extract} after extraction, and up to {files} files.",
 
     faqTitle: "Frequently asked questions",
     faqLead:
       "Everything about importing archives to GitHub, the accepted formats and your account's privacy.",
 
-    ctaTitle: "Ready to empty your next archive into GitHub?",
-    ctaLead: "Sign in, drop, push. We handle the rest.",
+    ctaTitle: "Ready to import your project to GitHub?",
+    ctaLead: "Sign in, upload the archive, and review the preview before confirming the push.",
 
     mockFile: "my-project.zip",
-    mockFileMeta: "{size} · {count} files",
-    mockExcluded: "excluded",
-    mockPushed: "Pushed to github.com/you/my-project · main branch",
 
-    demoEyebrow: "The magic, before sign-in",
+    demoEyebrow: "Try without an account",
     demoTitle: "From archive to GitHub repo in seconds.",
     demoTitleAccent: "No terminal.",
-    demoLead: "The archive gets verified, the preview opens, the push goes out. Nothing leaves until you say so.",
+    demoLead: "Try it with a ZIP. The preview stays in your browser: nothing is uploaded.",
     demoStep1: "Local archive",
-    demoStep2: "Extraction verified",
+    demoStep2: "File preview",
     demoStep3: "Repo ready",
-    demoFileMeta: "18.4 MB · 1,284 files",
-    demoScan: "Paths verified",
-    demoPushed: "Pushed · just now",
-    demoBranches: "main",
+    demoFileMeta: "{size} · Files: {count}",
+    demoScan: "Example scan",
+    demoPushed: "Example result",
     demoNoAccount: "Zero account, zero terminal.",
     demoLocalBadge: "Local",
     demoDropHint: "Drop a .zip here",
@@ -142,14 +137,14 @@ export const en: Dict = {
     demoDropTooLarge: "Archive too large: {max} maximum.",
     demoDropError: "Only .zip files are accepted.",
     demoReading: "Reading the archive…",
-    demoExtracting: "Extracting…",
-    demoReady: "Ready to push",
-    demoReadyMeta: "{count} files found · nothing left your browser",
+    demoPreparing: "Preparing preview…",
+    demoReady: "Preview ready",
+    demoReadyMeta: "Files found: {count} · read locally",
     demoPushCta: "Push to GitHub",
     demoLocalNote: "Your files stay in your browser — nothing is uploaded.",
     demoConnectTitle: "File ready!",
-    demoConnectBody: "Connect your GitHub account to finish the push.",
-    demoConnectNote: "The archive never left your browser — it will be pushed from your GitHub session.",
+    demoConnectBody: "Sign in with GitHub to continue the import.",
+    demoConnectNote: "Review the archive, then choose a repository and branch before pushing.",
     demoConnectCta: "Sign in with GitHub",
     demoConnectLater: "Later",
   },
@@ -158,7 +153,7 @@ export const en: Dict = {
     q1: "How do I put a .rar or .zip archive on GitHub without using Git?",
     a1: "Connect your GitHub account on RepoDrop, drag and drop your .rar, .zip, .tar or .tar.gz file, check the preview of the extracted files, then pick a new or existing repository. RepoDrop creates the commit and pushes the code directly under your GitHub identity, with no terminal and no command line.",
     q2: "Which archive formats and sizes are supported?",
-    a2: "RepoDrop natively supports .rar (RAR4 and RAR5), .zip, .tar, .tar.gz and .tgz archives, detected from their magic bytes server-side. By default an archive can weigh up to {upload} compressed ({extract} extracted and {files} files).",
+    a2: "RepoDrop detects and extracts .rar (RAR4 and RAR5), .zip, .tar, .tar.gz, and .tgz archives. Limits: {upload} per archive, {extract} after extraction, and up to {files} files.",
     q3: "Are my GitHub token and private source code stored?",
     a3: "No. Your GitHub OAuth token lives only in an encrypted httpOnly cookie (JWE A256GCM) in your browser: it is never written to the database or to the logs. Extracted files sit in an isolated temporary space and are purged automatically after the push.",
     q4: "Can I send an archive to an existing GitHub repository without overwriting my work?",
@@ -205,6 +200,7 @@ export const en: Dict = {
   },
 
   uploader: {
+    progressLabel: "Uploading archive",
     dropLabel: "Drop a .rar, .zip or .tar archive",
     uploading: "Uploading the archive… {progress}",
     keepOpen: "Do not close this tab.",
@@ -390,7 +386,7 @@ export const en: Dict = {
     extractingBody: "Paths are checked, the size limit applied and the root folder detected. Everything happens server-side, in an isolated space.",
     pushingTitle: "Pushing to GitHub…",
     pushingBody: "Creating the commit and sending the files. You can leave this tab open — we'll keep you posted.",
-    doneTitle: "It's pushed!",
+    doneTitle: "Your import is complete!",
     doneFiles: "Files imported: {count} · Branch: {branch}",
     doneCommit: "commit {sha}",
     doneCreated: "repository created",
@@ -401,6 +397,7 @@ export const en: Dict = {
   },
 
   ui: {
+    fork: "Fork",
     cancel: "Cancel",
     offline: "Could not reach the server. Try again.",
     repoName: "Repository name",
@@ -556,6 +553,8 @@ export const en: Dict = {
   },
 
   discord: {
+    monitorIssue: "The Discord monitor encountered a problem.",
+    gatewayConnected: "Bot connected to Discord",
     title: "Discord bot",
     lead: "Paste a Discord bot token or webhook URL. The value is encrypted and will not be shown again.",
     secretWarning: "SESSION_SECRET is not set. Configure it on the server to keep the token usable after a restart.",
@@ -607,9 +606,15 @@ export const en: Dict = {
     setupVerify: "Save the settings, then send a test message to verify the channel.",
   },
 
+  errorPage: {
+    title: "Couldn’t display this page",
+    body: "Something went wrong. Try again or return to the home page.",
+    retry: "Try again",
+  },
+
   notFound: {
     title: "Page not found",
-    body: "This page does not exist — or the job expired (archives are purged after a while).",
+    body: "This page doesn’t exist or the import has expired. Return to the home page to continue.",
     back: "Back to home",
   },
 };

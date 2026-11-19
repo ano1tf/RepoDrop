@@ -73,6 +73,7 @@ export function ConnectModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="demo-connect-title"
+        aria-describedby="demo-connect-description"
         className="panel relative w-full max-w-md animate-fade-up p-6 text-center"
       >
         <div
@@ -87,7 +88,7 @@ export function ConnectModal({
         <h3 id="demo-connect-title" className="mt-4 text-lg font-semibold tracking-tight">
           {title}
         </h3>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-mist">{body}</p>
+        <p id="demo-connect-description" className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-mist">{body}</p>
 
         <div className="mt-5 flex flex-col gap-2.5">
           <LocaleLink
@@ -108,7 +109,7 @@ export function ConnectModal({
           </button>
         </div>
 
-        <p className="mt-4 flex items-start gap-1.5 text-left text-[11px] leading-snug text-mist">
+        <p className="mt-4 flex items-start gap-1.5 text-start text-[11px] leading-snug text-mist">
           <ShieldCheck className="mt-px h-3 w-3 shrink-0 text-go/80" aria-hidden="true" />
           <span>{note}</span>
         </p>

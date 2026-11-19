@@ -15,6 +15,7 @@ export const nl: Dict = {
   },
 
   nav: {
+    rightToLeft: "Schrift van rechts naar links",
     howItWorks: "Hoe het werkt",
     myRepos: "Mijn repo's",
     importArchive: "Een archief importeren",
@@ -31,6 +32,7 @@ export const nl: Dict = {
   },
 
   home: {
+    demoReadError: "Dit ZIP-bestand is onleesbaar. Probeer een ander archief.",
     heroBadge: "Nieuw: .tar en .tar.gz",
     heroTitleLine1: "Jouw code-archieven,",
     heroTitleLine2: "op GitHub met slepen en neerzetten.",
@@ -40,7 +42,7 @@ export const nl: Dict = {
     ctaImport: "Een archief importeren",
     ctaHow: "Hoe het werkt",
     checkSandboxed: "Extractie in sandbox",
-    checkToken: "GitHub-token nooit opgeslagen",
+    checkToken: "Versleuteld GitHub-token",
     checkLanguages: "Interface beschikbaar in {count} talen",
 
     statFormats: "archiefformaten",
@@ -89,9 +91,8 @@ export const nl: Dict = {
       "Oude Windows-.rar-bestanden, geëxporteerde .zip-bestanden, .tar.gz van een Linux-server: alles wordt server-side gelezen, gestreamd, met dezelfde vangnetten. De enkele hoofdmap wordt automatisch verwijderd en node_modules is standaard uitgesloten.",
 
     securityTitle: "Wat we weigeren, en waarom",
-    securityLead:
-      "Het archief van een onbekende uitpakken is een riskante sport. Dit zijn de netten onder elke import.",
-    guard1Title: "Zip-slip & traversal",
+    securityLead: "Archieven worden uitgepakt in een tijdelijke werkmap. RepoDrop controleert de paden en beperkt de grootte en het aantal bestanden.",
+    guard1Title: "Padcontrole",
     guard1Body:
       "Elk pad wordt gevalideerd (../, absoluut, UNC, NUL). Eén poging en het hele archief wordt geweigerd.",
     guard2Title: "Decompressiebommen",
@@ -101,34 +102,28 @@ export const nl: Dict = {
     guard3Body:
       "Versleutelde httpOnly-cookie (JWE A256GCM), push via GIT_ASKPASS. Nooit in de database, nooit in logs.",
     guard4Title: "Quota",
-    guard4Body:
-      "30 uploads/u per IP en 10 pushes/u per gebruiker, persistente tellers: de dienst blijft gezond.",
-    limitsNote:
-      "Standaardlimieten: {upload} geüpload, {extract} uitgepakt, {files} bestanden per import.",
+    guard4Body: "Uploads: {uploads} per uur per IP-adres. Pushes: {pushes} per uur per account.",
+    limitsNote: "Limieten per import: {upload} per archief, {extract} na uitpakken en maximaal {files} bestanden.",
 
     faqTitle: "Veelgestelde vragen",
     faqLead:
       "Alles over het importeren van archieven naar GitHub, de geaccepteerde formaten en de privacy van je account.",
 
-    ctaTitle: "Klaar om je volgende archief op GitHub te legen?",
-    ctaLead: "Log in, sleep, push. Wij doen de rest.",
+    ctaTitle: "Wil je je project naar GitHub importeren?",
+    ctaLead: "Log in, upload het archief en controleer het voorbeeld voordat je de push bevestigt.",
 
     mockFile: "mijn-project.zip",
-    mockFileMeta: "{size} · {count} bestanden",
-    mockExcluded: "uitgesloten",
-    mockPushed: "Gepusht naar github.com/jij/mijn-project · branch main",
 
-    demoEyebrow: "De magie, vóór het inloggen",
+    demoEyebrow: "Probeer het zonder account",
     demoTitle: "Van archief naar GitHub-repo in seconden.",
     demoTitleAccent: "Zonder terminal.",
-    demoLead: "Sleep, check de preview, push. Geen commando's, niets gaat weg zonder jouw akkoord.",
+    demoLead: "Probeer het met een ZIP. Het voorbeeld blijft in je browser; niets wordt geüpload.",
     demoStep1: "Lokaal archief",
-    demoStep2: "Extractie gecheckt",
+    demoStep2: "Bestandsvoorbeeld",
     demoStep3: "Repo klaar",
-    demoFileMeta: "18,4 MB · 1.284 bestanden",
-    demoScan: "Paden gecheckt",
-    demoPushed: "Gepusht · net nu",
-    demoBranches: "main",
+    demoFileMeta: "{size} · Bestanden: {count}",
+    demoScan: "Voorbeeldcontrole",
+    demoPushed: "Voorbeeldresultaat",
     demoNoAccount: "Geen account, geen terminal.",
     demoLocalBadge: "Lokaal",
     demoDropHint: "Sleep hier een .zip",
@@ -137,14 +132,14 @@ export const nl: Dict = {
     demoDropTooLarge: "Archief te groot: maximaal {max}.",
     demoDropError: "Alleen .zip-bestanden worden geaccepteerd.",
     demoReading: "Archief wordt gelezen…",
-    demoExtracting: "Uitpakken…",
-    demoReady: "Klaar om te pushen",
-    demoReadyMeta: "{count} bestanden gevonden · niets verliet je browser",
+    demoPreparing: "Voorbeeld laden…",
+    demoReady: "Voorbeeld gereed",
+    demoReadyMeta: "Bestanden gevonden: {count} · lokaal gelezen",
     demoPushCta: "Naar GitHub pushen",
     demoLocalNote: "Je bestanden blijven in je browser — er wordt niets geüpload.",
     demoConnectTitle: "Bestand klaar!",
-    demoConnectBody: "Verbind je GitHub-account om de push af te ronden.",
-    demoConnectNote: "Het archief verliet je browser niet — het wordt gepusht vanuit je GitHub-sessie.",
+    demoConnectBody: "Meld je aan bij GitHub om verder te gaan met importeren.",
+    demoConnectNote: "Controleer het archief en kies een repository en branch voordat je de code pusht.",
     demoConnectCta: "Inloggen met GitHub",
     demoConnectLater: "Later",
   },
@@ -153,7 +148,7 @@ export const nl: Dict = {
     q1: "Hoe zet ik een .rar- of .zip-archief op GitHub zonder Git te gebruiken?",
     a1: "Koppel je GitHub-account op RepoDrop, sleep je .rar-, .zip-, .tar- of .tar.gz-bestand erin, controleer het voorbeeld van de uitgepakte bestanden en kies een nieuwe of bestaande repository. RepoDrop maakt de commit en pusht de code rechtstreeks onder jouw GitHub-identiteit, zonder terminal en zonder opdrachtregel.",
     q2: "Welke archiefformaten en groottes worden ondersteund?",
-    a2: "RepoDrop ondersteunt native .rar- (RAR4 en RAR5), .zip-, .tar-, .tar.gz- en .tgz-archieven, server-side herkend aan hun magic bytes. Standaard mag een archief tot {upload} gecomprimeerd wegen ({extract} uitgepakt en {files} bestanden).",
+    a2: "RepoDrop herkent en pakt .rar- (RAR4 en RAR5), .zip-, .tar-, .tar.gz- en .tgz-archieven uit. Limieten: {upload} per archief, {extract} na uitpakken en maximaal {files} bestanden.",
     q3: "Worden mijn GitHub-token en privécode opgeslagen?",
     a3: "Nee. Je GitHub OAuth-token leeft alleen in een versleutelde httpOnly-cookie (JWE A256GCM) in je browser: het wordt nooit naar de database of de logs geschreven. Uitgepakte bestanden staan in een geïsoleerde tijdelijke ruimte en worden na de push automatisch opgeruimd.",
     q4: "Kan ik een archief naar een bestaande GitHub-repository sturen zonder mijn werk te overschrijven?",
@@ -201,6 +196,7 @@ export const nl: Dict = {
   },
 
   uploader: {
+    progressLabel: "Archief uploaden",
     dropLabel: "Een .rar-, .zip- of .tar-archief neerzetten",
     uploading: "Archief wordt verzonden… {progress}",
     keepOpen: "Sluit dit tabblad niet.",
@@ -397,6 +393,7 @@ export const nl: Dict = {
   },
 
   ui: {
+    fork: "Afgeleide repository",
     cancel: "Annuleren",
     offline: "De server is niet bereikbaar. Probeer het opnieuw.",
     repoName: "Repositorynaam",
@@ -552,6 +549,8 @@ export const nl: Dict = {
   },
 
   discord: {
+    monitorIssue: "De Discord-monitor heeft een probleem gemeld.",
+    gatewayConnected: "Bot verbonden met Discord",
     title: "Discord-bot",
     lead: "Plak een Discord-bottoken of webhook-URL. De waarde wordt versleuteld en daarna niet meer getoond.",
     secretWarning: "SESSION_SECRET is niet ingesteld. Stel het op de server in zodat het token na een herstart blijft werken.",
@@ -603,9 +602,15 @@ export const nl: Dict = {
     setupVerify: "Sla de instellingen op en stuur een testbericht om het kanaal te controleren.",
   },
 
+  errorPage: {
+    title: "Deze pagina kan niet worden weergegeven",
+    body: "Er is iets misgegaan. Probeer het opnieuw of ga terug naar de startpagina.",
+    retry: "Opnieuw proberen",
+  },
+
   notFound: {
     title: "Pagina niet gevonden",
-    body: "Deze pagina bestaat niet — of de job is verlopen (archieven worden na verloop van tijd opgeruimd).",
+    body: "Deze pagina bestaat niet of de import is verlopen. Ga terug naar de startpagina om verder te gaan.",
     back: "Terug naar start",
   },
 };

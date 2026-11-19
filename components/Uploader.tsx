@@ -51,6 +51,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings 
 
   const send = useCallback(
     (file: File) => {
+      if (xhrRef.current) return;
       setError(null);
       if (!OK_EXT.test(file.name)) {
         setError(tRef.current.errorFormat);
@@ -78,7 +79,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings 
       xhr.open("POST", localize("/api/upload"));
       xhr.responseType = "json";
       xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+        if (e.lengthComputable && e.total > 0) setProgress(Math.round((e.loaded / e.total) * 100));
       };
       xhr.onload = () => {
         xhrRef.current = null;
@@ -107,6 +108,7 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings 
         xhrRef.current = null;
         setProgress(null);
       };
+      setProgress(0);
       xhr.send(form);
     },
     [maxBytes, maxLabel, router, localize],
@@ -151,12 +153,15 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings 
   return (
     <div className="animate-fade-up">
       <div
-        role="button"
-        tabIndex={0}
-        aria-label={strings.dropLabel}
+        role={uploading ? undefined : "button"}
+        tabIndex={uploading ? undefined : 0}
+        aria-label={uploading ? undefined : strings.dropLabel}
         onClick={() => !uploading && inputRef.current?.click()}
         onKeyDown={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && !uploading) inputRef.current?.click();
+          if ((e.key === "Enter" || e.key === " ") && !uploading) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
         }}
         onDragOver={(e) => {
           e.preventDefault();
@@ -186,13 +191,21 @@ export function Uploader({ maxLabel, extractLabel, maxBytes, locale, t: strings 
         {uploading ? (
           <div className="w-full max-w-sm">
             <div className="mb-3 flex items-center justify-center gap-2 text-sm text-chalk">
-              <UploadCloud className="h-5 w-5 text-go" />
-              {fill(strings.uploading, { progress: formatPercent(progress ?? 0, locale) })}
+              <UploadCloud className="h-5 w-5 text-go" aria-hidden="true" />
+              {fill(strings.uploading, { progress: formatPercent(progress, locale) })}
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-panel2">
+            <div
+              role="progressbar"
+              aria-label={strings.progressLabel}
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuetext={formatPercent(progress, locale)}
+              className="h-2 w-full overflow-hidden rounded-full bg-panel2"
+            >
               <div
                 className="h-full w-full origin-left rtl:origin-right rounded-full bg-gradient-to-r from-go to-sky transition-transform duration-200 ease-out"
-                style={{ transform: `scaleX(${(progress ?? 0) / 100})` }}
+                style={{ transform: `scaleX(${progress / 100})` }}
               />
             </div>
             <p className="mt-3 text-xs text-mist">{strings.keepOpen}</p>

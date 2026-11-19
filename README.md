@@ -501,8 +501,10 @@ Trois décisions et ce qu'elles évitent :
 - **Typage plutôt que convention.** `Dict = DeepStringify<typeof fr>` rend
   impossible la compilation d'un dictionnaire incomplet : ajouter une clé en
   français casse les quinze autres fichiers jusqu'à traduction. Le test
-  `tests/i18n.test.ts` complète ce que TypeScript ne voit pas (chaînes vides,
-  placeholders divergents, phrases restées en français).
+  `tests/i18n.test.ts` complète ce que TypeScript ne voit pas : chaînes vides,
+  variables divergentes et libellés recopiés du français, hors vocabulaire
+  réellement partagé. `tests/ui-copy.test.ts` repère les textes JSX et les
+  attributs d’accessibilité laissés en dur.
 - **Une seule URL canonique par page.** Pas de préfixe `/fr/`, `/en/`…
   Le français est la langue de repli. Les liens de langue ne changent ni les
   URL canoniques ni le sitemap. L’accueil, les guides, la recherche et les
@@ -535,12 +537,19 @@ Sans choix explicite, le middleware sélectionne la langue prise en charge la
 mieux pondérée par `Accept-Language`, puis le français. `POST /api/locale`
 (`{ locale }`) permet d'enregistrer le même choix sans redirection. Le test
 `npm run test:i18n:production`, à lancer après `npm run build`, vérifie le
-rendu réel avec et sans cookie. Il vérifie également les parcours connectés
-contre l’API GitHub de test, sans compte réel. Les erreurs des API de
-l’interface ont un `code` stable et un message traduit ; les anciens échecs
-d’import sont retraduits à la lecture. Les noms de dépôts, le contenu des
-fichiers et les diagnostics bruts ne sont pas traduits. Les notifications
-Discord sortantes restent indépendantes de la langue du navigateur.
+rendu réel avec et sans cookie dans les 16 langues, y compris les huit guides
+et les écrans connectés avec une API GitHub de test. Les guides partagent le
+même plan dans chaque langue, avec une introduction et des conseils propres
+à chaque sujet. Les erreurs des API gardent un `code` stable et un message
+traduit ; les anciens échecs d’import sont retraduits à la lecture. La démo
+ZIP affiche un aperçu local, puis l’import connecté demande confirmation
+avant l’envoi à GitHub.
+
+Les noms de dépôts, les branches et le contenu des fichiers ne sont pas
+traduits. Le panel d’administration traduit les résumés d’erreurs et conserve
+le détail technique à part pour le support. Les colonnes de l’export CSV et
+les notifications envoyées au canal Discord ne suivent pas la langue du
+navigateur.
 
 Ajouter une langue :
 

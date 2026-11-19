@@ -15,6 +15,7 @@ export const pt: Dict = {
   },
 
   nav: {
+    rightToLeft: "Escrita da direita para a esquerda",
     howItWorks: "Como funciona",
     myRepos: "Os meus repositórios",
     importArchive: "Importar um arquivo",
@@ -31,6 +32,7 @@ export const pt: Dict = {
   },
 
   home: {
+    demoReadError: "Não foi possível ler este ZIP. Experimente outro arquivo.",
     heroBadge: "Novo: .tar e .tar.gz",
     heroTitleLine1: "Os seus arquivos de código,",
     heroTitleLine2: "no GitHub com arrastar e largar.",
@@ -40,7 +42,7 @@ export const pt: Dict = {
     ctaImport: "Importar um arquivo",
     ctaHow: "Como funciona",
     checkSandboxed: "Extração em sandbox",
-    checkToken: "Token GitHub nunca guardado",
+    checkToken: "Token do GitHub encriptado",
     checkLanguages: "Interface disponível em {count} idiomas",
 
     statFormats: "formatos de arquivo",
@@ -89,9 +91,8 @@ export const pt: Dict = {
       "Os velhos .rar do Windows, os .zip de uma exportação, os .tar.gz de um servidor Linux: tudo é lido no servidor, em streaming, com as mesmas proteções. A pasta raiz única é removida automaticamente e node_modules é excluído por predefinição.",
 
     securityTitle: "O que recusamos, e porquê",
-    securityLead:
-      "Descomprimir o arquivo de um desconhecido é um desporto de risco. Eis as redes esticadas sob cada importação.",
-    guard1Title: "Zip-slip e traversal",
+    securityLead: "Os arquivos são extraídos num espaço temporário. O RepoDrop verifica os caminhos e limita o tamanho e o número de ficheiros.",
+    guard1Title: "Validação de caminhos",
     guard1Body:
       "Cada caminho é validado (../, absolutos, UNC, NUL). Uma única tentativa e o arquivo inteiro é recusado.",
     guard2Title: "Bombas de descompressão",
@@ -101,50 +102,44 @@ export const pt: Dict = {
     guard3Body:
       "Cookie httpOnly cifrado (JWE A256GCM), push via GIT_ASKPASS. Nunca na base de dados, nunca nos logs.",
     guard4Title: "Quotas",
-    guard4Body:
-      "30 uploads/h por IP e 10 push/h por utilizador, contadores persistentes: o serviço mantém-se saudável.",
-    limitsNote:
-      "Limites predefinidos: {upload} carregados, {extract} descomprimidos, {files} ficheiros por importação.",
+    guard4Body: "Envios de arquivos: {uploads} por hora e endereço IP. Envios para o GitHub: {pushes} por hora e conta.",
+    limitsNote: "Limites por importação: {upload} por arquivo, {extract} após a extração e até {files} ficheiros.",
 
     faqTitle: "Perguntas frequentes",
     faqLead:
       "Tudo sobre a importação de arquivos para o GitHub, os formatos aceites e a privacidade da sua conta.",
 
-    ctaTitle: "Pronto para vazar o seu próximo arquivo no GitHub?",
-    ctaLead: "Entre, largue, envie. Nós tratamos do resto.",
+    ctaTitle: "Quer importar o seu projeto para o GitHub?",
+    ctaLead: "Inicie sessão, envie o arquivo e reveja a pré-visualização antes de confirmar o envio para o GitHub.",
 
     mockFile: "meu-projeto.zip",
-    mockFileMeta: "{size} · {count} ficheiros",
-    mockExcluded: "excluído",
-    mockPushed: "Enviado para github.com/voce/meu-projeto · branch main",
 
-    demoEyebrow: "A mágica, antes do login",
+    demoEyebrow: "Experimente sem conta",
     demoTitle: "Do arquivo ao repo no GitHub em segundos.",
     demoTitleAccent: "Sem terminal.",
-    demoLead: "Arraste, confira o preview, dê push. Sem comandos, e nada sai antes do seu ok.",
+    demoLead: "Experimente com um ZIP. A pré-visualização é feita no navegador, sem enviar ficheiros.",
     demoStep1: "Arquivo local",
-    demoStep2: "Extração verificada",
+    demoStep2: "Pré-visualização",
     demoStep3: "Repo pronto",
-    demoFileMeta: "18,4 MB · 1.284 ficheiros",
-    demoScan: "Caminhos verificados",
-    demoPushed: "Pushado · agora",
-    demoBranches: "main",
+    demoFileMeta: "{size} · Ficheiros: {count}",
+    demoScan: "Exemplo de análise",
+    demoPushed: "Exemplo de resultado",
     demoNoAccount: "Zero conta, zero terminal.",
     demoLocalBadge: "Local",
-    demoDropHint: "Arrasta um .zip aqui",
+    demoDropHint: "Arraste um ficheiro .zip",
     demoDropBrowse: "ou escolha um ficheiro",
     demoDropCta: "Importar um arquivo",
     demoDropTooLarge: "Ficheiro demasiado grande: máximo {max}.",
     demoDropError: "Apenas ficheiros .zip são aceites.",
     demoReading: "A ler o arquivo…",
-    demoExtracting: "A extrair…",
-    demoReady: "Pronto para enviar",
-    demoReadyMeta: "{count} ficheiros detetados · nada saiu do navegador",
+    demoPreparing: "A preparar pré-visualização…",
+    demoReady: "Pré-visualização pronta",
+    demoReadyMeta: "Ficheiros detetados: {count} · leitura local",
     demoPushCta: "Enviar para o GitHub",
     demoLocalNote: "Os seus ficheiros ficam no navegador — nada é enviado.",
     demoConnectTitle: "Ficheiro pronto!",
-    demoConnectBody: "Ligue a sua conta GitHub para concluir o push.",
-    demoConnectNote: "O arquivo não saiu do navegador: será enviado a partir da sua sessão GitHub.",
+    demoConnectBody: "Inicie sessão com o GitHub para continuar a importação.",
+    demoConnectNote: "Reveja o arquivo e escolha o repositório e o ramo antes de enviar o código.",
     demoConnectCta: "Entrar com GitHub",
     demoConnectLater: "Mais tarde",
   },
@@ -153,7 +148,7 @@ export const pt: Dict = {
     q1: "Como colocar um arquivo .rar ou .zip no GitHub sem usar Git?",
     a1: "Ligue a sua conta GitHub no RepoDrop, arraste o seu ficheiro .rar, .zip, .tar ou .tar.gz, verifique a pré-visualização dos ficheiros extraídos e escolha um repositório novo ou existente. O RepoDrop cria o commit e envia o código diretamente com a sua identidade GitHub, sem terminal nem linha de comandos.",
     q2: "Que formatos de arquivo e tamanhos são suportados?",
-    a2: "O RepoDrop suporta nativamente arquivos .rar (RAR4 e RAR5), .zip, .tar, .tar.gz e .tgz, detetados pelos seus magic bytes no servidor. Por predefinição, um arquivo pode pesar até {upload} comprimidos ({extract} descomprimidos e {files} ficheiros).",
+    a2: "O RepoDrop deteta e extrai arquivos .rar (RAR4 e RAR5), .zip, .tar, .tar.gz e .tgz. Limites: {upload} por arquivo, {extract} após a extração e até {files} ficheiros.",
     q3: "O meu token GitHub e o código privado são guardados?",
     a3: "Não. O seu token OAuth GitHub vive apenas num cookie httpOnly cifrado (JWE A256GCM) no seu navegador: nunca é escrito na base de dados nem nos registos. Os ficheiros extraídos ficam num espaço temporário isolado e são eliminados automaticamente após o push.",
     q4: "Posso enviar um arquivo para um repositório GitHub existente sem sobrescrever o meu trabalho?",
@@ -201,6 +196,7 @@ export const pt: Dict = {
   },
 
   uploader: {
+    progressLabel: "A enviar o arquivo",
     dropLabel: "Largar um arquivo .rar, .zip ou .tar",
     uploading: "A enviar o arquivo… {progress}",
     keepOpen: "Não feche este separador.",
@@ -397,6 +393,7 @@ export const pt: Dict = {
   },
 
   ui: {
+    fork: "Repositório derivado",
     cancel: "Cancelar",
     offline: "Não foi possível contactar o servidor. Tente novamente.",
     repoName: "Nome do repositório",
@@ -552,6 +549,8 @@ export const pt: Dict = {
   },
 
   discord: {
+    monitorIssue: "O monitor do Discord encontrou um problema.",
+    gatewayConnected: "Bot ligado ao Discord",
     title: "Bot do Discord",
     lead: "Cole um token de bot ou URL de webhook do Discord. O valor é cifrado e não volta a ser apresentado.",
     secretWarning: "SESSION_SECRET não está definido. Configure-o no servidor para que o token continue utilizável após reiniciar.",
@@ -603,9 +602,15 @@ export const pt: Dict = {
     setupVerify: "Guarde as definições e envie uma mensagem de teste para verificar o canal.",
   },
 
+  errorPage: {
+    title: "Não foi possível apresentar esta página",
+    body: "Ocorreu um erro. Tente novamente ou volte à página inicial.",
+    retry: "Tentar novamente",
+  },
+
   notFound: {
     title: "Página não encontrada",
-    body: "Esta página não existe — ou o job expirou (os arquivos são eliminados após algum tempo).",
+    body: "Esta página não existe ou a importação expirou. Volte à página inicial para continuar.",
     back: "Voltar ao início",
   },
 };

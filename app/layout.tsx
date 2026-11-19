@@ -105,7 +105,7 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col">
         {/* Grain global : casse les aplats des dégradés. */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 noise-layer" />
-        <LocaleNavigation urlLocale={urlLocale}>
+        <LocaleNavigation urlLocale={urlLocale} errorCopy={{ ...t.errorPage, home: t.notFound.back }}>
           <Header />
           <div className="flex flex-1 flex-col">{children}</div>
           <Footer />

@@ -292,7 +292,7 @@ export function RepoDetail({
               </Badge>
               {repo.language && <Badge variant="muted">{repo.language}</Badge>}
               {repo.archived && <Badge variant="amber">{ui.archived}</Badge>}
-              {repo.fork && <Badge variant="muted">fork</Badge>}
+              {repo.fork && <Badge variant="muted">{ui.fork}</Badge>}
               <span>{formatBytes(repo.size * 1024, locale)}</span>
               {repo.pushed_at && (
                 <span>· {fill(copy.lastPush, { time: formatRelativeTime(Date.parse(repo.pushed_at), locale) })}</span>

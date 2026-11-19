@@ -2,9 +2,9 @@
  * Dictionnaire de référence : **toutes** les clés de l'interface, en français.
  *
  * C'est la source de vérité du typage (`Dict = DeepStringify<typeof fr>`) : ajouter une clé ici
- * casse la compilation des quinze autres dictionnaires tant qu'elle n'est
- * pas traduite. Aucune clé ne peut donc rester silencieusement en français dans
- * une autre langue — c'est exactement le bug que ce typage évite.
+ * casse la compilation des quinze autres dictionnaires tant que la clé manque.
+ * `tests/i18n.test.ts` contrôle aussi le contenu et les variables de chaque
+ * traduction, ce que le typage seul ne peut pas vérifier.
  *
  * Les valeurs sont des chaînes simples ou des gabarits à accolades
  * (`{count}`, `{max}`) rendus par `lib/i18n/format.ts`. Pas de fonction dans
@@ -26,6 +26,7 @@ export const fr = {
   },
 
   nav: {
+    rightToLeft: "Écriture de droite à gauche",
     howItWorks: "Comment ça marche",
     myRepos: "Mes dépôts",
     importArchive: "Importer une archive",
@@ -42,6 +43,7 @@ export const fr = {
   },
 
   home: {
+    demoReadError: "Ce ZIP est illisible. Essayez une autre archive.",
     heroBadge: "Nouveau : .tar et .tar.gz",
     heroTitleLine1: "Vos archives de code,",
     heroTitleLine2: "sur GitHub en un glisser-déposer.",
@@ -51,7 +53,7 @@ export const fr = {
     ctaImport: "Importer une archive",
     ctaHow: "Comment ça marche",
     checkSandboxed: "Extraction sandboxée",
-    checkToken: "Jeton GitHub jamais stocké",
+    checkToken: "Jeton GitHub chiffré",
     checkLanguages: "Interface disponible en {count} langues",
 
     statFormats: "formats d'archives",
@@ -100,9 +102,8 @@ export const fr = {
       "Les vieux .rar de Windows, les .zip d'un export, les .tar.gz d'un serveur Linux : tout est lu côté serveur, en streaming, avec les mêmes garde-fous. Le dossier racine unique est retiré automatiquement, et node_modules est exclu par défaut.",
 
     securityTitle: "Ce qu'on refuse, et pourquoi",
-    securityLead:
-      "Décompresser l'archive d'un inconnu est un sport à risque. Voilà les filets tendus sous chaque import.",
-    guard1Title: "Zip-slip & traversal",
+    securityLead: "Les archives sont extraites dans un espace temporaire. RepoDrop vérifie les chemins et limite la taille et le nombre de fichiers.",
+    guard1Title: "Validation des chemins",
     guard1Body:
       "Chaque chemin est validé (../, absolus, UNC, NUL). Une seule tentative et l'archive entière est refusée.",
     guard2Title: "Bombes de décompression",
@@ -112,34 +113,28 @@ export const fr = {
     guard3Body:
       "Cookie httpOnly chiffré (JWE A256GCM), push via GIT_ASKPASS. Jamais en base, jamais dans les logs.",
     guard4Title: "Quotas",
-    guard4Body:
-      "30 uploads/h par IP et 10 push/h par utilisateur, compteurs persistants : le service reste sain.",
-    limitsNote:
-      "Limites par défaut : {upload} uploadés, {extract} décompressés, {files} fichiers par import.",
+    guard4Body: "Envois d’archives : {uploads} par heure et par adresse IP. Push : {pushes} par heure et par compte.",
+    limitsNote: "Limites par import : {upload} pour l’archive, {extract} après extraction, {files} fichiers.",
 
     faqTitle: "Questions fréquentes",
     faqLead:
       "Tout savoir sur l'import d'archives vers GitHub, les formats acceptés et la confidentialité de votre compte.",
 
-    ctaTitle: "Prêt à vider votre prochaine archive sur GitHub ?",
-    ctaLead: "Connectez-vous, déposez, pushez. On s'occupe du reste.",
+    ctaTitle: "Prêt à importer votre projet sur GitHub ?",
+    ctaLead: "Connectez-vous, déposez l’archive et vérifiez l’aperçu. Confirmez ensuite l’envoi.",
 
     mockFile: "mon-projet.zip",
-    mockFileMeta: "{size} · {count} fichiers",
-    mockExcluded: "exclu",
-    mockPushed: "Poussé sur github.com/vous/mon-projet · branche main",
 
-    demoEyebrow: "La magie, avant le login",
-    demoTitle: "De l'archive au repo GitHub en quelques secondes.",
+    demoEyebrow: "À essayer sans compte",
+    demoTitle: "De l’archive au dépôt GitHub.",
     demoTitleAccent: "Sans terminal.",
-    demoLead: "L'archive est vérifiée, l'aperçu s'affiche, le push part. Aucune commande, rien n'est envoyé sans votre accord.",
+    demoLead: "Essayez avec un ZIP. L’aperçu se fait dans votre navigateur, sans envoi.",
     demoStep1: "Archive locale",
-    demoStep2: "Extraction vérifiée",
-    demoStep3: "Repo prêt",
-    demoFileMeta: "18,4 Mo · 1 284 fichiers",
-    demoScan: "Chemins vérifiés",
-    demoPushed: "Pushé · à l'instant",
-    demoBranches: "main",
+    demoStep2: "Aperçu des fichiers",
+    demoStep3: "Dépôt prêt",
+    demoFileMeta: "{size} · Fichiers : {count}",
+    demoScan: "Exemple d’analyse",
+    demoPushed: "Exemple de résultat",
     demoNoAccount: "Zéro compte, zéro terminal.",
     demoLocalBadge: "Local",
     demoDropHint: "Glissez un .zip ici",
@@ -148,14 +143,14 @@ export const fr = {
     demoDropTooLarge: "Archive trop volumineuse : {max} maximum.",
     demoDropError: "Seuls les fichiers .zip sont acceptés.",
     demoReading: "Lecture de l'archive…",
-    demoExtracting: "Extraction…",
-    demoReady: "Prêt à pousser",
-    demoReadyMeta: "{count} fichiers détectés · rien n'a quitté votre navigateur",
+    demoPreparing: "Préparation de l’aperçu…",
+    demoReady: "Aperçu prêt",
+    demoReadyMeta: "Fichiers détectés : {count} · lecture locale",
     demoPushCta: "Pousser sur GitHub",
     demoLocalNote: "Vos fichiers restent dans votre navigateur : rien n'est envoyé.",
     demoConnectTitle: "Fichier prêt !",
-    demoConnectBody: "Connectez votre compte GitHub pour terminer le push.",
-    demoConnectNote: "L'archive n'a pas quitté votre navigateur : elle sera poussée depuis votre session GitHub.",
+    demoConnectBody: "Connectez-vous à GitHub pour continuer l’import.",
+    demoConnectNote: "Après l’aperçu, vous choisirez le dépôt et la branche avant d’envoyer le code.",
     demoConnectCta: "Se connecter avec GitHub",
     demoConnectLater: "Plus tard",
   },
@@ -164,7 +159,7 @@ export const fr = {
     q1: "Comment mettre une archive .rar ou .zip sur GitHub sans utiliser Git ?",
     a1: "Connectez votre compte GitHub sur RepoDrop, glissez-déposez votre fichier .rar, .zip, .tar ou .tar.gz, vérifiez l'aperçu des fichiers extraits puis choisissez un nouveau dépôt ou un dépôt existant. RepoDrop crée le commit et pousse le code directement sous votre identité GitHub, sans terminal ni ligne de commande.",
     q2: "Quels formats d'archives et quelles tailles sont pris en charge ?",
-    a2: "RepoDrop accepte nativement les archives .rar (RAR4 et RAR5), .zip, .tar, .tar.gz et .tgz, détectées par leurs octets magiques côté serveur. Par défaut, une archive peut peser jusqu'à {upload} compressés ({extract} décompressés et {files} fichiers).",
+    a2: "RepoDrop détecte et extrait les archives .rar (RAR4 et RAR5), .zip, .tar, .tar.gz et .tgz. Taille maximale : {upload} par archive, {extract} après extraction et {files} fichiers.",
     q3: "Mon jeton GitHub et mon code source privé sont-ils stockés ?",
     a3: "Non. Votre jeton OAuth GitHub est conservé uniquement dans un cookie httpOnly chiffré (JWE A256GCM) dans votre navigateur : il n'est jamais écrit en base de données ni dans les journaux. Les fichiers extraits résident dans un espace temporaire isolé puis sont purgés automatiquement après le push.",
     q4: "Puis-je envoyer une archive vers un dépôt GitHub existant sans écraser mon travail ?",
@@ -212,6 +207,7 @@ export const fr = {
   },
 
   uploader: {
+    progressLabel: "Envoi de l’archive",
     dropLabel: "Déposer une archive .rar, .zip ou .tar",
     uploading: "Envoi de l'archive… {progress}",
     keepOpen: "Ne fermez pas cet onglet.",
@@ -277,8 +273,8 @@ export const fr = {
     readMore: "Lire le guide",
     relatedTitle: "Guides associés",
     backToGuides: "Retour aux guides",
-    searchTitle: "Rechercher un guide",
-    searchPlaceholder: "Rechercher un guide…",
+    searchTitle: "Rechercher dans les guides",
+    searchPlaceholder: "Rechercher dans les guides…",
     searchResultsFor: "Résultats pour « {q} »",
     searchNoResults: "Aucun guide ne correspond à votre recherche.",
     searchEmpty: "Saisissez une requête pour rechercher dans les guides.",
@@ -390,14 +386,14 @@ export const fr = {
     statusQueued: "En file d'attente",
     statusExtracting: "Extraction",
     statusReady: "Prêt à pousser",
-    statusPushing: "Poussage…",
+    statusPushing: "Envoi…",
     statusDone: "Terminé",
     statusFailed: "Échec",
     extractingTitle: "Extraction en cours…",
     extractingBody: "Vérification des chemins, limite de taille, détection du dossier racine. Tout se passe côté serveur, dans un espace isolé.",
-    pushingTitle: "Poussage vers GitHub…",
+    pushingTitle: "Envoi vers GitHub…",
     pushingBody: "Création du commit et envoi des fichiers. L'onglet peut rester ouvert, on vous tient au courant.",
-    doneTitle: "C'est poussé !",
+    doneTitle: "Import terminé !",
     doneFiles: "Fichiers importés : {count} · Branche : {branch}",
     doneCommit: "commit {sha}",
     doneCreated: "dépôt créé",
@@ -408,6 +404,7 @@ export const fr = {
   },
 
   ui: {
+    fork: "Dépôt dérivé",
     cancel: "Annuler",
     offline: "Impossible de joindre le serveur. Réessayez.",
     repoName: "Nom du dépôt",
@@ -563,6 +560,8 @@ export const fr = {
   },
 
   discord: {
+    monitorIssue: "Le moniteur Discord a rencontré un problème.",
+    gatewayConnected: "Bot connecté à Discord",
     title: "Bot Discord",
     lead: "Collez un jeton de bot ou une URL de webhook Discord. La valeur est chiffrée et ne sera plus affichée.",
     secretWarning: "SESSION_SECRET n’est pas défini. Configurez-le côté serveur pour que le jeton reste utilisable après un redémarrage.",
@@ -614,9 +613,15 @@ export const fr = {
     setupVerify: "Enregistrez les réglages, puis envoyez un message de test pour vérifier le canal.",
   },
 
+  errorPage: {
+    title: "Impossible d’afficher cette page",
+    body: "Une erreur est survenue. Réessayez ou retournez à l’accueil.",
+    retry: "Réessayer",
+  },
+
   notFound: {
     title: "Page introuvable",
-    body: "Cette page n'existe pas — ou le job a expiré (les archives sont purgées après un certain temps).",
+    body: "Cette page n’existe pas ou l’import a expiré. Revenez à l’accueil pour continuer.",
     back: "Retour à l'accueil",
   },
 } as const;
